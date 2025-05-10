@@ -35,7 +35,7 @@ bool FranAudio::Backend::miniaudio::Init(FranAudio::Decoder::DecoderType decoder
 	{
 		Logger::LogError("MiniAudio: No decoder type specified");
 		Logger::LogError("MiniAudio: Defaulting to miniaudio decoder");
-		decoderType = FranAudio::Decoder::DecoderType::libnyquist;
+		decoderType = FranAudio::Decoder::DecoderType::miniaudio;
 		//return false;
 	}
 
