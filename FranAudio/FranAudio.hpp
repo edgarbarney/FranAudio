@@ -5,11 +5,13 @@
 
 #include "FranAudioAPI.hpp"
 
+/*
 namespace GameEngine
 {
 	class Vector;
 	class Entity;
 }
+*/
 
 namespace FranAudio
 {
@@ -43,6 +45,7 @@ namespace FranAudio
 	FRANAUDIO_API Backend::Backend* GetBackend();
 }
 
+/*
 /// <summary>
 /// Engine specific code.
 /// 
@@ -103,3 +106,4 @@ namespace GameEngine
 		virtual void SetPosition(Vector pos) { position = pos; }
 	};
 }
+*/
