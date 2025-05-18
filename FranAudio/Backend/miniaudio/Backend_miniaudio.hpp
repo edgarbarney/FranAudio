@@ -68,8 +68,8 @@ namespace FranAudio::Backend
 		//~miniaudio();
 
 		/// <summary>
-		/// Initialize the backend.
-		/// This is used to initialize the backend and set it up for use.
+		/// Initialise the backend.
+		/// This is used to initialise the backend and set it up for use.
 		/// </summary>
 		virtual bool Init(FranAudio::Decoder::DecoderType decoderType = FranAudio::Decoder::DecoderType::None) override;
 

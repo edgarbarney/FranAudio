@@ -80,7 +80,7 @@ namespace FranAudio
 		/// 
 		/// <para>
 		/// This log message will have no preceding tag
-		/// and will be printed in default color.
+		/// and will be printed in default colour.
 		/// </para>
 		/// 
 		/// </summary>

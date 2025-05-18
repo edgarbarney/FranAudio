@@ -37,7 +37,7 @@ void FranAudioServer::Receive(char* buffer)
 
 		if (FranAudio::GetBackend() == nullptr)
 		{
-			std::cerr << "Failed to initialize backend!" << std::endl;
+			std::cerr << "Failed to initialise backend!" << std::endl;
 			return;
 		}
 	}
@@ -47,7 +47,7 @@ void FranAudioServer::Receive(char* buffer)
 
 		if (FranAudio::GetBackend() == nullptr)
 		{
-			std::cerr << "Failed to initialize backend!" << std::endl;
+			std::cerr << "Failed to initialise backend!" << std::endl;
 			return;
 		}
 

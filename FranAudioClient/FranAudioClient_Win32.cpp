@@ -19,7 +19,7 @@ SOCKET udpSocket;
 sockaddr_in serverAddress;
 
 bool isSocketValid = false;
-bool isWSAInitialized = false;
+bool isWSAInitialised = false;
 
 static const wchar_t* StringToWideString(const char* asciiStr)
 {
@@ -36,7 +36,7 @@ FRANAUDIO_CLIENT_API void FranAudioClient::Init(bool isTestmode)
 		Shutdown();
 		return;
 	}
-	isWSAInitialized = true;
+	isWSAInitialised = true;
 
 	udpSocket = socket(AF_INET, SOCK_DGRAM, 0);
 	if (udpSocket == INVALID_SOCKET)
@@ -73,7 +73,7 @@ FRANAUDIO_CLIENT_API void FranAudioClient::Shutdown()
 	if (isSocketValid)
 		closesocket(udpSocket);
 
-	if (isWSAInitialized)
+	if (isWSAInitialised)
 		WSACleanup();
 
 	//std::cin.get();

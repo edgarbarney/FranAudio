@@ -25,7 +25,7 @@ SOCKET udpSocket;
 sockaddr_in serverAddress, clientAddress;
 
 bool isSocketValid = false;
-bool isWSAInitialized = false;
+bool isWSAInitialised = false;
 
 int main(int argc, char* argv[])
 {
@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 		FranAudioServer::Shutdown();
 		return 1;
 	}
-	isWSAInitialized = true;
+	isWSAInitialised = true;
 
 	// Create UDP socket
 	udpSocket = socket(AF_INET, SOCK_DGRAM, 0);
@@ -98,7 +98,7 @@ void FranAudioServer::Shutdown()
 	if (isSocketValid)
 		closesocket(udpSocket);
 
-	if (isWSAInitialized)
+	if (isWSAInitialised)
 		WSACleanup();
 
 	//std::cin.get();

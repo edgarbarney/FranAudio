@@ -29,8 +29,8 @@ namespace FranAudio::Decoder
 		//~Decoder();
 
 		/// <summary>
-		/// Initialize the Decoder.
-		/// This is used to initialize the Decoder and set it up for use.
+		/// Initialise the Decoder.
+		/// This is used to initialise the Decoder and set it up for use.
 		/// </summary>
 		virtual bool Init() override;
 
