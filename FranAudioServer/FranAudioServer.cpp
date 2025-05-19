@@ -141,6 +141,8 @@ void FranAudioServer::Receive(char* buffer)
 		t_end = std::chrono::high_resolution_clock::now();
 		duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
 		std::cout << "FLAC read time: " << duration << " ms" << std::endl;
+
+		std::cout << std::endl << "All tests completed!" << std::endl;
 	}
 	else
 	{
