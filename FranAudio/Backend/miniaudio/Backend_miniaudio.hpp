@@ -54,14 +54,11 @@ namespace FranAudio::Backend
 		};
 
 		/// <summary>
-		/// A vector of active sounds' corresponding data in a format that miniaudio can play.
+		/// A map of active sounds' corresponding data in a format that miniaudio can play.
 		/// 
 		/// This is used for making miniaudio interaction easier.
 		/// </summary>
-		/// <remarks>
-		/// This is made of raw pointers, because we use it with C code.
-		/// </remarks>
-		std::vector<MiniaudioSound*> miniaudioSoundData = {};
+		std::unordered_map<size_t, std::unique_ptr<MiniaudioSound>> miniaudioSoundData;
 
 	public:
 		//miniaudio();

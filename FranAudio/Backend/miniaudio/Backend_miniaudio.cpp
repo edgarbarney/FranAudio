@@ -136,24 +136,24 @@ size_t FranAudio::Backend::miniaudio::PlayAudioFileNoChecks(const std::string& f
 		return SIZE_MAX;
 	}
 
-	const FranAudio::Sound::WaveData& waveData = waveDataCache[it->second];
-
-	MiniaudioSound* miniaudioSound = new MiniaudioSound;
+	const auto& waveData = waveDataCache[it->second];
+	auto miniaudioSound = std::make_unique<MiniaudioSound>();
 
 	miniaudioSound->audioBufferConfig = ma_audio_buffer_config_init(ConvertFormat(waveData.GetFormat()), waveData.GetChannels(), waveData.SizeInFrames(), waveData.GetFrames().data(), nullptr);
 	miniaudioSound->audioBufferConfig.sampleRate = waveData.GetSampleRate(); // Why is this not set in the config init function?
 	ma_audio_buffer_init(&miniaudioSound->audioBufferConfig, &miniaudioSound->audioBuffer);
-
 	ma_sound_init_from_data_source(&engine, &miniaudioSound->audioBuffer, 0, nullptr, &miniaudioSound->sound);
-	//ma_sound_init_from_file(&engine, filename.c_str(), 0, nullptr, nullptr, &sound);
 
-	activeSounds.emplace_back(activeSounds.size(), it->second);
-	miniaudioSoundData.emplace_back(miniaudioSound);
+	// Generate our unique ID
+	const size_t soundID = nextSoundID++;
 
+	activeSounds[soundID] = FranAudio::Sound::Sound(soundID, it->second);
 	ma_sound_set_volume(&miniaudioSound->sound, 1.0f);
 	ma_sound_start(&miniaudioSound->sound);
 
-	return activeSounds.size() - 1;
+	miniaudioSoundData[soundID] = std::move(miniaudioSound);
+
+	return soundID;
 }
 
 size_t FranAudio::Backend::miniaudio::PlayAudioFileStream(const std::string& filename)
@@ -163,35 +163,28 @@ size_t FranAudio::Backend::miniaudio::PlayAudioFileStream(const std::string& fil
 
 void FranAudio::Backend::miniaudio::StopPlayingSound(size_t soundID)
 {
-	if (soundID >= miniaudioSoundData.size())
+	if (soundID == SIZE_MAX)
 	{
-		Logger::LogError("MiniAudio: Sound ID out of range: " + std::to_string(soundID));
+		Logger::LogError("MiniAudio: Tried to stop an invalid sound.");
 		return;
 	}
-	if (miniaudioSoundData[soundID] == nullptr)
-	{
-		Logger::LogError("MiniAudio: Sound ID is null: " + std::to_string(soundID));
-		return;
-	}
-	if (activeSounds[soundID].GetSoundID() == SIZE_MAX)
+	if (!activeSounds.contains(soundID))
 	{
 		Logger::LogError("MiniAudio: Sound ID is not playing: " + std::to_string(soundID));
 		return;
 	}
+	if (!miniaudioSoundData.contains(soundID))
+	{
+		Logger::LogError("MiniAudio: Sound ID has invalid data: " + std::to_string(soundID));
+		return;
+	}
 
-	MiniaudioSound* miniaudioSound = miniaudioSoundData[soundID];
-	ma_sound_stop(&miniaudioSound->sound);
-	ma_sound_uninit(&miniaudioSound->sound);
-	//activeSounds.erase(miniaudioSoundData.begin() + soundID);
-	//miniaudioSoundData.erase(miniaudioSoundData.begin() + soundID);
-	//delete miniaudioSound;
+	auto& soundPtr = miniaudioSoundData[soundID];
+	ma_sound_stop(&soundPtr->sound);
+	ma_sound_uninit(&soundPtr->sound);
 
-	// Don't pop, just set to invalid
-	// This calls for a map instead of a vector
-	// Temporary workaround for now
-	activeSounds[soundID] = FranAudio::Sound::Sound{};
-	miniaudioSoundData[soundID] = nullptr;
-	delete miniaudioSound;
+	miniaudioSoundData.erase(soundID);
+	activeSounds.erase(soundID);
 }
 
 ma_decoder_config* FranAudio::Backend::miniaudio::GetDefaultDecoderConfig()

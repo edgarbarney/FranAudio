@@ -31,6 +31,12 @@ namespace FranAudio::Backend
 		FranAudio::Decoder::DecoderType currentDecoderType = FranAudio::Decoder::DecoderType::None;
 
 		/// <summary>
+		/// Next Sound ID to be used.
+		/// This is used to generate unique IDs for sounds.
+		/// </summary>
+		size_t nextSoundID = 0;
+
+		/// <summary>
 		/// Cache for decoded audio data.
 		/// This is used to cache the decoded audio data to avoid decoding every time the audio is played.
 		/// </summary>
@@ -44,10 +50,9 @@ namespace FranAudio::Backend
 
 		/// <summary>
 		/// Currently Active Sounds
+		/// Tied to nextSoundID
 		/// </summary>
-		std::vector<FranAudio::Sound::Sound> activeSounds;
-
-		//TODO: Should we use an unordered_map for the active sounds?
+		std::unordered_map<size_t, FranAudio::Sound::Sound> activeSounds;
 
 	public:
 		Backend() = default;
