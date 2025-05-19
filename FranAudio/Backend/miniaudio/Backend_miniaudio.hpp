@@ -19,6 +19,10 @@ namespace FranAudio::Backend
 	#ifdef FRANAUDIO_USE_OPUS
 		ma_decoding_backend_libopus,
 	#endif
+	// If neither vorbis or opus are defined, this will be nullptr.
+	#if !defined(FRANAUDIO_USE_VORBIS) && !defined(FRANAUDIO_USE_OPUS)
+		nullptr,
+	#endif
 	};
 
 	class miniaudio : public Backend

@@ -27,9 +27,12 @@ bool FranAudio::Backend::miniaudio::Init(FranAudio::Decoder::DecoderType decoder
 
 	// In case we're using miniaudio decoder with custom decoder backend
 	defaultDecoderConfig = ma_decoder_config_init_default();
+
+#if !defined(FRANAUDIO_USE_VORBIS) && !defined(FRANAUDIO_USE_OPUS)
 	defaultDecoderConfig.pCustomBackendUserData = nullptr;
 	defaultDecoderConfig.ppCustomBackendVTables = miniaudio_backendVTables;
 	defaultDecoderConfig.customBackendCount = std::size(miniaudio_backendVTables);
+#endif
 
 	if(decoderType == FranAudio::Decoder::DecoderType::None)
 	{
