@@ -153,14 +153,6 @@ size_t FranAudio::Backend::miniaudio::PlayAudioFileNoChecks(const std::string& f
 	ma_sound_set_volume(&miniaudioSound->sound, 1.0f);
 	ma_sound_start(&miniaudioSound->sound);
 
-	// Debug
-	// TODO: Remove this
-	/*
-	while (ma_sound_is_playing(&miniaudioSound->sound))
-	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-	}
-	*/
 	return activeSounds.size() - 1;
 }
 
