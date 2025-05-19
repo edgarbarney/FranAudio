@@ -140,6 +140,12 @@ namespace FranAudio::Backend
 		virtual size_t PlayAudioFileStream(const std::string& filename) override;
 
 		/// <summary>
+		/// Stop an active sound by its index.
+		/// </summary>
+		/// <param name="soundIndex">Index of the sound in the active sounds list</param>
+		virtual void StopPlayingSound(size_t soundIndex) override;
+
+		/// <summary>
 		/// Get the default decoder configuration.
 		/// </summary>
 		/// <returns>Default decoder configuration</returns>

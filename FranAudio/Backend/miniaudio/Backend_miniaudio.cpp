@@ -161,6 +161,39 @@ size_t FranAudio::Backend::miniaudio::PlayAudioFileStream(const std::string& fil
 	return SIZE_MAX;
 }
 
+void FranAudio::Backend::miniaudio::StopPlayingSound(size_t soundID)
+{
+	if (soundID >= miniaudioSoundData.size())
+	{
+		Logger::LogError("MiniAudio: Sound ID out of range: " + std::to_string(soundID));
+		return;
+	}
+	if (miniaudioSoundData[soundID] == nullptr)
+	{
+		Logger::LogError("MiniAudio: Sound ID is null: " + std::to_string(soundID));
+		return;
+	}
+	if (activeSounds[soundID].GetSoundID() == SIZE_MAX)
+	{
+		Logger::LogError("MiniAudio: Sound ID is not playing: " + std::to_string(soundID));
+		return;
+	}
+
+	MiniaudioSound* miniaudioSound = miniaudioSoundData[soundID];
+	ma_sound_stop(&miniaudioSound->sound);
+	ma_sound_uninit(&miniaudioSound->sound);
+	//activeSounds.erase(miniaudioSoundData.begin() + soundID);
+	//miniaudioSoundData.erase(miniaudioSoundData.begin() + soundID);
+	//delete miniaudioSound;
+
+	// Don't pop, just set to invalid
+	// This calls for a map instead of a vector
+	// Temporary workaround for now
+	activeSounds[soundID] = FranAudio::Sound::Sound{};
+	miniaudioSoundData[soundID] = nullptr;
+	delete miniaudioSound;
+}
+
 ma_decoder_config* FranAudio::Backend::miniaudio::GetDefaultDecoderConfig()
 {
 	return &defaultDecoderConfig;

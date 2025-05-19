@@ -47,6 +47,8 @@ namespace FranAudio::Backend
 		/// </summary>
 		std::vector<FranAudio::Sound::Sound> activeSounds;
 
+		//TODO: Should we use an unordered_map for the active sounds?
+
 	public:
 		Backend() = default;
 		~Backend();
@@ -146,6 +148,12 @@ namespace FranAudio::Backend
 		/// <param name="filename">Path to the audio file</param>
 		/// <returns>Active Sounds List Index</returns>
 		virtual size_t PlayAudioFileStream(const std::string& filename) = 0;
+
+		/// <summary>
+		/// Stop an active sound by its index.
+		/// </summary>
+		/// <param name="soundIndex">Index of the sound in the active sounds list</param>
+		virtual void StopPlayingSound(size_t soundIndex) = 0;
 
 		/// <summary>
 		/// Create a backend instance.
