@@ -19,7 +19,7 @@ int main()
 	//
 	//FranAudio::Globals::Shutdown();
 #else
-	FranAudioClient::Init();
+	FranAudioClient::Init(true);
 #endif
 	std::cin.get();
 }
