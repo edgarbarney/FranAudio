@@ -1,4 +1,4 @@
-// FranticDreamer 2022-2024
+// FranticDreamer 2022-2025
 #pragma once
 
 // TODO: Change file extension to .h because this can also be used in C

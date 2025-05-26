@@ -1,4 +1,4 @@
-// FranticDreamer 2022-2024
+// FranticDreamer 2022-2025
 #pragma once
 
 //#ifdef FRANAUDIO_USE_VORBIS

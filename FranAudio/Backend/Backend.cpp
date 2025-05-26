@@ -1,4 +1,4 @@
-// FranticDreamer 2022-2024
+// FranticDreamer 2022-2025
 
 #include "Backend.hpp"
 #include "miniaudio/Backend_miniaudio.hpp"
