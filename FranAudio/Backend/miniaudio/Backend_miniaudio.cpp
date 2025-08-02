@@ -1,4 +1,4 @@
-// FranticDreamer 2022-2024
+// FranticDreamer 2022-2025
 
 #include <iterator>
 #include <filesystem>
@@ -27,9 +27,12 @@ bool FranAudio::Backend::miniaudio::Init(FranAudio::Decoder::DecoderType decoder
 
 	// In case we're using miniaudio decoder with custom decoder backend
 	defaultDecoderConfig = ma_decoder_config_init_default();
+
+#if !defined(FRANAUDIO_USE_VORBIS) && !defined(FRANAUDIO_USE_OPUS)
 	defaultDecoderConfig.pCustomBackendUserData = nullptr;
 	defaultDecoderConfig.ppCustomBackendVTables = miniaudio_backendVTables;
 	defaultDecoderConfig.customBackendCount = std::size(miniaudio_backendVTables);
+#endif
 
 	if(decoderType == FranAudio::Decoder::DecoderType::None)
 	{
@@ -136,37 +139,55 @@ size_t FranAudio::Backend::miniaudio::PlayAudioFileNoChecks(const std::string& f
 		return SIZE_MAX;
 	}
 
-	const FranAudio::Sound::WaveData& waveData = waveDataCache[it->second];
-
-	MiniaudioSound* miniaudioSound = new MiniaudioSound;
+	const auto& waveData = waveDataCache[it->second];
+	auto miniaudioSound = std::make_unique<MiniaudioSound>();
 
 	miniaudioSound->audioBufferConfig = ma_audio_buffer_config_init(ConvertFormat(waveData.GetFormat()), waveData.GetChannels(), waveData.SizeInFrames(), waveData.GetFrames().data(), nullptr);
 	miniaudioSound->audioBufferConfig.sampleRate = waveData.GetSampleRate(); // Why is this not set in the config init function?
 	ma_audio_buffer_init(&miniaudioSound->audioBufferConfig, &miniaudioSound->audioBuffer);
-
 	ma_sound_init_from_data_source(&engine, &miniaudioSound->audioBuffer, 0, nullptr, &miniaudioSound->sound);
-	//ma_sound_init_from_file(&engine, filename.c_str(), 0, nullptr, nullptr, &sound);
 
-	activeSounds.emplace_back(activeSounds.size(), it->second);
-	miniaudioSoundData.emplace_back(miniaudioSound);
+	// Generate our unique ID
+	const size_t soundID = nextSoundID++;
 
+	activeSounds[soundID] = FranAudio::Sound::Sound(soundID, it->second);
 	ma_sound_set_volume(&miniaudioSound->sound, 1.0f);
 	ma_sound_start(&miniaudioSound->sound);
 
-	// Debug
-	// TODO: Remove this
-	/*
-	while (ma_sound_is_playing(&miniaudioSound->sound))
-	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-	}
-	*/
-	return activeSounds.size() - 1;
+	miniaudioSoundData[soundID] = std::move(miniaudioSound);
+
+	return soundID;
 }
 
 size_t FranAudio::Backend::miniaudio::PlayAudioFileStream(const std::string& filename)
 {
 	return SIZE_MAX;
+}
+
+void FranAudio::Backend::miniaudio::StopPlayingSound(size_t soundID)
+{
+	if (soundID == SIZE_MAX)
+	{
+		Logger::LogError("MiniAudio: Tried to stop an invalid sound.");
+		return;
+	}
+	if (!activeSounds.contains(soundID))
+	{
+		Logger::LogError("MiniAudio: Sound ID is not playing: " + std::to_string(soundID));
+		return;
+	}
+	if (!miniaudioSoundData.contains(soundID))
+	{
+		Logger::LogError("MiniAudio: Sound ID has invalid data: " + std::to_string(soundID));
+		return;
+	}
+
+	auto& soundPtr = miniaudioSoundData[soundID];
+	ma_sound_stop(&soundPtr->sound);
+	ma_sound_uninit(&soundPtr->sound);
+
+	miniaudioSoundData.erase(soundID);
+	activeSounds.erase(soundID);
 }
 
 ma_decoder_config* FranAudio::Backend::miniaudio::GetDefaultDecoderConfig()

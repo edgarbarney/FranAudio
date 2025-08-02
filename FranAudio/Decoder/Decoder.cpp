@@ -1,4 +1,4 @@
-// FranticDreamer 2022-2024
+// FranticDreamer 2022-2025
 
 #include "Decoder.hpp"
 #include "miniaudio/Decoder_miniaudio.hpp"

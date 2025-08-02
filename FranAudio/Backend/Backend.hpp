@@ -1,4 +1,4 @@
-// FranticDreamer 2022-2024
+// FranticDreamer 2022-2025
 #pragma once
 
 #include <string>
@@ -31,6 +31,12 @@ namespace FranAudio::Backend
 		FranAudio::Decoder::DecoderType currentDecoderType = FranAudio::Decoder::DecoderType::None;
 
 		/// <summary>
+		/// Next Sound ID to be used.
+		/// This is used to generate unique IDs for sounds.
+		/// </summary>
+		size_t nextSoundID = 0;
+
+		/// <summary>
 		/// Cache for decoded audio data.
 		/// This is used to cache the decoded audio data to avoid decoding every time the audio is played.
 		/// </summary>
@@ -44,8 +50,9 @@ namespace FranAudio::Backend
 
 		/// <summary>
 		/// Currently Active Sounds
+		/// Tied to nextSoundID
 		/// </summary>
-		std::vector<FranAudio::Sound::Sound> activeSounds;
+		std::unordered_map<size_t, FranAudio::Sound::Sound> activeSounds;
 
 	public:
 		Backend() = default;
@@ -146,6 +153,12 @@ namespace FranAudio::Backend
 		/// <param name="filename">Path to the audio file</param>
 		/// <returns>Active Sounds List Index</returns>
 		virtual size_t PlayAudioFileStream(const std::string& filename) = 0;
+
+		/// <summary>
+		/// Stop an active sound by its index.
+		/// </summary>
+		/// <param name="soundIndex">Index of the sound in the active sounds list</param>
+		virtual void StopPlayingSound(size_t soundIndex) = 0;
 
 		/// <summary>
 		/// Create a backend instance.

@@ -1,4 +1,4 @@
-// FranticDreamer 2022-2024
+// FranticDreamer 2022-2025
 
 #include <iterator>
 #include <filesystem>
@@ -42,9 +42,11 @@ bool FranAudio::Decoder::miniaudio::Init()
 
 	// In case we're using miniaudio decoder with custom decoder backend
 	defaultDecoderConfig = ma_decoder_config_init_default();
+#if !defined(FRANAUDIO_USE_VORBIS) && !defined(FRANAUDIO_USE_OPUS)
 	defaultDecoderConfig.pCustomBackendUserData = nullptr;
 	defaultDecoderConfig.ppCustomBackendVTables = FranAudio::Backend::miniaudio_backendVTables;
 	defaultDecoderConfig.customBackendCount = std::size(FranAudio::Backend::miniaudio_backendVTables);
+#endif
 
 	return true;
 }

@@ -1,4 +1,4 @@
-// FranticDreamer 2022-2024
+// FranticDreamer 2022-2025
 #pragma once
 
 //#ifdef FRANAUDIO_USE_VORBIS
@@ -18,6 +18,10 @@ namespace FranAudio::Backend
 	#endif
 	#ifdef FRANAUDIO_USE_OPUS
 		ma_decoding_backend_libopus,
+	#endif
+	// If neither vorbis or opus are defined, this will be nullptr.
+	#if !defined(FRANAUDIO_USE_VORBIS) && !defined(FRANAUDIO_USE_OPUS)
+		nullptr,
 	#endif
 	};
 
@@ -54,14 +58,11 @@ namespace FranAudio::Backend
 		};
 
 		/// <summary>
-		/// A vector of active sounds' corresponding data in a format that miniaudio can play.
+		/// A map of active sounds' corresponding data in a format that miniaudio can play.
 		/// 
 		/// This is used for making miniaudio interaction easier.
 		/// </summary>
-		/// <remarks>
-		/// This is made of raw pointers, because we use it with C code.
-		/// </remarks>
-		std::vector<MiniaudioSound*> miniaudioSoundData = {};
+		std::unordered_map<size_t, std::unique_ptr<MiniaudioSound>> miniaudioSoundData;
 
 	public:
 		//miniaudio();
@@ -138,6 +139,12 @@ namespace FranAudio::Backend
 		/// <param name="filename">Path to the audio file</param>
 		/// <returns>Active Sounds List Index</returns>
 		virtual size_t PlayAudioFileStream(const std::string& filename) override;
+
+		/// <summary>
+		/// Stop an active sound by its index.
+		/// </summary>
+		/// <param name="soundIndex">Index of the sound in the active sounds list</param>
+		virtual void StopPlayingSound(size_t soundIndex) override;
 
 		/// <summary>
 		/// Get the default decoder configuration.

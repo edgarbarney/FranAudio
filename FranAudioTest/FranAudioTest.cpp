@@ -1,4 +1,4 @@
-// FranticDreamer 2022-2024
+// FranticDreamer 2022-2025
 
 #include <iostream>
 
@@ -19,7 +19,7 @@ int main()
 	//
 	//FranAudio::Globals::Shutdown();
 #else
-	FranAudioClient::Init();
+	FranAudioClient::Init(true);
 #endif
 	std::cin.get();
 }
