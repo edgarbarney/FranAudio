@@ -29,7 +29,6 @@ A basic audio library made mainly for games and game engines that utilises C++23
 <b>FranAudio</b> - The main module that contains the core functionality of the library.  
 - FranAudio::<b>Backend</b> - The module that contains the backend interface and the default backend implementation.  
     - FranAudio::Backend::<b>Miniaudio</b> - The module that contains the miniaudio backend implementation.  
-    - FranAudio::Backend::<b>Libnyquist</b> - The module that contains the libnyquist backend implementation.  
     - FranAudio::Backend::<b>OpenAL</b> - The module that contains the OpenAL backend implementation (not implemented yet).  
 - FranAudio::<b>Decoder</b> - The module that contains the audio decoders for various formats.  
     - FranAudio::Decoder::<b>Miniaudio</b> - The module that contains the miniaudio decoder implementation.  

@@ -72,9 +72,9 @@ namespace FranAudioShared
 			{
 				if (input.size() < 3 || input.front() != '$')
 				{
-	#if !(defined FRANAUDIO_CLIENT_DISABLE_LOGGING || defined FRANAUDIO_SERVER_DISABLE_LOGGING)
+#if !(defined FRANAUDIO_CLIENT_DISABLE_LOGGING || defined FRANAUDIO_SERVER_DISABLE_LOGGING)
 					std::println("NetworkFunction ParseInput: Invalid input format for network function");
-	#endif
+#endif
 					return {};
 				}
 
@@ -93,9 +93,9 @@ namespace FranAudioShared
 				auto it = partsView.begin();
 				if (it == partsView.end())
 				{
-	#if !(defined FRANAUDIO_CLIENT_DISABLE_LOGGING || defined FRANAUDIO_SERVER_DISABLE_LOGGING)
+#if !(defined FRANAUDIO_CLIENT_DISABLE_LOGGING || defined FRANAUDIO_SERVER_DISABLE_LOGGING)
 					std::println("NetworkFunction ParseInput: Missing function name for network function");
-	#endif
+#endif
 					return {};
 				}
 
