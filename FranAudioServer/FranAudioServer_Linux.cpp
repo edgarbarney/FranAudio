@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 
 	while (!init)
 	{
-		std::cout << "Waiting for Initialisation Message..." << std::endl;
+		std::println("Waiting for Initialisation Message...");
 	}
 
 	FranAudio::Init();

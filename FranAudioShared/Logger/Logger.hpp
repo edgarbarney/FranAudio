@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace FranAudio
+namespace FranAudioShared
 {
 	/// <summary>
 	/// Logger class for logging messages and errors.

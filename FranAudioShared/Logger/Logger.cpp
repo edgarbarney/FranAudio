@@ -2,60 +2,61 @@
 #pragma once
 
 #include <print>
+#include <format>
 
 #include "Logger.hpp"
 
-void FranAudio::Logger::LogMessage(const std::string& message, bool newLine)
+void FranAudioShared::Logger::LogMessage(const std::string& message, bool newLine)
 {
 #ifndef FRANAUDIO_DISABLE_LOGGING
 	if (newLine)
-		std::print("\033[36m[INFO]\033[0m {}\n", message);
+		std::println("\033[36m[INFO]\033[0m {}", message);
 	else
 		std::print("\033[36m[INFO]\033[0m {}", message);
 #endif
 }
 
-void FranAudio::Logger::LogError(const std::string& message, bool newLine)
+void FranAudioShared::Logger::LogError(const std::string& message, bool newLine)
 {
 #ifndef FRANAUDIO_DISABLE_LOGGING
 	if (newLine)
-		std::print("\033[31m[ERROR]\033[0m {}\n", message);
+		std::println("\033[31m[ERROR]\033[0m {}", message);
 	else
 		std::print("\033[31m[ERROR]\033[0m {}", message);
 #endif
 }
 
-void FranAudio::Logger::LogWarning(const std::string& message, bool newLine)
+void FranAudioShared::Logger::LogWarning(const std::string& message, bool newLine)
 {
 #ifndef FRANAUDIO_DISABLE_LOGGING
 	if (newLine)
-		std::print("\033[33m[WARNING]\033[0m {}\n", message);
+		std::println("\033[33m[WARNING]\033[0m {}", message);
 	else
 		std::print("\033[33m[WARNING]\033[0m {}", message);
 #endif
 }
 
-void FranAudio::Logger::LogSuccess(const std::string& message, bool newLine)
+void FranAudioShared::Logger::LogSuccess(const std::string& message, bool newLine)
 {
 #ifndef FRANAUDIO_DISABLE_LOGGING
 	if (newLine)
-		std::print("\033[32m[SUCCESS]\033[0m {}\n", message);
+		std::println("\033[32m[SUCCESS]\033[0m {}", message);
 	else
 		std::print("\033[32m[SUCCESS]\033[0m {}", message);
 #endif
 }
 
-void FranAudio::Logger::LogGeneric(const std::string& message, bool newLine)
+void FranAudioShared::Logger::LogGeneric(const std::string& message, bool newLine)
 {
 #ifndef FRANAUDIO_DISABLE_LOGGING
 	if (newLine)
-		std::print("{}", message);
+		std::println("{}", message);
 	else
 		std::print("{}", message);
 #endif
 }
 
-void FranAudio::Logger::LogSeperator(bool newLine)
+void FranAudioShared::Logger::LogSeperator(bool newLine)
 {
 #ifndef FRANAUDIO_DISABLE_LOGGING
 	std::print("========================================");
@@ -65,10 +66,10 @@ void FranAudio::Logger::LogSeperator(bool newLine)
 #endif
 }
 
-void FranAudio::Logger::LogNewline()
+void FranAudioShared::Logger::LogNewline()
 {
 #ifndef FRANAUDIO_DISABLE_LOGGING
-	std::print("\n");
+	std::println("");
 #endif
 }
 

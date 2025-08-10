@@ -7,18 +7,40 @@ A basic audio library made mainly for games and game engines that utilises C++23
 
 # Features:
 - Modular Backend Support with `FranAudio::Backend::Backend` Interface  
-- Local Server-Client Communication for Inter-Process Usage (Mainly for Game Modding)  
+- Optional High-Level Server-Client Communication (localhost) for Inter-Process Usage (Mainly for Game Modding)  
 - **WAV**, **MP3**, **FLAC** and *(optional)* **Vorbis** Support
 - Optional extensive logging for both developers and end users.
 
 # To-do:
-- Extend Server-Client Communication to Full Control  
+- Extend Server-Client Communication  
 - Dynamic Positional Audio  
 - Post-Processing Effects  
 - OpenAL Backend  
 - Linux Support  
 - Opus Support  
 - C API  
+
+# Modules:
+<b>FranAudioShared</b> - Contains the shared modules for both client-server and the library itself.  
+- FranAudioShared::<b>Logger</b> - The module that contains the logging functionality for the library.  
+- FranAudioShared::<b>Network</b> - The module that contains the network helpers and constants for the library.  
+
+### FranAudio Library Structure
+<b>FranAudio</b> - The main module that contains the core functionality of the library.  
+- FranAudio::<b>Backend</b> - The module that contains the backend interface and the default backend implementation.  
+    - FranAudio::Backend::<b>Miniaudio</b> - The module that contains the miniaudio backend implementation.  
+    - FranAudio::Backend::<b>Libnyquist</b> - The module that contains the libnyquist backend implementation.  
+    - FranAudio::Backend::<b>OpenAL</b> - The module that contains the OpenAL backend implementation (not implemented yet).  
+- FranAudio::<b>Decoder</b> - The module that contains the audio decoders for various formats.  
+    - FranAudio::Decoder::<b>Miniaudio</b> - The module that contains the miniaudio decoder implementation.  
+    - FranAudio::Decoder::<b>Libnyquist</b> - The module that contains the libnyquist decoder implementation.  
+
+### FranAudio High-Level Server-Client Structure
+<b>FranAudioClient</b> - Library module that contains the client-side functionality for standalone server-client system. To be linked with target applications.
+<b>FranAudioServer</b> - Executable module that contains the server-side functionality for standalone server-client system.  
+
+### FranAudio Test Application
+<b>FranAudioTest</b> - Module that contains the test application for the library. Can test both library and server-client system.  
 
 # Basic Usage
 Since the project is in the initial stages, you may try to use it as a static or dynamic library as you may use any other one. But I suggest waiting for the initial release of the library. Please simply add this library to your watchlist and be patient. Thank you for your time.

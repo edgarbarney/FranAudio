@@ -2,7 +2,7 @@
 
 #include "Sound.hpp"
 
-#include "Logger/Logger.hpp"
+#include "FranAudioShared/Logger/Logger.hpp"
 
 FranAudio::Sound::Sound::Sound(size_t soundID, size_t waveDataIndex)
 	: soundID(soundID), waveDataIndex(waveDataIndex)

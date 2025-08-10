@@ -8,144 +8,193 @@
 
 #include "FranAudioServer.hpp"
 
-// TODO: Move this to the test executable.
-//
-// For now, we do test stuff in the server.
-// But when we complete the client-server communication,
-// We should move this to the test executable.
-void ServerTest_PlaySoundAndWait(const std::string& filename)
-{
-	FranAudio::GetBackend()->LoadAudioFile(filename);
-	auto tempId = FranAudio::GetBackend()->PlayAudioFile(filename);
-	std::cout << "Press Enter to continue..." << std::endl;
-	std::cin.get(); // Wait for user input to continue
-	FranAudio::GetBackend()->StopPlayingSound(tempId);
-	std::cout << "Continuing..." << std::endl;
-}
+#include "FranAudioShared/Logger/Logger.hpp"
 
 void FranAudioServer::Init()
 {
-	std::cout << "FranAudioServer::Init() Start" << std::endl;
+	FranAudioShared::Logger::LogMessage("FranAudioServer::Init() Start");
 
 	FranAudio::Init();
 
-	std::cout << "FranAudioServer::Init() Done" << std::endl;
+	FranAudioShared::Logger::LogMessage("FranAudioServer::Init() Done");
 }
 
-void FranAudioServer::Receive(char* buffer)
+std::string FranAudioServer::Receive(char* buffer)
 {
 	if (buffer == nullptr)
 	{
-		std::cerr << "Invalid buffer!" << std::endl;
-		return;
+		FranAudioShared::Logger::LogError("Invalid buffer!");
+		return {};
 	}
 
 	if (strlen(buffer) == 0)
 	{
-		std::cerr << "Empty buffer!" << std::endl;
-		return;
+		FranAudioShared::Logger::LogError("Empty buffer!");
+		return {};
 	}
 
-	if (strcmp(buffer, "initServer") == 0)
+	const auto& tempFunction = FranAudioShared::Network::NetworkFunction(buffer);
+
+	auto it = functionsMap.find(tempFunction.functionName);
+	if (it != functionsMap.end())
 	{
-		Init();
-
-		if (FranAudio::GetBackend() == nullptr)
-		{
-			std::cerr << "Failed to initialise backend!" << std::endl;
-			return;
-		}
+#if defined FRANAUDIO_SERVER_DEBUG && !defined FRANAUDIO_SERVER_DISABLE_LOGGING
+		FranAudioShared::Logger::LogMessage(std::format("Executing function: {}", tempFunction.functionName));
+#endif
+		return it->second(tempFunction);
 	}
-	else if (strcmp(buffer, "_testmode") == 0)
+	else 
 	{
-		// TODO: Move this to the test executable.
-		// 
-		// For now, we do test stuff in the server.
-		// But when we complete the client-server communication,
-		// We should move this to the test executable.
-		
-		Init();
-
-		if (FranAudio::GetBackend() == nullptr)
-		{
-			std::cerr << "Failed to initialise backend!" << std::endl;
-			return;
-		}
-
-		//auto t_start = std::chrono::high_resolution_clock::now();
-		//auto t_end = t_start;
-
-		ServerTest_PlaySoundAndWait("test.wav");
-		ServerTest_PlaySoundAndWait("test_unusualdata.wav");
-
-		ServerTest_PlaySoundAndWait("test.mp3");
-		ServerTest_PlaySoundAndWait("test.ogg");
-		ServerTest_PlaySoundAndWait("test.opus");
-		ServerTest_PlaySoundAndWait("test.flac");
-
-		auto t_start = std::chrono::high_resolution_clock::now();
-		auto t_end = t_start;
-
-		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
-		//std::cout << "Time taken to load audio files: " << duration << " ms" << std::endl;
-
-		std::cout << "Now the test will benchmark formats:" << std::endl;
-
-		t_start = std::chrono::high_resolution_clock::now();
-		// Vorbis read speed test
-		for (int i = 0; i < 5; ++i)
-		{
-			FranAudio::GetBackend()->LoadAudioFile("test.ogg");
-		}
-		t_end = std::chrono::high_resolution_clock::now();
-		duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
-		std::cout << "Vorbis read time: " << duration << " ms" << std::endl;
-
-		t_start = std::chrono::high_resolution_clock::now();
-		// opus read speed test
-		for (int i = 0; i < 5; ++i)
-		{
-			FranAudio::GetBackend()->LoadAudioFile("test.opus");
-		}
-
-		t_end = std::chrono::high_resolution_clock::now();
-		duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
-		std::cout << "Opus read time: " << duration << " ms" << std::endl;
-
-		t_start = std::chrono::high_resolution_clock::now();
-		// wav read speed test
-		for (int i = 0; i < 5; ++i)
-		{
-			FranAudio::GetBackend()->LoadAudioFile("test.wav");
-		}
-		t_end = std::chrono::high_resolution_clock::now();
-		duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
-		std::cout << "Wav read time: " << duration << " ms" << std::endl;
-
-		t_start = std::chrono::high_resolution_clock::now();
-		// mp3 read speed test
-		for (int i = 0; i < 5; ++i)
-		{
-			FranAudio::GetBackend()->LoadAudioFile("test.mp3");
-		}
-		t_end = std::chrono::high_resolution_clock::now();
-		duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
-		std::cout << "MP3 read time: " << duration << " ms" << std::endl;
-
-		t_start = std::chrono::high_resolution_clock::now();
-		// flac read speed test
-		for (int i = 0; i < 5; ++i)
-		{
-			FranAudio::GetBackend()->LoadAudioFile("test.flac");
-		}
-		t_end = std::chrono::high_resolution_clock::now();
-		duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
-		std::cout << "FLAC read time: " << duration << " ms" << std::endl;
-
-		std::cout << std::endl << "All tests completed!" << std::endl;
+		FranAudioShared::Logger::LogError("Function not found!");
+		return {};
 	}
-	else
-	{
-		std::cout << "Received: " << buffer << std::endl;
-	}
+
 }
+
+const std::unordered_map<std::string, std::function<std::string(const FranAudioShared::Network::NetworkFunction&)>> FranAudioServer::functionsMap =
+{
+	// Server::Init
+	// Params: none
+	// Returns: nothing
+	{
+		"server-init",
+		[](const FranAudioShared::Network::NetworkFunction& fn)
+		{
+			Init();
+
+			if (FranAudio::GetBackend() == nullptr)
+			{
+				FranAudioShared::Logger::LogError("Failed to initialise backend!");
+				return std::string("err");
+			}
+
+			return std::string();
+		}
+	},
+
+	// Backend::SetListenerTransform
+	// Params: posX, posY, posZ, forwardX, forwardY, forwardZ, upX, upY, upZ
+	// Returns: nothing
+	{
+		"backend-set_listener_transform",
+		[](const FranAudioShared::Network::NetworkFunction& fn)
+		{
+			if (fn.params.size() < 9)
+			{
+				FranAudioShared::Logger::LogError("Missing parameters for set_listener_transform");
+				return std::string("err");
+			}
+
+			try
+			{
+				const float position[3] = { std::stof(fn.params[0]), std::stof(fn.params[1]), std::stof(fn.params[2]) };
+				const float forward[3] = { std::stof(fn.params[3]), std::stof(fn.params[4]), std::stof(fn.params[5]) };
+				const float up[3] = { std::stof(fn.params[6]), std::stof(fn.params[7]), std::stof(fn.params[8]) };
+
+				FranAudio::GetBackend()->SetListenerTransform(position, forward, up);
+			}
+			catch (const std::exception& e)
+			{
+				FranAudioShared::Logger::LogError("Failed to set master volume: {}", e.what());
+				return std::string("err");
+			}
+
+			return std::string();
+		}
+	},
+
+	// Backend::SetMasterVolume
+	// Params: volume
+	// Returns: nothing
+	{
+		"backend-set_master_volume",
+		[](const FranAudioShared::Network::NetworkFunction& fn)
+		{
+			if (fn.params.size() < 1)
+			{
+				FranAudioShared::Logger::LogError("Missing volume parameter for set_master_volume");
+				return std::string("err");
+			}
+
+			try
+			{
+				FranAudio::GetBackend()->SetMasterVolume(std::stof(fn.params[0]));
+			}
+			catch (const std::exception& e)
+			{
+				FranAudioShared::Logger::LogError("Failed to set master volume: {}", e.what());
+				return std::string("err");
+			}
+
+			return std::string();
+		}
+	},
+
+	// Backend::LoadAudioFile
+	// Params: filename
+	// Returns: wave data index
+	{
+		"backend-load_audio_file",
+		[](const FranAudioShared::Network::NetworkFunction& fn)
+		{
+			if (fn.params.size() < 1)
+			{
+				FranAudioShared::Logger::LogError("Missing filename parameter for load_audio_file");
+				return std::string("err");
+			}
+
+			return std::to_string(FranAudio::GetBackend()->LoadAudioFile(fn.params[0]));
+		}
+	},
+
+
+	// Backend::PlayAudioFile
+	// Params: filename
+	// Returns: sound index
+	{
+		"backend-play_audio_file", 
+		[](const FranAudioShared::Network::NetworkFunction& fn)
+		{
+			if (fn.params.size() < 1) 
+			{
+				FranAudioShared::Logger::LogError("Missing filename parameter");
+				return std::string("err");
+			}
+
+			return std::to_string(FranAudio::GetBackend()->PlayAudioFile(fn.params[0]));
+		}
+	},
+
+	// Backend::StopPlayingSound
+	// Params: soundIndex
+	// Returns: nothing
+	{
+		"backend-stop_playing_sound",
+		[](const FranAudioShared::Network::NetworkFunction& fn)
+		{
+			if (fn.params.size() < 1)
+			{
+				FranAudioShared::Logger::LogError("Missing sound ID parameter");
+				return std::string("err");
+			}
+
+			if (fn.params[0] == std::to_string(SIZE_MAX))
+			{
+				FranAudioShared::Logger::LogError("Tried to play an unloaded audio file.");
+				return std::string("err");
+			}
+
+			try
+			{
+				FranAudio::GetBackend()->StopPlayingSound(std::stoi(fn.params[0]));
+			}
+			catch (const std::exception& e)
+			{
+				FranAudioShared::Logger::LogError(std::format("Failed to stop sound with ID {}: {}", fn.params[0], e.what()));
+				return std::string("err");
+			}
+
+			return std::string();
+		}
+	},
+};

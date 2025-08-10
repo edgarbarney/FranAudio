@@ -1,4 +1,4 @@
-﻿# FranticDreamer 2022-2024
+# FranticDreamer 2022-2024
 # CMakeLists file for CMake Configuration
 
 # At least 3.20 Needed for C++23
@@ -29,6 +29,7 @@ option (FRANAUDIO_USE_SERVER "Compile as an external app (Server)" ON)
 
 if (FRANAUDIO_USE_SERVER)
 add_compile_definitions (FRANAUDIO_USE_SERVER)
+add_compile_definitions (FRANAUDIO_SERVER_DEBUG)
 endif()
 # =================
 # Options End
@@ -67,7 +68,10 @@ include ("CMakeMacros.cmake")
 include ("CMakeFindLibs.cmake")
 # FranAudio Files
 include ("FranAudio/Files.cmake")
+include ("FranAudioShared/Files.cmake")
+if (FRANAUDIO_USE_TEST)
 include ("FranAudioTest/Files.cmake")
+endif()
 if (FRANAUDIO_USE_SERVER)
 include ("FranAudioServer/Files.cmake")
 include ("FranAudioClient/Files.cmake")
@@ -112,7 +116,7 @@ include_directories ("Libs/libnyquist/include")
 # ==================
 
 # FranAudio DLL/SO
-add_library (FranAudio SHARED ${FRANAUDIO_SOURCEFILES})
+add_library (FranAudio SHARED ${FRANAUDIO_SOURCEFILES} ${FRANAUDIOSHARED_SOURCEFILES})
 target_compile_features(FranAudio PRIVATE cxx_std_23)
 target_link_libraries (FranAudio
 	miniaudio
@@ -142,13 +146,13 @@ target_link_libraries (FranAudio
 endif()
 
 if (FRANAUDIO_USE_SERVER)
-	add_executable (FranAudioServer ${FRANAUDIOSERVER_SOURCEFILES})	
+	add_executable (FranAudioServer ${FRANAUDIOSERVER_SOURCEFILES} ${FRANAUDIOSHARED_SOURCEFILES})	
 	target_compile_features(FranAudioServer PRIVATE cxx_std_23)
 	target_link_libraries (FranAudioServer
 		FranAudio
 	)
 
-	add_library (FranAudioClient SHARED ${FRANAUDIOCLIENT_SOURCEFILES})
+	add_library (FranAudioClient SHARED ${FRANAUDIOCLIENT_SOURCEFILES} ${FRANAUDIOSHARED_SOURCEFILES})
 	target_compile_features(FranAudioClient PRIVATE cxx_std_23)
 	target_compile_definitions (FranAudioClient PRIVATE
 		FRANAUDIO_CLIENT_DYNAMIC
@@ -156,7 +160,7 @@ if (FRANAUDIO_USE_SERVER)
 endif()
 
 if (FRANAUDIO_USE_TEST)
-	add_executable (FranAudioTest ${FRANAUDIOTEST_SOURCEFILES})
+	add_executable (FranAudioTest ${FRANAUDIOTEST_SOURCEFILES} ${FRANAUDIOSHARED_SOURCEFILES})
 	target_compile_features(FranAudioTest PRIVATE cxx_std_23)
 	if (FRANAUDIO_USE_SERVER)
 	target_link_libraries (FranAudioTest

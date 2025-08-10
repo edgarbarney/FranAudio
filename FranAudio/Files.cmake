@@ -15,9 +15,6 @@ SET(GLOB FRANAUDIO_HEADERFILES
 
 	#Main
 	FranAudio/FranAudio.hpp
-	
-	#Logger
-	FranAudio/Logger/Logger.hpp
 
 	#Sound
 	FranAudio/Sound/Sound.hpp
@@ -48,9 +45,6 @@ FILE(GLOB FRANAUDIO_SOURCEFILES
 
 	#Main
 	FranAudio/FranAudio.cpp
-
-	#Logger
-	FranAudio/Logger/Logger.cpp
 
 	#Sound
 	FranAudio/Sound/Sound.cpp

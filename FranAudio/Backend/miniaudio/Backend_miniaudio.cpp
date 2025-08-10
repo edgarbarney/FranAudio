@@ -6,21 +6,21 @@
 
 #include "Backend_miniaudio.hpp"
 
-#include "Logger/Logger.hpp"
+#include "FranAudioShared/Logger/Logger.hpp"
 
 bool FranAudio::Backend::miniaudio::Init(FranAudio::Decoder::DecoderType decoderType)
 {
 	engineConfig = ma_engine_config_init();
 	if (ma_engine_init(&engineConfig, &engine) != MA_SUCCESS)
 	{
-		Logger::LogError("MiniAudio: Failed to initialise engine");
+		FranAudioShared::Logger::LogError("MiniAudio: Failed to initialise engine");
 		return false;
 	}
 
 	deviceConfig = ma_device_config_init(ma_device_type_playback);
 	if (ma_device_init(nullptr, &deviceConfig, &device) != MA_SUCCESS)
 	{
-		Logger::LogError("MiniAudio: Failed to initialise device");
+		FranAudioShared::Logger::LogError("MiniAudio: Failed to initialise device");
 		ma_engine_uninit(&engine);
 		return false;
 	}
@@ -36,8 +36,8 @@ bool FranAudio::Backend::miniaudio::Init(FranAudio::Decoder::DecoderType decoder
 
 	if(decoderType == FranAudio::Decoder::DecoderType::None)
 	{
-		Logger::LogError("MiniAudio: No decoder type specified");
-		Logger::LogError("MiniAudio: Defaulting to miniaudio decoder");
+		FranAudioShared::Logger::LogError("MiniAudio: No decoder type specified");
+		FranAudioShared::Logger::LogError("MiniAudio: Defaulting to miniaudio decoder");
 		decoderType = FranAudio::Decoder::DecoderType::miniaudio;
 		//return false;
 	}
@@ -87,19 +87,19 @@ size_t FranAudio::Backend::miniaudio::LoadAudioFile(const std::string& filename)
 
 	if (!std::filesystem::exists(filePath))
 	{
-		Logger::LogError("MiniAudio: File does not exist: " + filename);
+		FranAudioShared::Logger::LogError("MiniAudio: File does not exist: " + filename);
 		return SIZE_MAX;
 	}
 
 	if (std::filesystem::is_directory(filePath))
 	{
-		Logger::LogError("MiniAudio: File is a directory: " + filename);
+		FranAudioShared::Logger::LogError("MiniAudio: File is a directory: " + filename);
 		return SIZE_MAX;
 	}
 
 	if (std::filesystem::is_empty(filePath))
 	{
-		Logger::LogError("MiniAudio: File is empty: " + filename);
+		FranAudioShared::Logger::LogError("MiniAudio: File is empty: " + filename);
 		return SIZE_MAX;
 	}
 
@@ -108,7 +108,7 @@ size_t FranAudio::Backend::miniaudio::LoadAudioFile(const std::string& filename)
 
 	if (!result)
 	{
-		Logger::LogError("MiniAudio: Failed to decode audio file: " + filename);
+		FranAudioShared::Logger::LogError("MiniAudio: Failed to decode audio file: " + filename);
 		return SIZE_MAX;
 	}
 
@@ -120,7 +120,7 @@ size_t FranAudio::Backend::miniaudio::LoadAudioFile(const std::string& filename)
 	// TODO: Remove this
 	//PlayAudioFileNoChecks(filename);
 
-	Logger::LogSuccess("MiniAudio: Loaded audio file: " + filename);
+	FranAudioShared::Logger::LogSuccess("MiniAudio: Loaded audio file: " + filename);
 
 	return index;
 }
@@ -135,7 +135,7 @@ size_t FranAudio::Backend::miniaudio::PlayAudioFileNoChecks(const std::string& f
 	auto it = filenameWaveMap.find(filename); // Filename - Wave data cache index
 	if (it == filenameWaveMap.end())
 	{
-		Logger::LogError("MiniAudio: Audio file not loaded: " + filename);
+		FranAudioShared::Logger::LogError("MiniAudio: Audio file not loaded: " + filename);
 		return SIZE_MAX;
 	}
 
@@ -168,17 +168,17 @@ void FranAudio::Backend::miniaudio::StopPlayingSound(size_t soundID)
 {
 	if (soundID == SIZE_MAX)
 	{
-		Logger::LogError("MiniAudio: Tried to stop an invalid sound.");
+		FranAudioShared::Logger::LogError("MiniAudio: Tried to stop an invalid sound.");
 		return;
 	}
 	if (!activeSounds.contains(soundID))
 	{
-		Logger::LogError("MiniAudio: Sound ID is not playing: " + std::to_string(soundID));
+		FranAudioShared::Logger::LogError("MiniAudio: Sound ID is not playing: " + std::to_string(soundID));
 		return;
 	}
 	if (!miniaudioSoundData.contains(soundID))
 	{
-		Logger::LogError("MiniAudio: Sound ID has invalid data: " + std::to_string(soundID));
+		FranAudioShared::Logger::LogError("MiniAudio: Sound ID has invalid data: " + std::to_string(soundID));
 		return;
 	}
 

@@ -7,6 +7,9 @@
 # Header files
 SET(GLOB FRANAUDIOSERVER_HEADERFILES
 
+	#Shared
+	FranAudioShared/FranAudioShared.hpp
+
 	#Main
 	FranAudioServer/FranAudioServer.hpp
 	)

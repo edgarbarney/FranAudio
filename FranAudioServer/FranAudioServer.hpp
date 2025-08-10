@@ -1,17 +1,24 @@
 // FranticDreamer 2022-2025
 #pragma once
 
+#include <string>
+#include <unordered_map>
+#include <functional>
+
+#include "FranAudioShared/Network.hpp"
+
 namespace FranAudioServer
 {
-	// Constants
-	// These should match the client's values
-	// TODO: Move these to a configuration file
-	constexpr size_t messageBufferSize = 1024;
-	constexpr const char* listenAddress = "127.0.0.1"; // localhost
-	constexpr unsigned short listenPort = 8080;
-
 	void Init();
 	void Shutdown();
 
-	void Receive(char* buffer);
+	std::string Receive(char* buffer);
+
+	/// <summary>
+	/// Map of function names to their corresponding handler functions.
+	/// Each function takes a NetworkFunction object and returns a string response.
+	/// 
+	/// This is used for client-server communication in FranAudio.
+	/// Very Similar to the library's funtions.
+	extern const std::unordered_map<std::string, std::function<std::string(const FranAudioShared::Network::NetworkFunction&)>> functionsMap;
 }

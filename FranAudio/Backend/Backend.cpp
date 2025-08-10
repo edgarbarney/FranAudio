@@ -3,7 +3,7 @@
 #include "Backend.hpp"
 #include "miniaudio/Backend_miniaudio.hpp"
 
-#include "Logger/Logger.hpp"
+#include "FranAudioShared/Logger/Logger.hpp"
 
 FranAudio::Backend::Backend::~Backend()
 {
@@ -54,7 +54,7 @@ void FranAudio::Backend::Backend::SetDecoder(FranAudio::Decoder::DecoderType dec
 
 	if (currentDecoder == nullptr)
 	{
-		Logger::LogError("FranAudio: Decoder type not supported");
+		FranAudioShared::Logger::LogError("FranAudio: Decoder type not supported");
 		return;
 	}
 }
