@@ -9,14 +9,9 @@ namespace FranAudio
 {
 	/// <summary>
 	/// Entity handle type.
-	/// You may change this to your engine's entity handle type if needed.
+	/// You may change this to your engine's entity handle type if needed when you're rebuilding FranAudio.
 	/// </summary>
 	using EntityHandle = size_t;
-
-	/// <summary>
-	/// Unique ID type for entities, sounds, etc.
-	/// </summary>
-	using UniqueID = size_t;
 
 	inline const Backend::BackendType defaultBackend = Backend::BackendType::miniaudio;
 
