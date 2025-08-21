@@ -97,6 +97,12 @@ namespace FranAudio::Backend
 
 		/// <summary>
 		/// Get the current decoder.
+		/// 
+		/// <para>
+		/// NOTE: Do not cache the return of this function.
+		/// It may change if the decoder is changed or destroyed.
+		/// </para>
+		/// 
 		/// </summary>
 		/// <returns>Pointer to the current decoder used by this backend</returns>
 		FranAudio::Decoder::Decoder* GetCurrentDecoder() const;
