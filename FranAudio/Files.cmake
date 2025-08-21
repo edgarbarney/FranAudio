@@ -1,11 +1,11 @@
-# FranticDreamer 2022-2024
+# FranticDreamer 2022-2025
 
 # ---
 # FranAudio Files
 # ---
 
 # Header files
-SET(GLOB FRANAUDIO_HEADERFILES
+FILE(GLOB FRANAUDIO_HEADERFILES
 
 	#C API (Compiled as C++)
 	FranAudio/FranAudioAPILegacy.h

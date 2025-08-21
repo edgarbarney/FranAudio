@@ -1,11 +1,11 @@
-# FranticDreamer 2022-2024
+# FranticDreamer 2022-2025
 
 # ---
 # FranAudio Shared Files
 # ---
 
 # Header files
-SET(GLOB FRANAUDIOSHARED_HEADERFILES
+FILE(GLOB FRANAUDIOSHARED_HEADERFILES
 
 	#Network
 	FranAudioShared/Network.hpp

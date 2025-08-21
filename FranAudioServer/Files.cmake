@@ -1,11 +1,11 @@
-# FranticDreamer 2022-2024
+# FranticDreamer 2022-2025
 
 # ---
 # FranAudio Server Program Files
 # ---
 
 # Header files
-SET(GLOB FRANAUDIOSERVER_HEADERFILES
+FILE(GLOB FRANAUDIOSERVER_HEADERFILES
 
 	#Shared
 	FranAudioShared/FranAudioShared.hpp

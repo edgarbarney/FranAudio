@@ -1,4 +1,4 @@
-# FranticDreamer 2022-2024
+﻿# FranticDreamer 2022-2025
 # CMakeLists file for CMake Configuration
 
 # At least 3.20 Needed for C++23
@@ -24,15 +24,17 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 # =================
 # Options
 # =================
+
 option (FRANAUDIO_USE_TEST "Compile an app to test the library" ON)
 option (FRANAUDIO_USE_SERVER "Compile as an external app (Server)" ON)
 
 if (FRANAUDIO_USE_SERVER)
-add_compile_definitions (FRANAUDIO_USE_SERVER)
-add_compile_definitions (FRANAUDIO_SERVER_DEBUG)
+	add_compile_definitions (FRANAUDIO_USE_SERVER)
+	add_compile_definitions (FRANAUDIO_SERVER_DEBUG)
 endif()
+
 # =================
-# Options End
+# Output Settings
 # =================
 
 set (CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -64,9 +66,17 @@ endif()
 #	link_directories("Public/Win32")
 #endif()
 
+# ==================
+# Macros
+# ==================
+
 include ("CMakeMacros.cmake")
 include ("CMakeFindLibs.cmake")
+
+# ==================
 # FranAudio Files
+# ==================
+
 include ("FranAudio/Files.cmake")
 include ("FranAudioShared/Files.cmake")
 if (FRANAUDIO_USE_TEST)
@@ -110,6 +120,8 @@ add_subdirectory ("Libs/miniaudio")
 add_subdirectory ("Libs/libnyquist")
 include_directories ("Libs/libnyquist/include")
 
+# Raygui (Used only for test library, so its included over there)
+#include_directories ("Libs/raygui")
 
 # ==================
 # Binaries
@@ -126,6 +138,9 @@ target_compile_definitions (FranAudio PRIVATE
 	FRANAUDIO_DYNAMIC
 	FRANAUDIO_EXPORTS
 )
+# Export headers
+COPY_FILES (FranAudio FRANAUDIO_HEADERFILES ${CMAKE_BINARY_DIR}/include)
+COPY_FILES (FranAudio FRANAUDIOSHARED_HEADERFILES ${CMAKE_BINARY_DIR}/include)
 
 if (FRANAUDIO_CAN_USE_VORBIS)
 target_compile_definitions (FranAudio PRIVATE
@@ -145,6 +160,7 @@ target_link_libraries (FranAudio
 )
 endif()
 
+# FranAudio Server and Client
 if (FRANAUDIO_USE_SERVER)
 	add_executable (FranAudioServer ${FRANAUDIOSERVER_SOURCEFILES} ${FRANAUDIOSHARED_SOURCEFILES})	
 	target_compile_features(FranAudioServer PRIVATE cxx_std_23)
@@ -157,18 +173,27 @@ if (FRANAUDIO_USE_SERVER)
 	target_compile_definitions (FranAudioClient PRIVATE
 		FRANAUDIO_CLIENT_DYNAMIC
 	)
+
+	# Export headers
+	COPY_FILES (FranAudioClient FRANAUDIOCLIENT_HEADERFILES ${CMAKE_BINARY_DIR}/include)
 endif()
 
+# FranAudio Test Application
 if (FRANAUDIO_USE_TEST)
 	add_executable (FranAudioTest ${FRANAUDIOTEST_SOURCEFILES} ${FRANAUDIOSHARED_SOURCEFILES})
 	target_compile_features(FranAudioTest PRIVATE cxx_std_23)
+
+	target_include_directories(FranAudioTest PRIVATE
+		Libs/raygui
+	)
+
 	if (FRANAUDIO_USE_SERVER)
 	target_link_libraries (FranAudioTest
 		FranAudio
 		FranAudioClient
 	)
 	else()
-	target_link_libraries(FranAudioTest
+	target_link_libraries (FranAudioTest
 		FranAudio
 	)
 	endif()
