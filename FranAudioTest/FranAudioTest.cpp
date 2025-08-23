@@ -43,9 +43,9 @@ std::vector<size_t> gPlayingSounds;
 size_t PlayTestFile(const std::string& filename)
 {
 #ifndef FRANAUDIO_USE_SERVER
-	auto& backend = FranAudio::GetBackend();
-	backend.LoadAudioFile(filename);
-	size_t soundId = backend.PlayAudioFile(filename);
+	auto backend = FranAudio::GetBackend();
+	backend->LoadAudioFile(filename);
+	size_t soundId = backend->PlayAudioFile(filename);
 
 	if (soundId == SIZE_MAX)
 	{
@@ -53,7 +53,7 @@ size_t PlayTestFile(const std::string& filename)
 	}
 
 	gPlayingSounds.push_back(soundId);
-	return SIZE_MAX;
+	return soundId;
 #else
 	FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-load_audio_file", { filename }));
 
@@ -92,11 +92,7 @@ int main()
 {
 #ifndef FRANAUDIO_USE_SERVER
 	FranAudioShared::Logger::LogMessage("Starting FranAudio Library Test Application...");
-	//FranAudio::Globals::Init();
-	//
-	//FranAudio::Globals::LogMessage("Hello World!");
-	//
-	//FranAudio::Globals::Shutdown();
+	FranAudio::Init();
 #else
 	FranAudioShared::Logger::LogMessage("Starting FranAudio Server-Client Test Application...");
 	FranAudioClient::Init(true);
@@ -255,6 +251,10 @@ int main()
 		// Swap buffers
 		glfwSwapBuffers(window);
 	}
+
+#ifndef FRANAUDIO_USE_SERVER
+	FranAudio::Shutdown();
+#endif
 
 	// Cleanup
 	ImGui_ImplOpenGL3_Shutdown();

@@ -26,7 +26,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 # =================
 
 option (FRANAUDIO_USE_TEST "Compile an app to test the library" ON)
-option (FRANAUDIO_USE_SERVER "Compile as an external app (Server)" ON)
+option (FRANAUDIO_USE_SERVER "Compile as an external app (Server)" OFF)
 
 if (FRANAUDIO_USE_SERVER)
 	add_compile_definitions (FRANAUDIO_USE_SERVER)
