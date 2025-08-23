@@ -14,9 +14,9 @@ project ("FranAudio"
 )
 
 if (CMAKE_SIZEOF_VOID_P EQUAL 8) # 64 Bit
-set (PROJECT_ARCH "x64")
+	set (PROJECT_ARCH "x64")
 elseif (CMAKE_SIZEOF_VOID_P EQUAL 4) # 32 Bit
-set (PROJECT_ARCH "x86")
+	set (PROJECT_ARCH "x86")
 endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
@@ -57,7 +57,7 @@ if (WIN32)
 		set (BUILD_SHARED_LIBS TRUE)
 	endif()
 elseif (UNIX)
-	
+	# TODO: Linux Support
 endif()
 
 #if (PROJECT_ARCH STREQUAL "x64")
@@ -80,11 +80,11 @@ include ("CMakeFindLibs.cmake")
 include ("FranAudio/Files.cmake")
 include ("FranAudioShared/Files.cmake")
 if (FRANAUDIO_USE_TEST)
-include ("FranAudioTest/Files.cmake")
+	include ("FranAudioTest/Files.cmake")
 endif()
 if (FRANAUDIO_USE_SERVER)
-include ("FranAudioServer/Files.cmake")
-include ("FranAudioClient/Files.cmake")
+	include ("FranAudioServer/Files.cmake")
+	include ("FranAudioClient/Files.cmake")
 endif()
 
 # ==================
@@ -96,21 +96,21 @@ include_directories ("Libs")
 find_vorbis_and_opus()
 
 if (FRANAUDIO_CAN_USE_VORBIS)
-# Ogg
-add_subdirectory ("Libs/ogg")
-set (OGG_INCLUDE_DIR "Libs/ogg/include")
-include_directories ("Libs/ogg/include")
-set (OGG_LIBRARY "Libs/ogg")
+	# Ogg
+	add_subdirectory ("Libs/ogg")
+	set (OGG_INCLUDE_DIR "Libs/ogg/include")
+	include_directories ("Libs/ogg/include")
+	set (OGG_LIBRARY "Libs/ogg")
 
-# Vorbis
-add_subdirectory ("Libs/vorbis")
-include_directories ("Libs/vorbis/include")
+	# Vorbis
+	add_subdirectory ("Libs/vorbis")
+	include_directories ("Libs/vorbis/include")
 endif()
 
 if (FRANAUDIO_CAN_USE_OPUS)
-# Opus
-add_subdirectory ("Libs/opus")
-include_directories ("Libs/opus/include")
+	# Opus
+	add_subdirectory ("Libs/opus")
+	include_directories ("Libs/opus/include")
 endif()
 
 # Miniaudio
@@ -120,8 +120,20 @@ add_subdirectory ("Libs/miniaudio")
 add_subdirectory ("Libs/libnyquist")
 include_directories ("Libs/libnyquist/include")
 
-# Raygui (Used only for test library, so its included over there)
-#include_directories ("Libs/raygui")
+# Graphics stuff for FranAudio Test Application
+if (FRANAUDIO_USE_TEST)
+	find_package(OpenGL REQUIRED)
+
+	if (WIN32)
+		if (MSVC) 
+			set (GLFW_LIB_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Libs/glfw/lib-vc2019/glfw3.lib") # Targets VC++ 2019 Runtime. Use "glfw3_mt.lib" for Multi-thread support.
+		else()
+			# TODO: MinGW Support
+		endif()
+	elseif (UNIX)
+		# TODO: Linux Libraries for GLFW/GLAD
+	endif()
+endif()
 
 # ==================
 # Binaries
@@ -143,21 +155,21 @@ COPY_FILES (FranAudio FRANAUDIO_HEADERFILES ${CMAKE_BINARY_DIR}/include)
 COPY_FILES (FranAudio FRANAUDIOSHARED_HEADERFILES ${CMAKE_BINARY_DIR}/include)
 
 if (FRANAUDIO_CAN_USE_VORBIS)
-target_compile_definitions (FranAudio PRIVATE
-	FRANAUDIO_USE_VORBIS
-)
-target_link_libraries (FranAudio
-	miniaudio_libvorbis
+	target_compile_definitions (FranAudio PRIVATE
+		FRANAUDIO_USE_VORBIS
+	)
+	target_link_libraries (FranAudio
+		miniaudio_libvorbis
 )
 endif()
 
 if (FRANAUDIO_CAN_USE_OPUS)
-target_compile_definitions (FranAudio PRIVATE
-	FRANAUDIO_USE_OPUS
-)
-target_link_libraries (FranAudio
-	miniaudio_libopus
-)
+	target_compile_definitions (FranAudio PRIVATE
+		FRANAUDIO_USE_OPUS
+	)
+	target_link_libraries (FranAudio
+		miniaudio_libopus
+	)
 endif()
 
 # FranAudio Server and Client
@@ -183,18 +195,31 @@ if (FRANAUDIO_USE_TEST)
 	add_executable (FranAudioTest ${FRANAUDIOTEST_SOURCEFILES} ${FRANAUDIOSHARED_SOURCEFILES})
 	target_compile_features(FranAudioTest PRIVATE cxx_std_23)
 
-	target_include_directories(FranAudioTest PRIVATE
-		Libs/raygui
+	target_include_directories (FranAudioTest PRIVATE
+		Libs/glad/include
+		Libs/glfw/include
+		Libs/imgui
+		${OPENGL_INCLUDE_DIR}
+	)
+
+	target_sources (FranAudioTest PRIVATE
+		Libs/imgui/imgui.cpp
+		Libs/imgui/imgui_draw.cpp
+		Libs/imgui/imgui_tables.cpp
+		Libs/imgui/imgui_widgets.cpp
+		Libs/imgui/backends/imgui_impl_glfw.cpp
+		Libs/imgui/backends/imgui_impl_opengl3.cpp
+	)
+
+	target_link_libraries (FranAudioTest
+		FranAudio
+		${GLFW_LIB_FILE}
+		${OPENGL_LIBRARIES}
 	)
 
 	if (FRANAUDIO_USE_SERVER)
-	target_link_libraries (FranAudioTest
-		FranAudio
-		FranAudioClient
-	)
-	else()
-	target_link_libraries (FranAudioTest
-		FranAudio
-	)
+		target_link_libraries (FranAudioTest
+			FranAudioClient
+		)
 	endif()
 endif()

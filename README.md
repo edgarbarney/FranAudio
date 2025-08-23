@@ -87,6 +87,9 @@ After these steps are done, follow the instructions on the `FranAudio_Server` wi
 # List of used external libraries:   
 [miniaudio](https://miniaud.io/ "miniaudio") - As Backend and Decoder  
 [libnyquist](https://github.com/ddiakopoulos/libnyquist "libnyquist") - As Decoder  
+[GLFW](https://www.glfw.org "GLFW") - For Test Application
+[GLAD](https://github.com/Dav1dde/glad "GLAD") - For Test Application
+[ImGui](https://github.com/ocornut/imgui "Dear ImGui") - As Test Application GUI
 
 Libraries can be modified in one way or another. 
 So it's not advised to just replace them when updating.
