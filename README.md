@@ -10,10 +10,10 @@ A basic audio library made mainly for games and game engines that utilises C++23
 - Optional High-Level Server-Client Communication (localhost) for Inter-Process Usage (Mainly for Game Modding)  
 - **WAV**, **MP3**, **FLAC** and *(optional)* **Vorbis** Support
 - Optional extensive logging for both developers and end users.
+- Dynamic Positional Audio
 
 # To-do:
 - Extend Server-Client Communication  
-- Dynamic Positional Audio  
 - Post-Processing Effects  
 - OpenAL Backend  
 - Linux Support  

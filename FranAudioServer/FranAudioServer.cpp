@@ -197,4 +197,31 @@ const std::unordered_map<std::string, std::function<std::string(const FranAudioS
 			return std::string();
 		}
 	},
+
+	// Sound::SetPosition
+	// Params: soundIndex, posX, posY, posZ
+	// Returns: nothing
+	{
+		"sound-set_position",
+		[](const FranAudioShared::Network::NetworkFunction& fn)
+		{
+			if (fn.params.size() < 4)
+			{
+				FranAudioShared::Logger::LogError("Missing parameters for set_sound_position");
+				return std::string("err");
+			}
+			try
+			{
+				const size_t soundId = std::stoull(fn.params[0]);
+				const float position[3] = { std::stof(fn.params[1]), std::stof(fn.params[2]), std::stof(fn.params[3]) };
+				FranAudio::GetBackend()->SetSoundPosition(soundId, position);
+			}
+			catch (const std::exception& e)
+			{
+				FranAudioShared::Logger::LogError("Failed to set sound position: {}", e.what());
+				return std::string("err");
+			}
+			return std::string();
+		}
+	},
 };

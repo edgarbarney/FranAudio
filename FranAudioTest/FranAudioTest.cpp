@@ -97,8 +97,8 @@ void SetListenerTransform(float position[3], float forward[3], float up[3])
 	FranAudio::GetBackend()->SetListenerTransform(position, forward, up);
 #else
 	FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_listener_transform", { std::to_string(position[0]), std::to_string(position[1]), std::to_string(position[2]),
-																														std::to_string(forward[0]), std::to_string(forward[1]), std::to_string(forward[2]),
-																														std::to_string(up[0]), std::to_string(up[1]), std::to_string(up[2]) }));
+																										std::to_string(forward[0]), std::to_string(forward[1]), std::to_string(forward[2]),
+																										std::to_string(up[0]), std::to_string(up[1]), std::to_string(up[2]) }));
 #endif
 }
 
@@ -107,8 +107,7 @@ void SetSoundPosition(size_t soundId, float position[3])
 #ifndef FRANAUDIO_USE_SERVER
 	FranAudio::GetBackend()->SetSoundPosition(soundId, position);
 #else
-	FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_sound_position", { std::to_string(soundId),
-																										std::to_string(position[0]), std::to_string(position[1]), std::to_string(position[2]) }));
+	FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("sound-set_position", { std::to_string(soundId), std::to_string(position[0]), std::to_string(position[1]), std::to_string(position[2]) }));
 #endif
 }
 
