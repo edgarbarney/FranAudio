@@ -104,6 +104,16 @@ namespace FranAudio::Backend
 		virtual void SetListenerTransform(const float position[3], const float forward[3], const float up[3]) override;
 
 		/// <summary>
+		/// Set the listener's position.
+		/// </summary>
+		virtual void SetListenerPosition(const float position[3]) override;
+
+		/// <summary>
+		/// Set the listener's orientation.
+		/// </summary>
+		virtual void SetListenerOrientation(const float forward[3], const float up[3]) override;
+
+		/// <summary>
 		/// Set the master volume.
 		/// Can also be the listener's hearing volume.
 		/// </summary>
@@ -145,6 +155,12 @@ namespace FranAudio::Backend
 		/// </summary>
 		/// <param name="soundIndex">Index of the sound in the active sounds list</param>
 		virtual void StopPlayingSound(size_t soundIndex) override;
+
+		/// <summary>
+		/// Set the position of a playing sound by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to set the position of</param>
+		virtual void SetSoundPosition(size_t soundID, const float position[3]) override;
 
 		/// <summary>
 		/// Get the default decoder configuration.

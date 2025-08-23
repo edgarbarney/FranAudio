@@ -11,6 +11,9 @@
 //
 // Since this is a test application, it does not do much optimization or error handling.
 // It is meant to show a simple way to test the FranAudio library and its features.
+// 
+// If you want to see how you should use FranAudio in your own application,
+// please refer to the examples provided with the library.
 //
 //
 // ====================================================================================
@@ -87,6 +90,29 @@ void StopTestSound(size_t soundId)
 	gPlayingSounds.erase(std::remove(gPlayingSounds.begin(), gPlayingSounds.end(), soundId), gPlayingSounds.end());
 	FranAudioShared::Logger::LogMessage(std::format("Stopped sound ID: {}", soundId));
 }
+
+void SetListenerTransform(float position[3], float forward[3], float up[3])
+{
+#ifndef FRANAUDIO_USE_SERVER
+	FranAudio::GetBackend()->SetListenerTransform(position, forward, up);
+#else
+	FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_listener_transform", { std::to_string(position[0]), std::to_string(position[1]), std::to_string(position[2]),
+																														std::to_string(forward[0]), std::to_string(forward[1]), std::to_string(forward[2]),
+																														std::to_string(up[0]), std::to_string(up[1]), std::to_string(up[2]) }));
+#endif
+}
+
+void SetSoundPosition(size_t soundId, float position[3])
+{
+#ifndef FRANAUDIO_USE_SERVER
+	FranAudio::GetBackend()->SetSoundPosition(soundId, position);
+#else
+	FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_sound_position", { std::to_string(soundId),
+																										std::to_string(position[0]), std::to_string(position[1]), std::to_string(position[2]) }));
+#endif
+}
+
+
 
 int main()
 {
@@ -228,6 +254,8 @@ int main()
 			ImGui::SliderFloat3("Listener Up Vector", listenerUp, -1.0f, 1.0f, "%.1f");
 		ImGui::End();
 
+		SetListenerTransform(listenerPosition, listenerForward, listenerUp);
+
 		// Display currently playing sounds
 		for (size_t soundId : gPlayingSounds)
 		{
@@ -237,6 +265,11 @@ int main()
 				{
 					StopTestSound(soundId);
 				}
+				
+				// Set sound position to window position
+				ImVec2 soundPos = ImGui::GetWindowPos();
+				float soundPosition[3] = { soundPos.x, soundPos.y, 0.0f };
+				SetSoundPosition(soundId, soundPosition);
 			ImGui::End();
 		}
 

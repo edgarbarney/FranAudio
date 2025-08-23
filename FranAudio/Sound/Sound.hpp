@@ -42,5 +42,10 @@ namespace FranAudio::Sound
 		/// Get the wave data index.
 		/// </summary>
 		size_t GetWaveDataIndex() const;
+
+		/// <summary>
+		/// Set the position of the sound.
+ 		/// </summary>
+		void SetPosition(const float position[3]);
 	};
 }

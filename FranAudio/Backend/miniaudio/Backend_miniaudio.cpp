@@ -71,7 +71,17 @@ const std::vector<FranAudio::Decoder::DecoderType>& FranAudio::Backend::miniaudi
 
 void FranAudio::Backend::miniaudio::SetListenerTransform(const float position[3], const float forward[3], const float up[3])
 {
+	SetListenerPosition(position);
+	SetListenerOrientation(forward, up);
+}
+
+void FranAudio::Backend::miniaudio::SetListenerPosition(const float position[3])
+{
 	ma_engine_listener_set_position(&engine, 0, position[0], position[1], position[2]);
+}
+
+void FranAudio::Backend::miniaudio::SetListenerOrientation(const float forward[3], const float up[3])
+{
 	ma_engine_listener_set_direction(&engine, 0, forward[0], forward[1], forward[2]);
 	ma_engine_listener_set_world_up(&engine, 0, up[0], up[1], up[2]);
 }
@@ -188,6 +198,17 @@ void FranAudio::Backend::miniaudio::StopPlayingSound(size_t soundID)
 
 	miniaudioSoundData.erase(soundID);
 	activeSounds.erase(soundID);
+}
+
+void FranAudio::Backend::miniaudio::SetSoundPosition(size_t soundID, const float position[3])
+{
+	if (soundID == SIZE_MAX)
+	{
+		FranAudioShared::Logger::LogError("MiniAudio: Tried to set position of an invalid sound.");
+		return;
+	}
+
+	ma_sound_set_position(&miniaudioSoundData[soundID]->sound, position[0], position[1], position[2]);
 }
 
 ma_decoder_config* FranAudio::Backend::miniaudio::GetDefaultDecoderConfig()
