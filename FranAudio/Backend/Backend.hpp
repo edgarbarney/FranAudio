@@ -74,6 +74,10 @@ namespace FranAudio::Backend
 		/// <returns>Type of this Backend instance</returns>
 		virtual constexpr BackendType GetBackendType() const noexcept;
 
+		// ========================
+		// Decoder Management
+		// ========================
+
 		// TODO: Should we make the supported decoders a bitmap or bool array?
 		/// <summary>
 		/// Get the supported decoders.
@@ -109,6 +113,10 @@ namespace FranAudio::Backend
 		/// Destroy the current decoder.
 		/// </summary>
 		void DestroyDecoder();
+
+		// ========================
+		// Listener (3D Audio)
+		// ========================
 
 		/// <summary>
 		/// Set the listener's position and orientation.
@@ -164,6 +172,10 @@ namespace FranAudio::Backend
 		/// </summary>
 		virtual float GetMasterVolume() = 0; // Not const because some audio backends might require non-const pointer.
 
+		// ========================
+		// Audio File Management
+		// ========================
+
 		/// <summary>
 		/// Decode an audio file and load it into the memory.
 		/// </summary>
@@ -194,6 +206,10 @@ namespace FranAudio::Backend
 		/// <param name="filename">Path to the audio file</param>
 		/// <returns>Active Sounds List Index</returns>
 		virtual size_t PlayAudioFileStream(const std::string& filename) = 0;
+
+		// ========================
+		// Sound Management
+		// ========================
 
 		/// <summary>
 		/// Check if a sound is valid by its index.
@@ -246,6 +262,10 @@ namespace FranAudio::Backend
  		/// </summary>
  		/// <returns>Map of currently active sounds</returns>
 		virtual const std::unordered_map<size_t, Sound::Sound>& GetActiveSounds() const;
+
+		// ========================
+		// Backend
+		// ========================
 
 		/// <summary>
 		/// Create a backend instance.

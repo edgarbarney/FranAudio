@@ -58,6 +58,10 @@ void FranAudio::Backend::miniaudio::Shutdown()
 	ma_engine_uninit(&engine);
 }
 
+// ========================
+// Decoder Management
+// ========================
+
 const std::vector<FranAudio::Decoder::DecoderType>& FranAudio::Backend::miniaudio::GetSupportedDecoders() const
 {
 	static const std::vector<FranAudio::Decoder::DecoderType> supportedDecoders = 
@@ -68,6 +72,10 @@ const std::vector<FranAudio::Decoder::DecoderType>& FranAudio::Backend::miniaudi
 
 	return supportedDecoders;
 }
+
+// ========================
+// Listener (3D Audio)
+// ========================
 
 void FranAudio::Backend::miniaudio::SetListenerTransform(const float position[3], const float forward[3], const float up[3])
 {
@@ -121,6 +129,10 @@ float FranAudio::Backend::miniaudio::GetMasterVolume()
 {
 	return ma_engine_get_volume(&engine);
 }
+
+// ========================
+// Audio File Management
+// ========================
 
 size_t FranAudio::Backend::miniaudio::LoadAudioFile(const std::string& filename)
 {
@@ -204,6 +216,10 @@ size_t FranAudio::Backend::miniaudio::PlayAudioFileStream(const std::string& fil
 {
 	return SIZE_MAX;
 }
+
+// ========================
+// Sound Management
+// ========================
 
 /*
 bool FranAudio::Backend::miniaudio::IsSoundValid(size_t soundIndex)
@@ -294,6 +310,10 @@ void FranAudio::Backend::miniaudio::GetSoundPosition(size_t soundID, float outPo
 	outPosition[1] = pos.y;
 	outPosition[2] = pos.z;
 }
+
+// ========================
+// Miniaudio Specific
+// ========================
 
 ma_decoder_config* FranAudio::Backend::miniaudio::GetDefaultDecoderConfig()
 {

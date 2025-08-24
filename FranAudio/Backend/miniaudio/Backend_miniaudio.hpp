@@ -92,11 +92,19 @@ namespace FranAudio::Backend
 		/// <returns>Type of this Backend instance</returns>
 		virtual constexpr BackendType GetBackendType() const noexcept override { return BackendType::miniaudio; }
 
+		// ========================
+		// Decoder Management
+		// ========================
+
 		/// <summary>
 		/// Get the supported decoders.
 		/// </summary>
 		/// <returns>List of supported decoders</returns>
 		virtual const std::vector<FranAudio::Decoder::DecoderType>& GetSupportedDecoders() const override;
+
+		// ========================
+		// Listener (3D Audio)
+		// ========================
 
 		/// <summary>
 		/// Set the listener's position and orientation.
@@ -143,6 +151,7 @@ namespace FranAudio::Backend
 		/// Set the master volume.
 		/// Can also be the listener's hearing volume.
 		/// </summary>
+		/// <param name="volume">Volume to set the master volume to (0.0 - 1.0)</param>
 		virtual void SetMasterVolume(float volume) override;
 
 		/// <summary>
@@ -150,6 +159,10 @@ namespace FranAudio::Backend
  		/// Can also be the listener's hearing volume.
  		/// </summary>
  		virtual float GetMasterVolume() override; // Not const because some audio backends might require non-const pointer.
+
+		// ========================
+		// Audio File Management
+		// ========================
 
 		/// <summary>
 		/// Decode an audio file and load it into the memory.
@@ -181,6 +194,10 @@ namespace FranAudio::Backend
 		/// <param name="filename">Path to the audio file</param>
 		/// <returns>Active Sounds List Index</returns>
 		virtual size_t PlayAudioFileStream(const std::string& filename) override;
+
+		// ========================
+		// Sound Management
+		// ========================
 
 		/*
 		/// <summary>
@@ -221,6 +238,10 @@ namespace FranAudio::Backend
  		/// </summary>
  		/// <param name="soundID">ID of the sound to get the position of</param>
 		virtual void GetSoundPosition(size_t soundID, float outPosition[3]) override;
+
+		// ========================
+		// Miniaudio Specific
+		// ========================
 
 		/// <summary>
 		/// Get the default decoder configuration.

@@ -16,6 +16,10 @@ constexpr FranAudio::Backend::BackendType FranAudio::Backend::Backend::GetBacken
 	return BackendType::None;
 }
 
+// ========================
+// Decoder Management
+// ========================
+
 FranAudio::Decoder::DecoderType FranAudio::Backend::Backend::GetDecoderType() const
 {
 	return currentDecoderType;
@@ -68,6 +72,10 @@ void FranAudio::Backend::Backend::DestroyDecoder()
 		currentDecoder = nullptr;
 	}
 }
+
+// ========================
+// Sound Management
+// ========================
 
 bool FranAudio::Backend::Backend::IsSoundValid(size_t soundIndex)
 {
