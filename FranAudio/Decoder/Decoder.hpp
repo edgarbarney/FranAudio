@@ -7,6 +7,8 @@
 #include <span>
 #include <array>
 
+#include "Decoder/DecoderTypes.hpp"
+
 #include "Sound/WaveData/WaveData.hpp"
 
 namespace FranAudio::Backend
@@ -16,16 +18,6 @@ namespace FranAudio::Backend
 	
 namespace FranAudio::Decoder
 {
-	/// <summary>
-	/// Possible decoder types.
-	/// </summary>
-	enum class DecoderType
-	{
-		None = 0,
-		miniaudio,
-		libnyquist,
-	};
-
 	/// <summary>
 	/// Interface for decoder implementations.
 	/// 

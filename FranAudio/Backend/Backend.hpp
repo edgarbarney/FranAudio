@@ -5,22 +5,14 @@
 #include <vector>
 #include <unordered_map>
 
+#include "Backend/BackendTypes.hpp"
+
 #include "Decoder/Decoder.hpp"
 #include "Sound/WaveData/WaveData.hpp"
 #include "Sound/Sound.hpp"
 
 namespace FranAudio::Backend
 {
-	/// <summary>
-	/// Possible backend types.
-	/// </summary>
-	enum class BackendType
-	{
-		None = 0,
-		miniaudio,
-		OpenALSoft,
-	};
-
 	/// <summary>
 	/// Interface for backend implementations.
 	/// </summary>
