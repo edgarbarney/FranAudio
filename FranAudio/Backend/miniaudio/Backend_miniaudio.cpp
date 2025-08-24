@@ -75,9 +75,23 @@ void FranAudio::Backend::miniaudio::SetListenerTransform(const float position[3]
 	SetListenerOrientation(forward, up);
 }
 
+void FranAudio::Backend::miniaudio::GetListenerTransform(float position[3], float forward[3], float up[3])
+{
+	GetListenerPosition(position);
+	GetListenerOrientation(forward, up);
+}
+
 void FranAudio::Backend::miniaudio::SetListenerPosition(const float position[3])
 {
 	ma_engine_listener_set_position(&engine, 0, position[0], position[1], position[2]);
+}
+
+void FranAudio::Backend::miniaudio::GetListenerPosition(float position[3])
+{
+	ma_vec3f result = ma_engine_listener_get_position(&engine, 0);
+	position[0] = result.x;
+	position[1] = result.y;
+	position[2] = result.z;
 }
 
 void FranAudio::Backend::miniaudio::SetListenerOrientation(const float forward[3], const float up[3])
@@ -86,9 +100,26 @@ void FranAudio::Backend::miniaudio::SetListenerOrientation(const float forward[3
 	ma_engine_listener_set_world_up(&engine, 0, up[0], up[1], up[2]);
 }
 
+void FranAudio::Backend::miniaudio::GetListenerOrientation(float forward[3], float up[3])
+{
+	ma_vec3f fwd = ma_engine_listener_get_direction(&engine, 0);
+	ma_vec3f u = ma_engine_listener_get_world_up(&engine, 0);
+	forward[0] = fwd.x;
+	forward[1] = fwd.y;
+	forward[2] = fwd.z;
+	up[0] = u.x;
+	up[1] = u.y;
+	up[2] = u.z;
+}
+
 void FranAudio::Backend::miniaudio::SetMasterVolume(float volume)
 {
 	ma_engine_set_volume(&engine, 1.0f);
+}
+
+float FranAudio::Backend::miniaudio::GetMasterVolume()
+{
+	return ma_engine_get_volume(&engine);
 }
 
 size_t FranAudio::Backend::miniaudio::LoadAudioFile(const std::string& filename)
@@ -174,6 +205,26 @@ size_t FranAudio::Backend::miniaudio::PlayAudioFileStream(const std::string& fil
 	return SIZE_MAX;
 }
 
+/*
+bool FranAudio::Backend::miniaudio::IsSoundValid(size_t soundIndex)
+{
+	return soundIndex != SIZE_MAX;
+
+
+	if (soundIndex == SIZE_MAX)
+	{
+		return false;
+	}
+
+	if (!miniaudioSoundData.contains(soundIndex))
+	{
+		return false;
+	}
+
+	return activeSounds[soundIndex].GetSoundID() != SIZE_MAX;
+}
+*/
+
 void FranAudio::Backend::miniaudio::StopPlayingSound(size_t soundID)
 {
 	if (soundID == SIZE_MAX)
@@ -200,6 +251,26 @@ void FranAudio::Backend::miniaudio::StopPlayingSound(size_t soundID)
 	activeSounds.erase(soundID);
 }
 
+void FranAudio::Backend::miniaudio::SetSoundVolume(size_t soundID, float volume)
+{
+	if (soundID == SIZE_MAX)
+	{
+		FranAudioShared::Logger::LogError("MiniAudio: Tried to set volume of an invalid sound.");
+		return;
+	}
+	ma_sound_set_volume(&miniaudioSoundData[soundID]->sound, volume);
+}
+
+float FranAudio::Backend::miniaudio::GetSoundVolume(size_t soundID)
+{
+	if (soundID == SIZE_MAX)
+	{
+		FranAudioShared::Logger::LogError("MiniAudio: Tried to get volume of an invalid sound.");
+		return 0.0f;
+	}
+	return ma_sound_get_volume(&miniaudioSoundData[soundID]->sound);
+}
+
 void FranAudio::Backend::miniaudio::SetSoundPosition(size_t soundID, const float position[3])
 {
 	if (soundID == SIZE_MAX)
@@ -209,6 +280,19 @@ void FranAudio::Backend::miniaudio::SetSoundPosition(size_t soundID, const float
 	}
 
 	ma_sound_set_position(&miniaudioSoundData[soundID]->sound, position[0], position[1], position[2]);
+}
+
+void FranAudio::Backend::miniaudio::GetSoundPosition(size_t soundID, float outPosition[3])
+{
+	if (soundID == SIZE_MAX)
+	{
+		FranAudioShared::Logger::LogError("MiniAudio: Tried to get position of an invalid sound.");
+		return;
+	}
+	ma_vec3f pos = ma_sound_get_position(&miniaudioSoundData[soundID]->sound);
+	outPosition[0] = pos.x;
+	outPosition[1] = pos.y;
+	outPosition[2] = pos.z;
 }
 
 ma_decoder_config* FranAudio::Backend::miniaudio::GetDefaultDecoderConfig()

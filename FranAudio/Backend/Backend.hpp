@@ -121,23 +121,56 @@ namespace FranAudio::Backend
 		/// <summary>
 		/// Set the listener's position and orientation.
 		/// </summary>
+		/// <param name="position">New position of the listener</param>
+		/// <param name="forward">New forward vector of the listener</param>
 		virtual void SetListenerTransform(const float position[3], const float forward[3], const float up[3]) = 0;
+
+		/// <summary>
+		/// Get the listener's position and orientation.
+		/// </summary>
+		/// <param name="position">Output position of the listener</param>
+		/// <param name="forward">Output forward vector of the listener</param>
+		/// <param name="up">Output up vector of the listener</param>
+		virtual void GetListenerTransform(float outPosition[3], float outForward[3], float outUp[3]) = 0;
 
 		/// <summary>
 		/// Set the listener's position.
 		/// </summary>
+		/// <param name="position">New position of the listener</param> 
 		virtual void SetListenerPosition(const float position[3]) = 0;
+
+		/// <summary>
+		/// Get the listener's position.
+	 	/// </summary>
+		/// <param name="position">Output position of the listener</param>
+		virtual void GetListenerPosition(float outPosition[3]) = 0;
 
 		/// <summary>
 		/// Set the listener's orientation.
 		/// </summary>
+		/// <param name="forward">New forward vector of the listener</param>
+		/// <param name="up">New up vector of the listener</param>
 		virtual void SetListenerOrientation(const float forward[3], const float up[3]) = 0;
+
+		/// <summary>
+		/// Get the listener's orientation.
+		/// </summary>
+		/// <param name="forward">Output forward vector of the listener</param>
+		/// <param name="up">Output up vector of the listener</param>
+		virtual void GetListenerOrientation(float outForward[3], float outUp[3]) = 0;
 
 		/// <summary>
 		/// Set the master volume.
 		/// Can also be the listener's hearing volume.
 		/// </summary>
+	 	/// <param name="volume">Volume to set the master volume to (0.0 - 1.0)</param>
 		virtual void SetMasterVolume(float volume) = 0;
+
+		/// <summary>
+		/// Get the master volume.
+ 		/// Can also be the listener's hearing volume.	
+		/// </summary>
+		virtual float GetMasterVolume() = 0; // Not const because some audio backends might require non-const pointer.
 
 		/// <summary>
 		/// Decode an audio file and load it into the memory.
@@ -171,16 +204,56 @@ namespace FranAudio::Backend
 		virtual size_t PlayAudioFileStream(const std::string& filename) = 0;
 
 		/// <summary>
-		/// Stop an active sound by its index.
+		/// Check if a sound is valid by its index.
+		/// </summary>
+		/// <param name="soundIndex">Index of the sound in the active sounds list</param>
+		virtual bool IsSoundValid(size_t soundIndex);
+
+		/// <summary>
+		/// Stop and clear an active sound by its index.
 		/// </summary>
 		/// <param name="soundIndex">Index of the sound in the active sounds list</param>
 		virtual void StopPlayingSound(size_t soundIndex) = 0;
 
 		/// <summary>
+		/// Set the volume of a playing sound by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to set the volume of</param>
+		/// <param name="volume">Volume to set the sound to (0.0 - 1.0)</param>
+		virtual void SetSoundVolume(size_t soundID, float volume) = 0;
+
+		/// <summary>
+		/// Get the volume of a playing sound by its index.
+	 	/// </summary>
+		/// <param name="soundID">ID of the sound to get the volume of</param>
+		/// <returns>Volume of the sound (0.0 - 1.0)</returns>
+		virtual float GetSoundVolume(size_t soundID) = 0;
+
+		/// <summary>
 		/// Set the position of a playing sound by its index.
 		/// </summary>
  		/// <param name="soundID">ID of the sound to set the position of</param>
+ 		/// <param name="position">Position to set the sound to</param>
 		virtual void SetSoundPosition(size_t soundID, const float position[3]) = 0;
+
+		/// <summary>
+		/// Get the position of a playing sound by its index.
+		/// </summary>
+ 		/// <param name="soundID">ID of the sound to get the position of</param>
+	 	/// <param name="position">Output position of the sound</param>
+		virtual void GetSoundPosition(size_t soundID, float position[3]) = 0;
+
+		/// <summary>
+		/// Get a reference to a playing sound by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to get</param>
+		virtual Sound::Sound& GetSound(size_t soundID);
+		
+		/// <summary>
+		/// Get the map of currently active sounds.
+ 		/// </summary>
+ 		/// <returns>Map of currently active sounds</returns>
+		virtual const std::unordered_map<size_t, Sound::Sound>& GetActiveSounds() const;
 
 		/// <summary>
 		/// Create a backend instance.

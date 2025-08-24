@@ -7,6 +7,12 @@
 
 namespace FranAudio::Sound
 {
+	/// <summary>
+	/// Represents a sound instance.
+	/// 
+	/// Basically a struct, combined with a wrapper around
+	/// sound instances and backend interaction. 
+	/// </summary>
 	class Sound
 	{
 	private:
@@ -33,6 +39,8 @@ namespace FranAudio::Sound
 		/// </summary>
 		virtual ~Sound() = default;
 
+		bool IsValid() const;
+	
 		/// <summary>
 		/// Get the sound ID.
 		/// </summary>
@@ -44,8 +52,30 @@ namespace FranAudio::Sound
 		size_t GetWaveDataIndex() const;
 
 		/// <summary>
+		/// Stop and clear the sound.
+		/// </summary>
+		void Stop() const;
+
+		/// <summary>
+		/// Set the volume of the sound.
+	 	/// </summary>
+ 		/// <param name="volume">Volume to set the sound to (0.0 - 1.0)</param>
+ 		void SetVolume(float volume) const;
+
+		/// <summary>
+		/// Get the volume of the sound.
+ 		/// </summary>
+ 		/// <returns>Current volume of the sound (0.0 - 1.0)</returns>
+		float GetVolume() const;
+
+		/// <summary>
 		/// Set the position of the sound.
  		/// </summary>
-		void SetPosition(const float position[3]);
+		void SetPosition(const float position[3]) const;
+
+		/// <summary>
+		/// Get the position of the sound.
+		/// </summary>
+		void GetPosition(float outPosition[3]) const;
 	};
 }

@@ -69,6 +69,21 @@ void FranAudio::Backend::Backend::DestroyDecoder()
 	}
 }
 
+bool FranAudio::Backend::Backend::IsSoundValid(size_t soundIndex)
+{
+	return soundIndex != SIZE_MAX;
+}
+
+FranAudio::Sound::Sound& FranAudio::Backend::Backend::GetSound(size_t soundID)
+{
+	return activeSounds[soundID];
+} 
+
+const std::unordered_map<size_t, FranAudio::Sound::Sound>& FranAudio::Backend::Backend::GetActiveSounds() const
+{
+	return activeSounds;
+}
+
 FranAudio::Backend::Backend* FranAudio::Backend::Backend::CreateBackend(BackendType backendType)
 {
 	Backend* newBackend = nullptr;
