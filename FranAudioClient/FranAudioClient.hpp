@@ -214,7 +214,7 @@ namespace FranAudioClient
 			/// </summary>
 			/// <param name="soundID">ID of the sound to set the position of</param>
 			/// <param name="position">Position to set the sound to</param>
-			FRANAUDIO_CLIENT_API void SetPosition(size_t soundID, const float position[3]);
+			FRANAUDIO_CLIENT_API void SetPosition(size_t soundID, float position[3]);
 
 			/// <summary>
 			/// Get the position of a playing sound by its index.

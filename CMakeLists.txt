@@ -1,4 +1,4 @@
-﻿# FranticDreamer 2022-2025
+# FranticDreamer 2022-2025
 # CMakeLists file for CMake Configuration
 
 # At least 3.20 Needed for C++23
@@ -6,6 +6,9 @@ cmake_minimum_required (VERSION 3.20)
 
 set (SUPPORTED_ARCHITECTURES "x86" "x64")
 set (CURDIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project ("FranAudio"
 	VERSION 0.1.0
