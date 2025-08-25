@@ -1,4 +1,4 @@
-# FranticDreamer 2022-2025
+﻿# FranticDreamer 2022-2025
 # CMakeLists file for CMake Configuration
 
 # At least 3.20 Needed for C++23
@@ -144,7 +144,6 @@ endif()
 
 # FranAudio DLL/SO
 add_library (FranAudio SHARED ${FRANAUDIO_SOURCEFILES} ${FRANAUDIOSHARED_SOURCEFILES})
-target_compile_features(FranAudio PRIVATE cxx_std_23)
 target_link_libraries (FranAudio
 	miniaudio
 	libnyquist
@@ -154,8 +153,8 @@ target_compile_definitions (FranAudio PRIVATE
 	FRANAUDIO_EXPORTS
 )
 # Export headers
-COPY_FILES (FranAudio FRANAUDIO_HEADERFILES ${CMAKE_BINARY_DIR}/include)
-COPY_FILES (FranAudio FRANAUDIOSHARED_HEADERFILES ${CMAKE_BINARY_DIR}/include)
+COPY_FILES (FranAudio FRANAUDIO_HEADERFILES ${CMAKE_BINARY_DIR}/include "")
+COPY_FILES (FranAudio FRANAUDIOSHARED_HEADERFILES ${CMAKE_BINARY_DIR}/include "")
 
 if (FRANAUDIO_CAN_USE_VORBIS)
 	target_compile_definitions (FranAudio PRIVATE
@@ -178,25 +177,22 @@ endif()
 # FranAudio Server and Client
 if (FRANAUDIO_USE_SERVER)
 	add_executable (FranAudioServer ${FRANAUDIOSERVER_SOURCEFILES} ${FRANAUDIOSHARED_SOURCEFILES})	
-	target_compile_features(FranAudioServer PRIVATE cxx_std_23)
 	target_link_libraries (FranAudioServer
 		FranAudio
 	)
 
 	add_library (FranAudioClient SHARED ${FRANAUDIOCLIENT_SOURCEFILES} ${FRANAUDIOSHARED_SOURCEFILES})
-	target_compile_features(FranAudioClient PRIVATE cxx_std_23)
 	target_compile_definitions (FranAudioClient PRIVATE
 		FRANAUDIO_CLIENT_DYNAMIC
 	)
 
 	# Export headers
-	COPY_FILES (FranAudioClient FRANAUDIOCLIENT_HEADERFILES ${CMAKE_BINARY_DIR}/include)
+	COPY_FILES (FranAudioClient FRANAUDIOCLIENT_HEADERFILES ${CMAKE_BINARY_DIR}/include "")
 endif()
 
 # FranAudio Test Application
 if (FRANAUDIO_USE_TEST)
 	add_executable (FranAudioTest ${FRANAUDIOTEST_SOURCEFILES} ${FRANAUDIOSHARED_SOURCEFILES})
-	target_compile_features(FranAudioTest PRIVATE cxx_std_23)
 
 	target_include_directories (FranAudioTest PRIVATE
 		Libs/glad/include
