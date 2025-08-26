@@ -122,7 +122,7 @@ void FranAudio::Backend::miniaudio::GetListenerOrientation(float forward[3], flo
 
 void FranAudio::Backend::miniaudio::SetMasterVolume(float volume)
 {
-	ma_engine_set_volume(&engine, 1.0f);
+	ma_engine_set_volume(&engine, volume);
 }
 
 float FranAudio::Backend::miniaudio::GetMasterVolume()
@@ -221,29 +221,9 @@ size_t FranAudio::Backend::miniaudio::PlayAudioFileStream(const std::string& fil
 // Sound Management
 // ========================
 
-/*
-bool FranAudio::Backend::miniaudio::IsSoundValid(size_t soundIndex)
-{
-	return soundIndex != SIZE_MAX;
-
-
-	if (soundIndex == SIZE_MAX)
-	{
-		return false;
-	}
-
-	if (!miniaudioSoundData.contains(soundIndex))
-	{
-		return false;
-	}
-
-	return activeSounds[soundIndex].GetSoundID() != SIZE_MAX;
-}
-*/
-
 void FranAudio::Backend::miniaudio::StopPlayingSound(size_t soundID)
 {
-	if (soundID == SIZE_MAX)
+	if (!IsSoundValid(soundID))
 	{
 		FranAudioShared::Logger::LogError("MiniAudio: Tried to stop an invalid sound.");
 		return;
@@ -269,7 +249,7 @@ void FranAudio::Backend::miniaudio::StopPlayingSound(size_t soundID)
 
 void FranAudio::Backend::miniaudio::SetSoundVolume(size_t soundID, float volume)
 {
-	if (soundID == SIZE_MAX)
+	if (!IsSoundValid(soundID))
 	{
 		FranAudioShared::Logger::LogError("MiniAudio: Tried to set volume of an invalid sound.");
 		return;
@@ -279,7 +259,7 @@ void FranAudio::Backend::miniaudio::SetSoundVolume(size_t soundID, float volume)
 
 float FranAudio::Backend::miniaudio::GetSoundVolume(size_t soundID)
 {
-	if (soundID == SIZE_MAX)
+	if (!IsSoundValid(soundID))
 	{
 		FranAudioShared::Logger::LogError("MiniAudio: Tried to get volume of an invalid sound.");
 		return 0.0f;
@@ -289,7 +269,7 @@ float FranAudio::Backend::miniaudio::GetSoundVolume(size_t soundID)
 
 void FranAudio::Backend::miniaudio::SetSoundPosition(size_t soundID, const float position[3])
 {
-	if (soundID == SIZE_MAX)
+	if (!IsSoundValid(soundID))
 	{
 		FranAudioShared::Logger::LogError("MiniAudio: Tried to set position of an invalid sound.");
 		return;
@@ -300,7 +280,7 @@ void FranAudio::Backend::miniaudio::SetSoundPosition(size_t soundID, const float
 
 void FranAudio::Backend::miniaudio::GetSoundPosition(size_t soundID, float outPosition[3])
 {
-	if (soundID == SIZE_MAX)
+	if (!IsSoundValid(soundID))
 	{
 		FranAudioShared::Logger::LogError("MiniAudio: Tried to get position of an invalid sound.");
 		return;

@@ -2,7 +2,8 @@
 #pragma once
 
 #include "FranAudioClientAPI.hpp"
-#include "FranAudioShared/Network.hpp"
+#include "FranAudioShared/Network/Network.hpp"
+#include "FranAudioShared/Logger/Logger.hpp"
 
 #include "Decoder/DecoderTypes.hpp"
 #include "Backend/BackendTypes.hpp"
@@ -50,13 +51,22 @@ namespace FranAudioClient
 	// End of Functions with Platform Specific Implementations
 	// ===========================
 
+	// ========================
+	// Shared Logger Usage
+	// ========================
+
+	/// <summary>
+	/// Routes the client output to the specified console stream buffer.
+	/// </summary>
+	/// <param name="consoleBuffer">A pointer to the ConsoleStreamBuffer where client output will be directed.</param>
+	FRANAUDIO_CLIENT_API void RouteClientLoggingToConsole(FranAudioShared::Logger::ConsoleStreamBuffer* consoleBuffer);
+
 	namespace Wrapper
 	{
 		/// <summary>
 		/// Sets the audio backend to use.
 		/// </summary>
 		/// <param name="type">The backend type to set, specified as a value of Backend::BackendType.</param>
-		/// <returns>This function does not return a value.</returns>
 		FRANAUDIO_CLIENT_API void SetBackend(FranAudio::Backend::BackendType backendType);
 
 		namespace Backend
@@ -175,6 +185,16 @@ namespace FranAudioClient
 			/// <param name="filename">Path to the audio file</param>
 			/// <returns>Active Sounds List Index</returns>
 			FRANAUDIO_CLIENT_API size_t PlayAudioFileStream(const std::string& filename);
+
+			// ========================
+			// Macro Sound Management
+			// ========================
+
+			/// <summary>
+			/// Retrieves a list of active sound IDs.
+			/// </summary>
+			/// <returns>A vector containing the IDs of currently active sounds.</returns>
+			FRANAUDIO_CLIENT_API const std::vector<size_t> GetActiveSoundIDs();
 		}
 
 		namespace Sound

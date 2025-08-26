@@ -9,6 +9,7 @@
 
 #include "FranAudioServer.hpp"
 
+#include "FranAudioShared/Serialisation/Serialisation.hpp"
 #include "FranAudioShared/Logger/Logger.hpp"
 
 void FranAudioServer::Init()
@@ -20,7 +21,7 @@ void FranAudioServer::Init()
 	FranAudioShared::Logger::LogMessage("FranAudioServer::Init() Done");
 }
 
-std::string FranAudioServer::Receive(char* buffer)
+std::string FranAudioServer::Receive(const char* buffer)
 {
 	if (buffer == nullptr)
 	{
@@ -46,13 +47,13 @@ std::string FranAudioServer::Receive(char* buffer)
 	}
 	else 
 	{
-		FranAudioShared::Logger::LogError("Function not found!");
+		FranAudioShared::Logger::LogError(std::format("Function not found! {}", tempFunction.functionName));
 		return {};
 	}
 
 }
 
-const std::unordered_map<std::string, std::function<std::string(const FranAudioShared::Network::NetworkFunction&)>> FranAudioServer::functionsMap =
+const FranAudioShared::Containers::UnorderedMap<std::string, std::function<std::string(const FranAudioShared::Network::NetworkFunction&)>> FranAudioServer::functionsMap =
 {
 	// Server::Init
 	// Params: none
@@ -379,6 +380,17 @@ const std::unordered_map<std::string, std::function<std::string(const FranAudioS
 				return std::string("err");
 			}
 			return std::to_string(FranAudio::GetBackend()->PlayAudioFileStream(fn.params[0]));
+		}
+	},
+
+	// Sound::GetActiveSoundIDs
+	// Params: none
+	// Returns: Active sound ids as a binary serialised vector
+	{
+		"backend-get_active_sound_ids",
+		[](const FranAudioShared::Network::NetworkFunction& fn)
+		{
+			return FranAudio::GetBackend()->GetActiveSounds().size() < 1 ? std::string() : FranAudioShared::Serialisation::BinarySerialiser::SerialiseVector(FranAudio::GetBackend()->GetActiveSoundIDs());
 		}
 	},
 

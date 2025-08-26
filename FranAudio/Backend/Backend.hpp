@@ -3,10 +3,10 @@
 
 #include <string>
 #include <vector>
-#include <unordered_map>
 
 #include "Backend/BackendTypes.hpp"
 
+#include "FranAudioShared/Containers/UnorderedMap.hpp"
 #include "Decoder/Decoder.hpp"
 #include "Sound/WaveData/WaveData.hpp"
 #include "Sound/Sound.hpp"
@@ -38,13 +38,13 @@ namespace FranAudio::Backend
 		/// Map for finding decoded audio data in cache by filename.
 		/// This is used to evade a lookup in the vector.
 		/// </summary>
-		std::unordered_map<std::string, size_t> filenameWaveMap;
+		FranAudioShared::Containers::UnorderedMap<std::string, size_t> filenameWaveMap;
 
 		/// <summary>
 		/// Currently Active Sounds
 		/// Tied to nextSoundID
 		/// </summary>
-		std::unordered_map<size_t, FranAudio::Sound::Sound> activeSounds;
+		FranAudioShared::Containers::UnorderedMap<size_t, FranAudio::Sound::Sound> activeSounds;
 
 	public:
 		Backend() = default;
@@ -253,6 +253,7 @@ namespace FranAudio::Backend
 
 		/// <summary>
 		/// Get a reference to a playing sound by its index.
+		/// Index MUST be valid.
 		/// </summary>
 		/// <param name="soundID">ID of the sound to get</param>
 		virtual Sound::Sound& GetSound(size_t soundID);
@@ -261,7 +262,13 @@ namespace FranAudio::Backend
 		/// Get the map of currently active sounds.
  		/// </summary>
  		/// <returns>Map of currently active sounds</returns>
-		virtual const std::unordered_map<size_t, Sound::Sound>& GetActiveSounds() const;
+		virtual const FranAudioShared::Containers::UnorderedMap<size_t, Sound::Sound>& GetActiveSounds() const;
+
+		/// <summary>
+		/// Retrieves a list of active sound IDs.
+		/// </summary>
+		/// <returns>A vector containing the IDs of currently active sounds.</returns>
+		virtual const std::vector<size_t> GetActiveSoundIDs() const;
 
 		// ========================
 		// Backend

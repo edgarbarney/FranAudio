@@ -5,6 +5,8 @@
 
 #include "FranAudioAPI.hpp"
 
+#include "FranAudioShared/Logger/Logger.hpp"
+
 namespace FranAudio
 {
 	/// <summary>
@@ -38,6 +40,12 @@ namespace FranAudio
 	/// Shuts down the FranAudio library and cleans up resources.
 	/// </summary>
 	FRANAUDIO_API void Shutdown();
+
+	/// <summary>
+	/// Routes the library logging output to the specified console stream buffer.
+	/// </summary>
+	/// <param name="consoleBuffer">A pointer to the ConsoleStreamBuffer where client output will be directed.</param>
+	FRANAUDIO_API void RouteLoggingToConsole(FranAudioShared::Logger::ConsoleStreamBuffer* consoleBuffer);
 
 	/// <summary>
 	/// Sets the audio backend to use.

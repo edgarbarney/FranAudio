@@ -79,17 +79,38 @@ void FranAudio::Backend::Backend::DestroyDecoder()
 
 bool FranAudio::Backend::Backend::IsSoundValid(size_t soundIndex)
 {
-	return soundIndex != SIZE_MAX;
+	if (soundIndex == SIZE_MAX)
+	{
+		return false;
+	}
+
+	return activeSounds.contains(soundIndex);
 }
 
 FranAudio::Sound::Sound& FranAudio::Backend::Backend::GetSound(size_t soundID)
 {
-	return activeSounds[soundID];
+	return activeSounds.at(soundID);
 } 
 
-const std::unordered_map<size_t, FranAudio::Sound::Sound>& FranAudio::Backend::Backend::GetActiveSounds() const
+const FranAudioShared::Containers::UnorderedMap<size_t, FranAudio::Sound::Sound>& FranAudio::Backend::Backend::GetActiveSounds() const
 {
 	return activeSounds;
+}
+
+const std::vector<size_t> FranAudio::Backend::Backend::GetActiveSoundIDs() const
+{
+	// No need to reallocate every time
+	static std::vector<size_t> soundIDs;
+
+	soundIDs.clear();
+	soundIDs.reserve(activeSounds.size());
+
+	for (const auto& [soundID, sound] : activeSounds)
+	{
+		soundIDs.push_back(soundID);
+	}
+
+	return soundIDs;
 }
 
 FranAudio::Backend::Backend* FranAudio::Backend::Backend::CreateBackend(BackendType backendType)

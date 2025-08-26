@@ -4,11 +4,12 @@
 
 #include <iostream>
 #include <string>
-#include <WinSock2.h>
-#include <ws2tcpip.h>
 
 #include "FranAudio.hpp"
 #include "FranAudioServer.hpp"
+
+#include <WinSock2.h>
+#include <ws2tcpip.h>
 
 #include "FranAudioShared/Logger/Logger.hpp"
 
@@ -88,32 +89,23 @@ int main()
 	bool shutDown = false;
 	while (!shutDown)
 	{
-		int bytesReceived = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
-		if (bytesReceived == SOCKET_ERROR || bytesReceived == 0)
-		{
-			FranAudioShared::Logger::LogError("Client disconnected or recv error.");
-			break;
-		}
+		std::string request = FranAudioShared::Network::Win32Helpers::RecvFrame(clientSocket);
 
-		buffer[bytesReceived] = '\0';
-#if defined FRANAUDIO_SERVER_DEBUG && !defined FRANAUDIO_SERVER_DISABLE_LOGGING
-		FranAudioShared::Logger::LogMessage(std::format("Received: {}", buffer));
-#endif
-		std::string response = FranAudioServer::Receive(buffer);
+		std::string response = FranAudioServer::Receive(request.c_str());
 
-		// Unresponsive command
-		// Send empty response to keep the connection alive
-		if (response.empty())
+		if (response.empty()) 
 		{
-			send(clientSocket, "\n", 1, 0);
+			// Keep-alive behavior (optional): send an empty frame
+			FranAudioShared::Network::Win32Helpers::SendFrame(clientSocket, std::string());
 			continue;
 		}
-		if (response == "stop")
-		{
-			shutDown = true;
+
+		if (response == "stop") 
+		{ 
+			shutDown = true; 
 		}
 
-		send(clientSocket, response.c_str(), (int)response.size(), 0);
+		FranAudioShared::Network::Win32Helpers::SendFrame(clientSocket, response);
 	}
 
 	FranAudioServer::Shutdown();

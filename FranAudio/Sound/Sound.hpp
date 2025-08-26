@@ -39,6 +39,9 @@ namespace FranAudio::Sound
 		/// </summary>
 		virtual ~Sound() = default;
 
+		/// <summary>
+		/// Check if the sound is valid.
+		/// </summary>
 		bool IsValid() const;
 	
 		/// <summary>

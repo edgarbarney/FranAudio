@@ -7,9 +7,6 @@
 # Header files
 FILE(GLOB FRANAUDIOSERVER_HEADERFILES
 
-	#Shared
-	FranAudioShared/FranAudioShared.hpp
-
 	#Main
 	FranAudioServer/FranAudioServer.hpp
 	)

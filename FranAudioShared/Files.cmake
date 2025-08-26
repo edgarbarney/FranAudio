@@ -8,10 +8,13 @@
 FILE(GLOB FRANAUDIOSHARED_HEADERFILES
 
 	#Network
-	FranAudioShared/Network.hpp
+	FranAudioShared/Network/Network.hpp
 
 	#Logger
 	FranAudioShared/Logger/Logger.hpp
+
+	#Containers
+	FranAudioShared/Containers/UnorderedMap.hpp
 	)
 
 # Source files

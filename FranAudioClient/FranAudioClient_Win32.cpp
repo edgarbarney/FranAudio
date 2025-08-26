@@ -4,10 +4,11 @@
 
 #include <iostream>
 #include <string>
-#include <WinSock2.h>
-#include <ws2tcpip.h>
 
 #include "FranAudio.hpp"
+
+#include <WinSock2.h>
+#include <ws2tcpip.h>
 
 #include "FranAudioClient.hpp"
 
@@ -32,6 +33,11 @@ static const wchar_t* StringToWideString(const char* asciiStr)
 
 FRANAUDIO_CLIENT_API void FranAudioClient::Init(bool isTestmode)
 {
+	// Setup Logger to route to console
+	FranAudioShared::Logger::FranAudioConsole franConsole;
+	FranAudioShared::Logger::ConsoleStreamBuffer consoleBuffer(franConsole);
+	FranAudioShared::Logger::RouteToConsole(&consoleBuffer);
+
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 	{
 		FranAudioShared::Logger::LogError("WSAStartup failed!");
@@ -81,36 +87,18 @@ FRANAUDIO_CLIENT_API void FranAudioClient::Shutdown()
 
 FRANAUDIO_CLIENT_API std::string FranAudioClient::Send(const char* message)
 {
-	int len = (int)strlen(message);
-	if (send(tcpSocket, message, len, 0) == SOCKET_ERROR)
-	{
-		FranAudioShared::Logger::LogError("Send failed!\n Message: {}", message);
-		return {};
-	}
-	
-	char buffer[FranAudioShared::Network::messageBufferSize]{};
-	int received = recv(tcpSocket, buffer, sizeof(buffer) - 1, 0);
-	
-	if (received <= 0)
-	{
-		FranAudioShared::Logger::LogError("Receive failed or connection closed!");
-		return {};
-	}
+	const std::string data(message, message + std::strlen(message));
+	FranAudioShared::Network::Win32Helpers::SendFrame(tcpSocket, data);
 
-	// Check if the message is "err"
-	if (received == 3 && strncmp(buffer, "err", 3) == 0)
-	{
-		FranAudioShared::Logger::LogError("Received 'err' message!");
-	}
-
-	// Explicitly null-terminate
-	// Or bad things will happen
-	buffer[received] = '\0';
-	return buffer;
+	return FranAudioShared::Network::Win32Helpers::RecvFrame(tcpSocket);
 }
 
 FRANAUDIO_CLIENT_API std::string FranAudioClient::Send(const FranAudioShared::Network::NetworkFunction& message)
 {
+#if defined FRANAUDIO_SERVER_DEBUG && !defined FRANAUDIO_SERVER_DISABLE_LOGGING
+	FranAudioShared::Logger::LogMessage(std::format("Sending network function: {}", message.ToString()));
+#endif
+
 	return Send(message.ToString().c_str());
 }
 

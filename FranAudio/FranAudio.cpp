@@ -24,6 +24,11 @@ FRANAUDIO_API void FranAudio::Shutdown()
 	gGlobals.currentBackend = nullptr;
 }
 
+FRANAUDIO_API void FranAudio::RouteLoggingToConsole(FranAudioShared::Logger::ConsoleStreamBuffer* consoleBuffer)
+{
+	FranAudioShared::Logger::RouteToConsole(consoleBuffer);
+}
+
 FRANAUDIO_API void FranAudio::SetBackend(Backend::BackendType type)
 {
 	if (gGlobals.currentBackend)

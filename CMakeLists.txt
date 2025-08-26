@@ -30,10 +30,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 option (FRANAUDIO_USE_TEST "Compile an app to test the library" ON)
 option (FRANAUDIO_USE_SERVER "Compile as an external app (Server)" OFF)
+option (FRANAUDIO_SERVERCLIENT_DEBUG "Compile server and client with extended debug messages" OFF)
 
 if (FRANAUDIO_USE_SERVER)
 	add_compile_definitions (FRANAUDIO_USE_SERVER)
-	add_compile_definitions (FRANAUDIO_SERVER_DEBUG)
+	if (FRANAUDIO_SERVERCLIENT_DEBUG)
+		add_compile_definitions (FRANAUDIO_SERVER_DEBUG)
+		add_compile_definitions (FRANAUDIO_CLIENT_DEBUG)
+	endif()
 endif()
 
 # =================
@@ -51,6 +55,8 @@ if (WIN32)
 	add_compile_definitions (_CRT_SECURE_NO_DEPRECATE)
 	
 	add_compile_definitions (_USE_MATH_DEFINES)
+
+	add_compile_definitions (NOMINMAX)
 
 	# Unicode Program
 	add_compile_definitions (_UNICODE UNICODE)
@@ -193,6 +199,14 @@ endif()
 # FranAudio Test Application
 if (FRANAUDIO_USE_TEST)
 	add_executable (FranAudioTest ${FRANAUDIOTEST_SOURCEFILES} ${FRANAUDIOSHARED_SOURCEFILES})
+
+	if (WIN32)
+		if (MSVC) 
+			set_target_properties(FranAudioTest PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
+		else()
+			target_link_options(FranAudioTest PRIVATE -mwindows)
+		endif()
+	endif()
 
 	target_include_directories (FranAudioTest PRIVATE
 		Libs/glad/include

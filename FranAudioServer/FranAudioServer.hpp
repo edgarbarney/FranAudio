@@ -5,14 +5,14 @@
 #include <unordered_map>
 #include <functional>
 
-#include "FranAudioShared/Network.hpp"
+#include "FranAudioShared/Network/Network.hpp"
 
 namespace FranAudioServer
 {
 	void Init();
 	void Shutdown();
 
-	std::string Receive(char* buffer);
+	std::string Receive(const char* buffer);
 
 	/// <summary>
 	/// Map of function names to their corresponding handler functions.
@@ -20,5 +20,6 @@ namespace FranAudioServer
 	/// 
 	/// This is used for client-server communication in FranAudio.
 	/// Very Similar to the library's funtions.
-	extern const std::unordered_map<std::string, std::function<std::string(const FranAudioShared::Network::NetworkFunction&)>> functionsMap;
+	/// </summary>
+	extern const FranAudioShared::Containers::UnorderedMap<std::string, std::function<std::string(const FranAudioShared::Network::NetworkFunction&)>> functionsMap;
 }

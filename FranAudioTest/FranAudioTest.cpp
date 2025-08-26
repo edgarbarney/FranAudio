@@ -23,6 +23,15 @@
 #include <format>
 #include <vector>
 
+#ifndef FRANAUDIO_USE_SERVER
+#include "FranAudio.hpp"
+#else
+#include "FranAudioClient/FranAudioClient.hpp"
+#endif
+
+#include "FranAudioShared/Logger/Logger.hpp"
+#include "FranAudioShared/Containers/UnorderedMap.hpp"
+
 #define GLAD_GL_IMPLEMENTATION
 #include "glad/gl.h"
 #include "GLFW/glfw3.h"
@@ -31,20 +40,14 @@
 #include "backends/imgui_impl_glfw.h"
 #include "styles/imgui_style_candy.hpp"
 
-#ifndef FRANAUDIO_USE_SERVER
-#include "FranAudio.hpp"
-#else
-#include "FranAudioClient/FranAudioClient.hpp"
-#endif
-
-#include "FranAudioShared/Logger/Logger.hpp"
+#include "windows.h"
 
 #include "FranAudioTest.hpp"
 
-std::vector<size_t> gPlayingSounds;
-
 size_t PlayTestFile(const std::string& filename)
 {
+	FranAudioShared::Logger::LogMessage(std::format("Playing test file: {}", filename));
+
 #ifndef FRANAUDIO_USE_SERVER
 	auto backend = FranAudio::GetBackend();
 	backend->LoadAudioFile(filename);
@@ -55,27 +58,11 @@ size_t PlayTestFile(const std::string& filename)
 		return SIZE_MAX;
 	}
 
-	gPlayingSounds.push_back(soundId);
 	return soundId;
 #else
-	FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-load_audio_file", { filename }));
+	FranAudioClient::Wrapper::Backend::LoadAudioFile(filename);
 
-	try
-	{
-		size_t soundId = std::stoull(FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-play_audio_file", { filename })));
-
-		if (soundId == SIZE_MAX)
-		{
-			throw std::runtime_error("Invalid sound ID returned");
-		}
-
-		gPlayingSounds.push_back(soundId);
-		return soundId;
-	}
-	catch (const std::exception& e)
-	{
-		return SIZE_MAX;
-	}
+	return FranAudioClient::Wrapper::Backend::PlayAudioFile(filename);
 #endif
 }
 
@@ -84,10 +71,9 @@ void StopTestSound(size_t soundId)
 #ifndef FRANAUDIO_USE_SERVER
 	FranAudio::GetBackend()->StopPlayingSound(soundId);
 #else
-	FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-stop_playing_sound", { std::to_string(soundId) }));
+	FranAudioClient::Wrapper::Sound::Stop(soundId);
 #endif
 	
-	gPlayingSounds.erase(std::remove(gPlayingSounds.begin(), gPlayingSounds.end(), soundId), gPlayingSounds.end());
 	FranAudioShared::Logger::LogMessage(std::format("Stopped sound ID: {}", soundId));
 }
 
@@ -96,25 +82,74 @@ void SetListenerTransform(float position[3], float forward[3], float up[3])
 #ifndef FRANAUDIO_USE_SERVER
 	FranAudio::GetBackend()->SetListenerTransform(position, forward, up);
 #else
-	FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_listener_transform", { std::to_string(position[0]), std::to_string(position[1]), std::to_string(position[2]),
-																										std::to_string(forward[0]), std::to_string(forward[1]), std::to_string(forward[2]),
-																										std::to_string(up[0]), std::to_string(up[1]), std::to_string(up[2]) }));
+	FranAudioClient::Wrapper::Backend::SetListenerTransform(position, forward, up);
+#endif
+}
+
+void SetListenerVolume(float volume)
+{
+#ifndef FRANAUDIO_USE_SERVER
+	FranAudio::GetBackend()->SetMasterVolume(volume);
+#else
+	FranAudioClient::Wrapper::Backend::SetMasterVolume(volume);
 #endif
 }
 
 void SetSoundPosition(size_t soundId, float position[3])
 {
 #ifndef FRANAUDIO_USE_SERVER
+	//FranAudio::GetBackend()->GetSound(soundId).SetPosition(position);
 	FranAudio::GetBackend()->SetSoundPosition(soundId, position);
 #else
-	FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("sound-set_position", { std::to_string(soundId), std::to_string(position[0]), std::to_string(position[1]), std::to_string(position[2]) }));
+	FranAudioClient::Wrapper::Sound::SetPosition(soundId, position);
 #endif
 }
 
+void SetSoundVolume(size_t soundId, float volume)
+{
+#ifndef FRANAUDIO_USE_SERVER
+	//FranAudio::GetBackend()->GetSound(soundId).SetVolume(volume);
+	FranAudio::GetBackend()->SetSoundVolume(soundId, volume);
+#else
+	FranAudioClient::Wrapper::Sound::SetVolume(soundId, volume);
+#endif
+	FranAudioShared::Logger::LogMessage(std::format("Set volume of sound ID {} to {}", soundId, volume));
+}
+
+float GetSoundVolume(size_t soundId)
+{
+#ifndef FRANAUDIO_USE_SERVER
+	//return FranAudio::GetBackend()->GetSound(soundId).GetVolume();
+	return FranAudio::GetBackend()->GetSoundVolume(soundId);
+#else
+	return FranAudioClient::Wrapper::Sound::GetVolume(soundId);
+#endif
+}
+
+std::vector<size_t> GetActiveSoundIDs()
+{
+#ifndef FRANAUDIO_USE_SERVER
+	return FranAudio::GetBackend()->GetActiveSoundIDs();
+#else
+	return FranAudioClient::Wrapper::Backend::GetActiveSoundIDs();
+#endif
+
+	FranAudioShared::Logger::LogMessage("Retrieved active sound ids.");
+}
 
 
 int main()
 {
+	// Setup Logger to route to console
+	FranAudioShared::Logger::FranAudioConsole franConsole;
+	FranAudioShared::Logger::ConsoleStreamBuffer consoleBuffer(franConsole);
+	FranAudioShared::Logger::RouteToConsole(&consoleBuffer);
+#ifndef FRANAUDIO_USE_SERVER
+	FranAudio::RouteLoggingToConsole(&consoleBuffer);
+#else
+	FranAudioClient::RouteClientLoggingToConsole(&consoleBuffer);
+#endif
+
 #ifndef FRANAUDIO_USE_SERVER
 	FranAudioShared::Logger::LogMessage("Starting FranAudio Library Test Application...");
 	FranAudio::Init();
@@ -122,8 +157,6 @@ int main()
 	FranAudioShared::Logger::LogMessage("Starting FranAudio Server-Client Test Application...");
 	FranAudioClient::Init(true);
 #endif
-
-	gPlayingSounds.reserve(20);
 
 	if (!glfwInit())
 	{
@@ -221,6 +254,7 @@ int main()
 		static float listenerPosition[3] = { 0.0f, 0.0f, 0.0f };
 		static float listenerForward[3] = { 0.0f, 0.0f, -1.0f };
 		static float listenerUp[3] = { 0.0f, 1.0f, 0.0f };
+		static float listenerVolume = 1.0f;
 
 		ImGui::Begin("Listener", nullptr, ImGuiWindowFlags_NoResize);
 			// Is the window being dragged?
@@ -244,31 +278,73 @@ int main()
 			ImGui::Text("You can position the \"Listener\" window anywhere on the screen.");
 			ImGui::Text("Listener's position's X and Y is determined by the window's top left corner's position on screen.");
 			ImGui::Text("You can also change the listener's Z and orientation.");
-			ImGui::SeparatorText("");
+			ImGui::Separator();
 			if (ImGui::SliderFloat3("Listener Position Vector", listenerPosition, 0.0f, static_cast<float>(glfwGetVideoMode(glfwGetPrimaryMonitor())->width), "%.1f"))
 			{
 				ImGui::SetWindowPos("Listener", ImVec2(listenerPosition[0], listenerPosition[1]));
 			}
 			ImGui::SliderFloat3("Listener Forward Vector", listenerForward, -1.0f, 1.0f, "%.1f");
 			ImGui::SliderFloat3("Listener Up Vector", listenerUp, -1.0f, 1.0f, "%.1f");
+			ImGui::Separator();
+			if (ImGui::SliderFloat("Master (Listener) Volume", &listenerVolume, 0.0f, 2.0f, "%.2f"))
+			{
+				SetListenerVolume(listenerVolume);
+			}
 		ImGui::End();
 
 		SetListenerTransform(listenerPosition, listenerForward, listenerUp);
 
+		// Console
+		ImGui::Begin("Console", nullptr);
+			ImGui::Separator();
+			if (ImGui::Button("Clear Console"))
+			{
+				// Clear console entries
+				franConsole.Clear();
+			}
+			if (ImGui::BeginListBox("##bruh", ImVec2(-FLT_MIN, -FLT_MIN)))
+			{
+					for (size_t i = 0; i < franConsole.GetEntries().size(); i++)
+					{
+						ImGui::PushID(i);
+						if (ImGui::Selectable(franConsole.GetEntries()[i].text.c_str()))
+						{
+							franConsole.Remove(i);
+							ImGui::PopID();
+							break;
+						}
+						ImGui::PopID();
+					}
+				ImGui::EndListBox();
+			}
+			ImGui::Separator();
+		ImGui::End();
+
 		// Display currently playing sounds
-		for (size_t soundId : gPlayingSounds)
+		for (size_t soundId : GetActiveSoundIDs())
 		{
+			ImVec2 soundPos;
+			float soundPosition[3] = { 0.0f, 0.0f, 0.0f };
+			float soundVolume = GetSoundVolume(soundId);
+
 			ImGui::Begin(std::to_string(soundId).c_str(), nullptr, ImGuiWindowFlags_NoResize);
+				// Set sound position to window position
+				soundPos = ImGui::GetWindowPos();
+				soundPosition[0] = soundPos.x;
+				soundPosition[1] = soundPos.y;
+				SetSoundPosition(soundId, soundPosition);
+
 				ImGui::Text("Sound ID: %zu", soundId);
+
 				if (ImGui::Button(std::format("Stop Sound ID: {}", soundId).c_str()))
 				{
 					StopTestSound(soundId);
 				}
-				
-				// Set sound position to window position
-				ImVec2 soundPos = ImGui::GetWindowPos();
-				float soundPosition[3] = { soundPos.x, soundPos.y, 0.0f };
-				SetSoundPosition(soundId, soundPosition);
+
+				if (ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 2.0f, "%.2f"))
+				{
+					SetSoundVolume(soundId, soundVolume);
+				}
 			ImGui::End();
 		}
 
@@ -295,4 +371,9 @@ int main()
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
+}
+
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+{
+	return main();
 }

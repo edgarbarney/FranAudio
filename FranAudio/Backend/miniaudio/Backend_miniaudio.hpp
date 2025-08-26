@@ -62,7 +62,7 @@ namespace FranAudio::Backend
 		/// 
 		/// This is used for making miniaudio interaction easier.
 		/// </summary>
-		std::unordered_map<size_t, std::unique_ptr<MiniaudioSound>> miniaudioSoundData;
+		FranAudioShared::Containers::UnorderedMap<size_t, std::unique_ptr<MiniaudioSound>> miniaudioSoundData;
 
 	public:
 		//miniaudio();

@@ -56,10 +56,9 @@ namespace FranAudio::Decoder
 		/// <summary>
 		/// Decode an audio file.
 		/// This is used to decode an audio file and store the result in the target WaveData.
+		/// 
+		/// <para>Important: Audio file MUST exist.</para>
 		/// </summary>
-		/// <remarks>
-		/// Important: Audio file MUST exist.
-		/// </remarks>
 		/// <returns>
 		/// True if the decoding was successful, false otherwise.
 		/// </returns>

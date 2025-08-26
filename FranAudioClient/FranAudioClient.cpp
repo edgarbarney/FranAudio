@@ -1,11 +1,19 @@
 // FranticDreamer 2022-2025
 
+#include "FranAudioShared/Serialisation/Serialisation.hpp"
 #include "FranAudioShared/Logger/Logger.hpp"
 
 #include "FranAudioClient.hpp"
 
+
+FRANAUDIO_CLIENT_API void FranAudioClient::RouteClientLoggingToConsole(FranAudioShared::Logger::ConsoleStreamBuffer* consoleBuffer)
+{
+	FranAudioShared::Logger::RouteToConsole(consoleBuffer);
+}
+
 namespace FranAudioClient::Wrapper
 {
+
 	FRANAUDIO_CLIENT_API void SetBackend(FranAudio::Backend::BackendType backendType)
 	{
 
@@ -226,6 +234,16 @@ namespace FranAudioClient::Wrapper
 				FranAudioShared::Logger::LogError("Failed to play audio file stream: " + filename);
 				return SIZE_MAX;
 			}
+		}
+		
+		// ========================
+		// Macro Sound Management
+		// ========================
+
+		FRANAUDIO_CLIENT_API const std::vector<size_t> GetActiveSoundIDs()
+		{
+			std::string response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-get_active_sound_ids", {}));
+			return FranAudioShared::Serialisation::BinarySerialiser::DeserialiseVector<size_t>(response);
 		}
 	}
 
