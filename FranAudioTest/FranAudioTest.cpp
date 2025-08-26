@@ -214,6 +214,47 @@ int main()
 		ImGui::Begin("FranAudio Test Controls", nullptr, ImGuiWindowFlags_NoResize);
 		ImGui::Text("This is a simple test window for FranAudio.");
 		ImGui::Text("You can test audio files by clicking the buttons below.");
+#ifndef FRANAUDIO_USE_SERVER
+		ImGui::Text("Backend:");
+		if (ImGui::BeginCombo("##backend", FranAudio::Backend::BackendTypeNames[(size_t)FranAudio::GetBackend()->GetBackendType()]))
+		{
+			for (size_t backendId = 0; backendId < std::size(FranAudio::Backend::BackendTypeNames); backendId++)
+			{
+				const bool isSelected = ((FranAudio::Backend::BackendType)backendId == FranAudio::GetBackend()->GetBackendType());
+				if (ImGui::Selectable(FranAudio::Backend::BackendTypeNames[backendId], isSelected))
+				{
+					FranAudio::SetBackend((FranAudio::Backend::BackendType)backendId);
+				}
+				if (isSelected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+
+			ImGui::EndCombo();
+		}
+
+		ImGui::Text("Decoder:");
+		if (ImGui::BeginCombo("##decoder", FranAudio::Decoder::DecoderTypeNames[(size_t)FranAudio::GetBackend()->GetDecoderType()]))
+		{
+			for (size_t decoderId = 0; decoderId < std::size(FranAudio::Decoder::DecoderTypeNames); decoderId++)
+			{
+				bool isSelected = ((FranAudio::Decoder::DecoderType)decoderId == FranAudio::GetBackend()->GetDecoderType());
+				if (ImGui::Selectable(FranAudio::Decoder::DecoderTypeNames[decoderId], isSelected))
+				{
+					FranAudio::GetBackend()->SetDecoder((FranAudio::Decoder::DecoderType)decoderId);
+				}
+				if (isSelected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+#else
+#endif
+		auto eben = FranAudio::GetBackend();
+
 		if (ImGui::Button("Test WAV File"))
 		{
 			lastPlayedSoundId = PlayTestFile("test.wav");
@@ -302,7 +343,7 @@ int main()
 				// Clear console entries
 				franConsole.Clear();
 			}
-			if (ImGui::BeginListBox("##bruh", ImVec2(-FLT_MIN, -FLT_MIN)))
+			if (ImGui::BeginListBox("##consoleentries", ImVec2(-FLT_MIN, -FLT_MIN)))
 			{
 					for (size_t i = 0; i < franConsole.GetEntries().size(); i++)
 					{
