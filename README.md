@@ -83,14 +83,21 @@ After you've done [building](#requirements-and-building) the project, you can te
 
 - Run `FranAudio_Test` and use the UI to test out the library.  
 
-# List of used external libraries:   
+# Libraries:  
+## Here are the libraries used in this project:  
+### Directly included: 
+[ankerl::unordered_dense](https://github.com/martinus/unordered_dense "ankerl::unordered_dense") - As STL Unordered Map Replacement   
 [miniaudio](https://miniaud.io/ "miniaudio") - As Backend and Decoder  
 [libnyquist](https://github.com/ddiakopoulos/libnyquist "libnyquist") - As Decoder  
-[GLFW](https://www.glfw.org "GLFW") - For Test Application  
-[GLAD](https://github.com/Dav1dde/glad "GLAD") - For Test Application  
 [ImGui](https://github.com/ocornut/imgui "Dear ImGui") - As Test Application GUI  
-[ankerl::unordered_dense](https://github.com/martinus/unordered_dense "ankerl::unordered_dense") - As STL Unordered Map Replacement
+[GLFW](https://www.glfw.org "GLFW") - For Test Application GUI  
+[GLAD](https://github.com/Dav1dde/glad "GLAD") - For Test Application GUI  
 
-Libraries can be modified in one way or another. 
-So it's not advised to just replace them drop-in when updating.
-Try to do a folder-by-folder diff with a tool like WinMerge or Meld.
+### Optional (not included, you should get them yourself and put them in Libs folder):  
+[libogg](https://xiph.org/downloads/ "Xiph libogg") - Vorbis library depends on this. You should rename "libogg-x.x.x" folder as "ogg"  
+[libvorbis](https://xiph.org/downloads/ "Xiph libvorbis") - Used for OGG/Vorbis support. You should rename "libvorbis-x.x.x" folder as "vorbis"  
+
+## Notes:  
+Libraries can be modified in one way or another.  
+So it's not advised to just replace them drop-in when updating.  
+Try to do a folder-by-folder diff with a tool like WinMerge or Meld.  
