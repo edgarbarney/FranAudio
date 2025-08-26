@@ -30,9 +30,9 @@ FranAudio::Decoder::Decoder* FranAudio::Backend::Backend::GetCurrentDecoder() co
 	return currentDecoder;
 }
 
-void FranAudio::Backend::Backend::SetDecoder(FranAudio::Decoder::DecoderType decoderType)
+void FranAudio::Backend::Backend::SetDecoder(FranAudio::Decoder::DecoderType decoderType, bool force)
 {
-	if (currentDecoderType == decoderType)
+	if (currentDecoderType == decoderType && !force)
 	{
 		return; // No need to change the decoder
 	}
@@ -52,13 +52,15 @@ void FranAudio::Backend::Backend::SetDecoder(FranAudio::Decoder::DecoderType dec
 		if (supportedDecoder == decoderType)
 		{
 			currentDecoder = FranAudio::Decoder::Decoder::CreateDecoder(decoderType);
+			currentDecoderType = decoderType;
+			FranAudioShared::Logger::LogMessage(std::format("{}: Initialised decoder type {}", FranAudio::Backend::BackendTypeViews[(size_t)GetBackendType()], FranAudio::Decoder::DecoderTypeViews[(size_t)decoderType]));
 			return;
 		}
 	}
 
 	if (currentDecoder == nullptr)
 	{
-		FranAudioShared::Logger::LogError("FranAudio: Decoder type not supported");
+		FranAudioShared::Logger::LogError(std::format("{}: Decoder type not supported", FranAudio::Backend::BackendTypeViews[(size_t)GetBackendType()]));
 		return;
 	}
 }

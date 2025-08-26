@@ -4,6 +4,7 @@
 #include "miniaudio.h"
 
 #include "Decoder/Decoder.hpp"
+#include "Backend/BackendTypes.hpp"
 
 namespace FranAudio::Decoder
 {

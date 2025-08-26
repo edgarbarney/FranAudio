@@ -107,7 +107,8 @@ namespace FranAudio::Backend
 		/// Set the decoder type.
 		/// </summary>
 		/// <param name="decoderType">Type of the decoder to replace the current one</param>
-		void SetDecoder(FranAudio::Decoder::DecoderType decoderType);
+		/// <param name="force">Force the decoder to be replaced even if it's the same type</param>
+		void SetDecoder(FranAudio::Decoder::DecoderType decoderType, bool force = false);
 
 		/// <summary>
 		/// Destroy the current decoder.

@@ -30,19 +30,38 @@ bool FranAudio::Backend::miniaudio::Init(FranAudio::Decoder::DecoderType decoder
 
 #if !defined(FRANAUDIO_USE_VORBIS) && !defined(FRANAUDIO_USE_OPUS)
 	defaultDecoderConfig.pCustomBackendUserData = nullptr;
-	defaultDecoderConfig.ppCustomBackendVTables = miniaudio_backendVTables;
-	defaultDecoderConfig.customBackendCount = std::size(miniaudio_backendVTables);
+	defaultDecoderConfig.ppCustomBackendVTables = FranAudio::Backend::miniaudio_backendVTables;
+	defaultDecoderConfig.customBackendCount = std::size(FranAudio::Backend::miniaudio_backendVTables);
+#else
+	defaultDecoderConfig.pCustomBackendUserData = nullptr;
+	defaultDecoderConfig.ppCustomBackendVTables = FranAudio::Backend::miniaudio_backendVTables;
+	defaultDecoderConfig.customBackendCount = std::size(FranAudio::Backend::miniaudio_backendVTables);
 #endif
 
-	if(decoderType == FranAudio::Decoder::DecoderType::None)
+	bool decoderFail = false;
+
+	if (decoderType == FranAudio::Decoder::DecoderType::None)
 	{
 		FranAudioShared::Logger::LogError("MiniAudio: No decoder type specified");
-		FranAudioShared::Logger::LogError("MiniAudio: Defaulting to miniaudio decoder");
-		decoderType = FranAudio::Decoder::DecoderType::miniaudio;
-		//return false;
+		decoderFail = true;
 	}
 
-	SetDecoder(decoderType);
+	// Check if the requested decoder is supported
+	const auto& supportedDecoders = GetSupportedDecoders();
+	if (std::find(supportedDecoders.begin(), supportedDecoders.end(), decoderType) == supportedDecoders.end())
+	{
+		FranAudioShared::Logger::LogError("MiniAudio: Requested decoder is not supported by this backend");
+		decoderFail = true;
+	}
+
+	if (decoderFail)
+	{
+		FranAudioShared::Logger::LogError("MiniAudio: Defaulting to miniaudio decoder");
+		decoderType = FranAudio::Decoder::DecoderType::miniaudio;
+	}
+
+	// Decoder will be initialised by the FranAudio::Init
+	currentDecoderType = decoderType;
 
 	return true;
 }
