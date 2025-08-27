@@ -119,6 +119,8 @@ if (FRANAUDIO_USE_VORBIS)
 endif()
 
 if (FRANAUDIO_USE_OPUS)
+	set(OP_DISABLE_HTTP ON CACHE BOOL "Disable HTTP/HTTPS support" FORCE)
+
     # Opus
 	FetchContent_Declare(
 		opus
@@ -139,8 +141,6 @@ if (FRANAUDIO_USE_OPUS)
 		SOURCE_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/Libs/opusfile
 	)
 	FetchContent_MakeAvailable(opusfile)
-
-	set(OP_DISABLE_HTTP ON CACHE BOOL "Disable HTTP/HTTPS support" FORCE)
 	
 	set (OPUSFILE_LIBRARY "Libs/opusfile")
 	set (OpusFile_DIR "Libs/opusfile")
