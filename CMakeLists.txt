@@ -161,6 +161,10 @@ if (FRANAUDIO_USE_TEST)
 		SOURCE_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/Libs/glfw
 	)
 	FetchContent_MakeAvailable(glfw)
+
+	set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+	set(GLFW_BUILD_TESTS    OFF CACHE BOOL "" FORCE)
+	set(GLFW_BUILD_DOCS     OFF CACHE BOOL "" FORCE)
 endif()
 
 # =================
@@ -243,22 +247,14 @@ if (FRANAUDIO_USE_TEST)
 
     target_include_directories(FranAudioTest PRIVATE
         Libs/glad/include
-        Libs/glfw/include
         Libs/imgui
         ${OPENGL_INCLUDE_DIR}
     )
 
-    if (WIN32)
-		if (MSVC)
-			target_link_libraries(FranAudioTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Libs/glfw/lib-vc2019/glfw3.lib)
-		endif()
-	else()
-		# Other OS
-    endif()
-
     target_link_libraries(FranAudioTest
         PRIVATE FranAudio
         PRIVATE ${OPENGL_LIBRARIES}
+		PRIVATE glfw
     )
 
     if (FRANAUDIO_USE_SERVER)
