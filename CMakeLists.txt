@@ -2,7 +2,7 @@
 # CMakeLists file for CMake Configuration
 
 # At least 3.20 Needed for C++23
-cmake_minimum_required (VERSION 3.20)
+cmake_minimum_required (VERSION 3.23)
 
 set (SUPPORTED_ARCHITECTURES "x86" "x64")
 set (CURDIR ${CMAKE_CURRENT_SOURCE_DIR})
@@ -100,8 +100,10 @@ endif()
 # External Libraries
 # ==================
 include_directories ("Libs")
+set (FRANAUDIO_LIBRARIES_PARENT_DIR "Libs")
 
 # Let's check if we can use Vorbis and Opus
+# OGG and Vorbis MUST be present for Opus to work!
 find_vorbis_and_opus()
 
 if (FRANAUDIO_CAN_USE_VORBIS)
@@ -110,16 +112,32 @@ if (FRANAUDIO_CAN_USE_VORBIS)
 	set (OGG_INCLUDE_DIR "Libs/ogg/include")
 	include_directories ("Libs/ogg/include")
 	set (OGG_LIBRARY "Libs/ogg")
+	set (Ogg_DIR "Libs/ogg")
 
 	# Vorbis
 	add_subdirectory ("Libs/vorbis")
 	include_directories ("Libs/vorbis/include")
+	set (VORBIS_LIBRARY "Libs/ogg")
+	set (Vorbis_DIR "Libs/ogg")
 endif()
 
 if (FRANAUDIO_CAN_USE_OPUS)
 	# Opus
 	add_subdirectory ("Libs/opus")
 	include_directories ("Libs/opus/include")
+	set (OPUS_LIBRARY "Libs/opus")
+	set (Opus_DIR "Libs/opus")
+
+	# Disable HTTP/HTTPS support in opusfile
+	# We don't need it and it requires libcurl - openssl
+	# We just want to decode Ogg Opus files.
+	set(OP_DISABLE_HTTP ON CACHE BOOL "Disable HTTP/HTTPS support")
+	set(OP_DISABLE_HTTP ON) # Older CMake Versions. Just to be sure.
+
+	add_subdirectory ("Libs/opusfile")
+	include_directories ("Libs/opusfile/include")
+	set (OPUSFILE_LIBRARY "Libs/opusfile")
+	set (OpusFile_DIR "Libs/opusfile")
 endif()
 
 # Miniaudio

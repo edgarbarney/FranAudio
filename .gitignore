@@ -1,6 +1,8 @@
 ## External Libs
 Libs/ogg/
 Libs/vorbis/
+Libs/opus/
+Libs/opusfile/
 
 ## Testing Sound Files
 TestFiles/

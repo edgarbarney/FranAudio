@@ -4,6 +4,9 @@
 //#ifdef FRANAUDIO_USE_VORBIS
 #include "miniaudio/extras/decoders/libvorbis/miniaudio_libvorbis.h"
 //#endif
+//#ifdef FRANAUDIO_USE_OPUS
+#include "miniaudio/extras/decoders/libopus/miniaudio_libopus.h"
+//#endif
 
 #include "Backend/Backend.hpp"
 #include "Sound/Sound.hpp"
