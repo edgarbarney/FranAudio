@@ -23,6 +23,8 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#ifndef FRANAUDIO_USE_VORBIS
+
 #if (_MSC_VER)
     #pragma warning (push)
     #pragma warning (disable: 181 111 4267 4996 4244 4701 4702 4133 4100 4127 4206 4312 4505 4365 4005 4013 4334)
@@ -35,34 +37,34 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     #pragma clang diagnostic ignored "-Wdeprecated-register"
 #endif
 
-#include "libvorbis/include/vorbis/vorbisenc.h"
-#include "libvorbis/include/vorbis/codec.h"
-#include "libvorbis/include/vorbis/vorbisfile.h"
+#include "vorbis/include/vorbis/vorbisenc.h"
+#include "vorbis/include/vorbis/codec.h"
+#include "vorbis/include/vorbis/vorbisfile.h"
 
-#include "libogg/src/bitwise.c"
-#include "libogg/src/framing.c"
+#include "ogg/src/bitwise.c"
+#include "ogg/src/framing.c"
 
-#include "libvorbis/src/analysis.c"
-#include "libvorbis/src/bitrate.c"
-#include "libvorbis/src/block.c"
-#include "libvorbis/src/codebook.c"
-#include "libvorbis/src/envelope.c"
-#include "libvorbis/src/floor0.c"
-#include "libvorbis/src/floor1.c"
-#include "libvorbis/src/info.c"
-#include "libvorbis/src/lpc.c"
-#include "libvorbis/src/lsp.c"
-#include "libvorbis/src/mapping0.c"
-#include "libvorbis/src/psy.c"
-#include "libvorbis/src/registry.c"
-#include "libvorbis/src/res0.c"
-#include "libvorbis/src/sharedbook.c"
-#include "libvorbis/src/smallft.c"
-#include "libvorbis/src/synthesis.c"
-#include "libvorbis/src/vorbisenc.c"
-#include "libvorbis/src/vorbisfile.c"
-#include "libvorbis/src/window.c"
-#include "libvorbis/src/mdct.c"
+#include "vorbis/lib/analysis.c"
+#include "vorbis/lib/bitrate.c"
+#include "vorbis/lib/block.c"
+#include "vorbis/lib/codebook.c"
+#include "vorbis/lib/envelope.c"
+#include "vorbis/lib/floor0.c"
+#include "vorbis/lib/floor1.c"
+#include "vorbis/lib/info.c"
+#include "vorbis/lib/lpc.c"
+#include "vorbis/lib/lsp.c"
+#include "vorbis/lib/mapping0.c"
+#include "vorbis/lib/psy.c"
+#include "vorbis/lib/registry.c"
+#include "vorbis/lib/res0.c"
+#include "vorbis/lib/sharedbook.c"
+#include "vorbis/lib/smallft.c"
+#include "vorbis/lib/synthesis.c"
+#include "vorbis/lib/vorbisenc.c"
+#include "vorbis/lib/vorbisfile.c"
+#include "vorbis/lib/window.c"
+#include "vorbis/lib/mdct.c"
 
 #ifdef __clang__
     #pragma clang diagnostic pop
@@ -70,4 +72,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if (_MSC_VER)
     #pragma warning (pop)
+#endif
+
 #endif
