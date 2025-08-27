@@ -3,6 +3,7 @@ Libs/ogg/
 Libs/vorbis/
 Libs/opus/
 Libs/opusfile/
+Libs/glfw/
 
 ## Testing Sound Files
 TestFiles/
