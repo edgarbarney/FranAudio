@@ -95,7 +95,7 @@ FRANAUDIO_CLIENT_API std::string FranAudioClient::Send(const char* message)
 
 FRANAUDIO_CLIENT_API std::string FranAudioClient::Send(const FranAudioShared::Network::NetworkFunction& message)
 {
-#if defined FRANAUDIO_SERVER_DEBUG && !defined FRANAUDIO_SERVER_DISABLE_LOGGING
+#ifdef FRANAUDIO_SERVER_DEBUG
 	FranAudioShared::Logger::LogMessage(std::format("Sending network function: {}", message.ToString()));
 #endif
 

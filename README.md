@@ -93,9 +93,11 @@ After you've done [building](#requirements-and-building) the project, you can te
 [GLFW](https://www.glfw.org "GLFW") - For Test Application GUI  
 [GLAD](https://github.com/Dav1dde/glad "GLAD") - For Test Application GUI  
 
-### Optional (not included, you should get them yourself and put them in Libs folder):  
-[libogg](https://xiph.org/downloads/ "Xiph libogg") - Vorbis library depends on this. You should rename "libogg-x.x.x" folder as "ogg"  
-[libvorbis](https://xiph.org/downloads/ "Xiph libvorbis") - Used for OGG/Vorbis support. You should rename "libvorbis-x.x.x" folder as "vorbis"  
+### Optional (Will be fetched by CMake unless disabled):  
+[libogg](https://xiph.org/downloads/ "Xiph libogg") - Vorbis library depends on this.  
+[libvorbis](https://xiph.org/downloads/ "Xiph libvorbis") - Used for OGG/Vorbis support.  
+[libopus](https://opus-codec.org/ "Opus Codec") - Opusfile library depends on this.  
+[libopusfile](https://opus-codec.org/ "Opus Codec") - Used for Opus support.  
 
 ## Notes:  
 Libraries can be modified in one way or another.  

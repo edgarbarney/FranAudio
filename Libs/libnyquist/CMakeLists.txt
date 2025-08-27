@@ -133,7 +133,7 @@ target_include_directories(libnyquist
 )
 # Use FranAudio's Ogg, Vorbis and Opus libraries if found
 
-if (FRANAUDIO_CAN_USE_VORBIS AND FRANAUDIO_CAN_USE_OPUS)
+if (FRANAUDIO_USE_VORBIS AND FRANAUDIO_USE_OPUS)
 	target_include_directories(libnyquist
 	PRIVATE
 		${FRANAUDIO_LIBRARIES_PARENT_DIR}

@@ -18,7 +18,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # =================
 option(FRANAUDIO_USE_TEST "Build a test application for the library" ON)
 option(FRANAUDIO_USE_SERVER "Build FranAudio as a server + client" OFF)
+option(FRANAUDIO_DISABLE_LOGGING "Disable all logging functionality" OFF)
 option(FRANAUDIO_SERVERCLIENT_DEBUG "Enable extended debug messages for server and client" OFF)
+option(FRANAUDIO_USE_VORBIS "Enable Vorbis Support (requires libogg and libvorbis)" ON)
+option(FRANAUDIO_USE_OPUS "Enable Opus Support (requires Vorbis Support, libopus and libopusfile)" ON)
+
+if (FRANAUDIO_USE_SERVER)
+	add_compile_definitions (FRANAUDIO_USE_SERVER)
+	if (FRANAUDIO_SERVERCLIENT_DEBUG AND NOT FRANAUDIO_DISABLE_LOGGING)
+		add_compile_definitions (FRANAUDIO_SERVER_DEBUG)
+		add_compile_definitions (FRANAUDIO_CLIENT_DEBUG)
+	endif()
+endif()
+
+if (FRANAUDIO_DISABLE_LOGGING)
+	add_compile_definitions (FRANAUDIO_DISABLE_LOGGING)
+endif()
 
 # =================
 # Architecture
@@ -54,7 +69,6 @@ endif()
 # Macros
 # =================
 include("CMakeMacros.cmake")
-include("CMakeFindLibs.cmake")
 
 # =================
 # FranAudio Sources
@@ -72,39 +86,62 @@ endif()
 # =================
 # External Libraries
 # =================
+include(FetchContent)
+
 include_directories ("Libs")
 set(FRANAUDIO_LIBRARIES_PARENT_DIR "Libs")
 
-# Ogg / Vorbis / Opus
-find_vorbis_and_opus()
-
-if (FRANAUDIO_CAN_USE_VORBIS)
+if (FRANAUDIO_USE_VORBIS)
 	# Ogg
-    add_subdirectory("Libs/ogg")
-	include_directories ("Libs/ogg/include")
+	FetchContent_Declare(
+		ogg
+		GIT_REPOSITORY https://github.com/xiph/ogg.git
+		GIT_TAG        v1.3.6
+		SOURCE_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/Libs/ogg  # clean folder name
+	)
+	FetchContent_MakeAvailable(ogg)
+
 	set (OGG_INCLUDE_DIR "Libs/ogg/include")
 	set (OGG_LIBRARY "Libs/ogg")
 	set (Ogg_DIR "Libs/ogg")
 
-    # Vorbis
-	add_subdirectory ("Libs/vorbis")
-	include_directories ("Libs/vorbis/include")
+	# Vorbis
+	FetchContent_Declare(
+		vorbis
+		GIT_REPOSITORY https://github.com/xiph/vorbis.git
+		GIT_TAG        v1.3.7
+		SOURCE_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/Libs/vorbis
+	)
+	FetchContent_MakeAvailable(vorbis)
+	
 	set (VORBIS_LIBRARY "Libs/ogg")
 	set (Vorbis_DIR "Libs/ogg")
 endif()
 
-if (FRANAUDIO_CAN_USE_OPUS)
-    set(OP_DISABLE_HTTP ON CACHE BOOL "Disable HTTP/HTTPS support" FORCE)
-    
-	# Opus
-	add_subdirectory ("Libs/opus")
-	include_directories ("Libs/opus/include")
+if (FRANAUDIO_USE_OPUS)
+    # Opus
+	FetchContent_Declare(
+		opus
+		GIT_REPOSITORY https://github.com/xiph/opus.git
+		GIT_TAG        v1.5.2
+		SOURCE_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/Libs/opus
+	)
+	FetchContent_MakeAvailable(opus)
+
 	set (OPUS_LIBRARY "Libs/opus")
 	set (Opus_DIR "Libs/opus")
 
 	# Opusfile
-	add_subdirectory ("Libs/opusfile")
-	include_directories ("Libs/opusfile/include")
+	FetchContent_Declare(
+		opusfile
+		GIT_REPOSITORY https://github.com/xiph/opusfile.git
+		GIT_TAG        8890ea3e96cbeb813c8660bfb4222bad10009c60
+		SOURCE_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/Libs/opusfile
+	)
+	FetchContent_MakeAvailable(opusfile)
+
+	set(OP_DISABLE_HTTP ON CACHE BOOL "Disable HTTP/HTTPS support" FORCE)
+	
 	set (OPUSFILE_LIBRARY "Libs/opusfile")
 	set (OpusFile_DIR "Libs/opusfile")
 endif()
@@ -126,17 +163,17 @@ add_library(FranAudio SHARED
 target_compile_definitions(FranAudio PRIVATE
     FRANAUDIO_DYNAMIC
     FRANAUDIO_EXPORTS
-    $<$<BOOL:${FRANAUDIO_CAN_USE_VORBIS}>:FRANAUDIO_USE_VORBIS>
-    $<$<BOOL:${FRANAUDIO_CAN_USE_OPUS}>:FRANAUDIO_USE_OPUS>
+    $<$<BOOL:${FRANAUDIO_USE_VORBIS}>:FRANAUDIO_USE_VORBIS>
+    $<$<BOOL:${FRANAUDIO_USE_OPUS}>:FRANAUDIO_USE_OPUS>
 )
 
 target_link_libraries(FranAudio
     PRIVATE miniaudio libnyquist
-    PRIVATE $<$<BOOL:${FRANAUDIO_CAN_USE_VORBIS}>:miniaudio_libvorbis>
-    PRIVATE $<$<BOOL:${FRANAUDIO_CAN_USE_OPUS}>:miniaudio_libopus>
+    PRIVATE $<$<BOOL:${FRANAUDIO_USE_VORBIS}>:miniaudio_libvorbis>
+    PRIVATE $<$<BOOL:${FRANAUDIO_USE_OPUS}>:miniaudio_libopus>
 )
 
-# Export headers (CMake ≥ 3.23 style)
+# Export headers
 target_sources(FranAudio
     PUBLIC
         FILE_SET HEADERS
@@ -190,7 +227,7 @@ if (FRANAUDIO_USE_TEST)
     )
 
     set_target_properties(FranAudioTest PROPERTIES
-        WIN32_EXECUTABLE TRUE # replaces manual /SUBSYSTEM:WINDOWS or -mwindows
+        WIN32_EXECUTABLE TRUE
     )
 
     target_include_directories(FranAudioTest PRIVATE
@@ -222,10 +259,6 @@ endif()
 # Install & Export (for consumers)
 # =================
 include(GNUInstallDirs)
-
-# Avoid installing empty directories
-set(CMAKE_INSTALL_DATAROOTDIR "")
-set(CMAKE_INSTALL_DATADIR "")
 
 install(TARGETS FranAudio
     EXPORT FranAudioTargets
