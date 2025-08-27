@@ -90,6 +90,7 @@ After you've done [building](#requirements-and-building) the project, you can te
 [miniaudio](https://miniaud.io/ "miniaudio") - As Backend and Decoder  
 [libnyquist](https://github.com/ddiakopoulos/libnyquist "libnyquist") - As Decoder  
 [ImGui](https://github.com/ocornut/imgui "Dear ImGui") - As Test Application GUI  
+[imgui-filebrowser](https://github.com/AirGuanZ/imgui-filebrowser "imgui-filebrowser") - Extension for ImGui for file browsing  
 [GLFW](https://www.glfw.org "GLFW") - For Test Application GUI  
 [GLAD](https://github.com/Dav1dde/glad "GLAD") - For Test Application GUI  
 

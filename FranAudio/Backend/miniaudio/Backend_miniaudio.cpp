@@ -192,7 +192,7 @@ size_t FranAudio::Backend::miniaudio::LoadAudioFile(const std::string& filename)
 	// TODO: Remove this
 	//PlayAudioFileNoChecks(filename);
 
-	FranAudioShared::Logger::LogSuccess("MiniAudio: Loaded audio file: " + filename);
+	FranAudioShared::Logger::LogSuccess(std::format("MiniAudio: Decoder {} loaded audio file: {}", FranAudio::Decoder::DecoderTypeNames[(int)currentDecoder->GetDecoderType()], filename));
 
 	return index;
 }

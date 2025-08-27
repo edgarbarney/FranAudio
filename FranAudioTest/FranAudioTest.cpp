@@ -36,6 +36,7 @@
 #include "glad/gl.h"
 #include "GLFW/glfw3.h"
 #include "imgui.h"
+#include "imgui_filebrowser.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "backends/imgui_impl_glfw.h"
 #include "styles/imgui_style_candy.hpp"
@@ -185,6 +186,8 @@ int main()
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
+	ImGui::FileBrowser fileBrowser;
+
 	//io.ConfigWindowsMoveFromTitleBarOnly = true; // Allow moving windows only from the title bar. To prevent teleportation of listener.
 
 	// Fallback style
@@ -255,29 +258,9 @@ int main()
 #endif
 		auto eben = FranAudio::GetBackend();
 
-		if (ImGui::Button("Test WAV File"))
+		if (ImGui::Button("Browse file to play"))
 		{
-			lastPlayedSoundId = PlayTestFile("test.wav");
-		}
-		if (ImGui::Button("Test WAV File with unusual data"))
-		{
-			lastPlayedSoundId = PlayTestFile("test_unusualdata.wav");
-		}
-		if (ImGui::Button("Test MP3 File"))
-		{
-			lastPlayedSoundId = PlayTestFile("test.mp3");
-		}
-		if (ImGui::Button("Test OGG File"))
-		{
-			lastPlayedSoundId = PlayTestFile("test.ogg");
-		}
-		if (ImGui::Button("Test Opus File"))
-		{
-			lastPlayedSoundId = PlayTestFile("test.opus");
-		}
-		if (ImGui::Button("Test FLAC File"))
-		{
-			lastPlayedSoundId = PlayTestFile("test.flac");
+			fileBrowser.Open();
 		}
 		ImGui::End();
 
@@ -387,6 +370,14 @@ int main()
 					SetSoundVolume(soundId, soundVolume);
 				}
 			ImGui::End();
+		}
+
+		fileBrowser.Display();
+
+		if (fileBrowser.HasSelected())
+		{
+			lastPlayedSoundId = PlayTestFile(fileBrowser.GetSelected().string());
+			fileBrowser.ClearSelected();
 		}
 
 		// Controls End
