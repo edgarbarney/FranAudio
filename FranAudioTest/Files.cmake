@@ -1,11 +1,11 @@
-# FranticDreamer 2022-2024
+# FranticDreamer 2022-2025
 
 # ---
 # FranAudio Test Program Files
 # ---
 
 # Header files
-SET(GLOB FRANAUDIOTEST_HEADERFILES
+FILE(GLOB FRANAUDIOTEST_HEADERFILES
 
 	#Main
 	FranAudioTest/FranAudioTest.hpp

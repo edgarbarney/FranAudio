@@ -6,21 +6,21 @@
 
 #include "Backend_miniaudio.hpp"
 
-#include "Logger/Logger.hpp"
+#include "FranAudioShared/Logger/Logger.hpp"
 
 bool FranAudio::Backend::miniaudio::Init(FranAudio::Decoder::DecoderType decoderType)
 {
 	engineConfig = ma_engine_config_init();
 	if (ma_engine_init(&engineConfig, &engine) != MA_SUCCESS)
 	{
-		Logger::LogError("MiniAudio: Failed to initialise engine");
+		FranAudioShared::Logger::LogError("MiniAudio: Failed to initialise engine");
 		return false;
 	}
 
 	deviceConfig = ma_device_config_init(ma_device_type_playback);
 	if (ma_device_init(nullptr, &deviceConfig, &device) != MA_SUCCESS)
 	{
-		Logger::LogError("MiniAudio: Failed to initialise device");
+		FranAudioShared::Logger::LogError("MiniAudio: Failed to initialise device");
 		ma_engine_uninit(&engine);
 		return false;
 	}
@@ -30,19 +30,38 @@ bool FranAudio::Backend::miniaudio::Init(FranAudio::Decoder::DecoderType decoder
 
 #if !defined(FRANAUDIO_USE_VORBIS) && !defined(FRANAUDIO_USE_OPUS)
 	defaultDecoderConfig.pCustomBackendUserData = nullptr;
-	defaultDecoderConfig.ppCustomBackendVTables = miniaudio_backendVTables;
-	defaultDecoderConfig.customBackendCount = std::size(miniaudio_backendVTables);
+	defaultDecoderConfig.ppCustomBackendVTables = FranAudio::Backend::miniaudio_backendVTables;
+	defaultDecoderConfig.customBackendCount = std::size(FranAudio::Backend::miniaudio_backendVTables);
+#else
+	defaultDecoderConfig.pCustomBackendUserData = nullptr;
+	defaultDecoderConfig.ppCustomBackendVTables = FranAudio::Backend::miniaudio_backendVTables;
+	defaultDecoderConfig.customBackendCount = std::size(FranAudio::Backend::miniaudio_backendVTables);
 #endif
 
-	if(decoderType == FranAudio::Decoder::DecoderType::None)
+	bool decoderFail = false;
+
+	if (decoderType == FranAudio::Decoder::DecoderType::None)
 	{
-		Logger::LogError("MiniAudio: No decoder type specified");
-		Logger::LogError("MiniAudio: Defaulting to miniaudio decoder");
-		decoderType = FranAudio::Decoder::DecoderType::miniaudio;
-		//return false;
+		FranAudioShared::Logger::LogError("MiniAudio: No decoder type specified");
+		decoderFail = true;
 	}
 
-	SetDecoder(decoderType);
+	// Check if the requested decoder is supported
+	const auto& supportedDecoders = GetSupportedDecoders();
+	if (std::find(supportedDecoders.begin(), supportedDecoders.end(), decoderType) == supportedDecoders.end())
+	{
+		FranAudioShared::Logger::LogError("MiniAudio: Requested decoder is not supported by this backend");
+		decoderFail = true;
+	}
+
+	if (decoderFail)
+	{
+		FranAudioShared::Logger::LogError("MiniAudio: Defaulting to miniaudio decoder");
+		decoderType = FranAudio::Decoder::DecoderType::miniaudio;
+	}
+
+	// Decoder will be initialised by the FranAudio::Init
+	currentDecoderType = decoderType;
 
 	return true;
 }
@@ -58,6 +77,10 @@ void FranAudio::Backend::miniaudio::Shutdown()
 	ma_engine_uninit(&engine);
 }
 
+// ========================
+// Decoder Management
+// ========================
+
 const std::vector<FranAudio::Decoder::DecoderType>& FranAudio::Backend::miniaudio::GetSupportedDecoders() const
 {
 	static const std::vector<FranAudio::Decoder::DecoderType> supportedDecoders = 
@@ -69,17 +92,66 @@ const std::vector<FranAudio::Decoder::DecoderType>& FranAudio::Backend::miniaudi
 	return supportedDecoders;
 }
 
+// ========================
+// Listener (3D Audio)
+// ========================
+
 void FranAudio::Backend::miniaudio::SetListenerTransform(const float position[3], const float forward[3], const float up[3])
 {
+	SetListenerPosition(position);
+	SetListenerOrientation(forward, up);
+}
+
+void FranAudio::Backend::miniaudio::GetListenerTransform(float position[3], float forward[3], float up[3])
+{
+	GetListenerPosition(position);
+	GetListenerOrientation(forward, up);
+}
+
+void FranAudio::Backend::miniaudio::SetListenerPosition(const float position[3])
+{
 	ma_engine_listener_set_position(&engine, 0, position[0], position[1], position[2]);
+}
+
+void FranAudio::Backend::miniaudio::GetListenerPosition(float position[3])
+{
+	ma_vec3f result = ma_engine_listener_get_position(&engine, 0);
+	position[0] = result.x;
+	position[1] = result.y;
+	position[2] = result.z;
+}
+
+void FranAudio::Backend::miniaudio::SetListenerOrientation(const float forward[3], const float up[3])
+{
 	ma_engine_listener_set_direction(&engine, 0, forward[0], forward[1], forward[2]);
 	ma_engine_listener_set_world_up(&engine, 0, up[0], up[1], up[2]);
 }
 
+void FranAudio::Backend::miniaudio::GetListenerOrientation(float forward[3], float up[3])
+{
+	ma_vec3f fwd = ma_engine_listener_get_direction(&engine, 0);
+	ma_vec3f u = ma_engine_listener_get_world_up(&engine, 0);
+	forward[0] = fwd.x;
+	forward[1] = fwd.y;
+	forward[2] = fwd.z;
+	up[0] = u.x;
+	up[1] = u.y;
+	up[2] = u.z;
+}
+
 void FranAudio::Backend::miniaudio::SetMasterVolume(float volume)
 {
-	ma_engine_set_volume(&engine, 1.0f);
+	ma_engine_set_volume(&engine, volume);
 }
+
+float FranAudio::Backend::miniaudio::GetMasterVolume()
+{
+	return ma_engine_get_volume(&engine);
+}
+
+// ========================
+// Audio File Management
+// ========================
 
 size_t FranAudio::Backend::miniaudio::LoadAudioFile(const std::string& filename)
 {
@@ -87,19 +159,19 @@ size_t FranAudio::Backend::miniaudio::LoadAudioFile(const std::string& filename)
 
 	if (!std::filesystem::exists(filePath))
 	{
-		Logger::LogError("MiniAudio: File does not exist: " + filename);
+		FranAudioShared::Logger::LogError("MiniAudio: File does not exist: " + filename);
 		return SIZE_MAX;
 	}
 
 	if (std::filesystem::is_directory(filePath))
 	{
-		Logger::LogError("MiniAudio: File is a directory: " + filename);
+		FranAudioShared::Logger::LogError("MiniAudio: File is a directory: " + filename);
 		return SIZE_MAX;
 	}
 
 	if (std::filesystem::is_empty(filePath))
 	{
-		Logger::LogError("MiniAudio: File is empty: " + filename);
+		FranAudioShared::Logger::LogError("MiniAudio: File is empty: " + filename);
 		return SIZE_MAX;
 	}
 
@@ -108,7 +180,7 @@ size_t FranAudio::Backend::miniaudio::LoadAudioFile(const std::string& filename)
 
 	if (!result)
 	{
-		Logger::LogError("MiniAudio: Failed to decode audio file: " + filename);
+		FranAudioShared::Logger::LogError("MiniAudio: Failed to decode audio file: " + filename);
 		return SIZE_MAX;
 	}
 
@@ -120,7 +192,7 @@ size_t FranAudio::Backend::miniaudio::LoadAudioFile(const std::string& filename)
 	// TODO: Remove this
 	//PlayAudioFileNoChecks(filename);
 
-	Logger::LogSuccess("MiniAudio: Loaded audio file: " + filename);
+	FranAudioShared::Logger::LogSuccess(std::format("MiniAudio: Decoder {} loaded audio file: {}", FranAudio::Decoder::DecoderTypeNames[(int)currentDecoder->GetDecoderType()], filename));
 
 	return index;
 }
@@ -135,7 +207,7 @@ size_t FranAudio::Backend::miniaudio::PlayAudioFileNoChecks(const std::string& f
 	auto it = filenameWaveMap.find(filename); // Filename - Wave data cache index
 	if (it == filenameWaveMap.end())
 	{
-		Logger::LogError("MiniAudio: Audio file not loaded: " + filename);
+		FranAudioShared::Logger::LogError("MiniAudio: Audio file not loaded: " + filename);
 		return SIZE_MAX;
 	}
 
@@ -164,21 +236,25 @@ size_t FranAudio::Backend::miniaudio::PlayAudioFileStream(const std::string& fil
 	return SIZE_MAX;
 }
 
+// ========================
+// Sound Management
+// ========================
+
 void FranAudio::Backend::miniaudio::StopPlayingSound(size_t soundID)
 {
-	if (soundID == SIZE_MAX)
+	if (!IsSoundValid(soundID))
 	{
-		Logger::LogError("MiniAudio: Tried to stop an invalid sound.");
+		FranAudioShared::Logger::LogError("MiniAudio: Tried to stop an invalid sound.");
 		return;
 	}
 	if (!activeSounds.contains(soundID))
 	{
-		Logger::LogError("MiniAudio: Sound ID is not playing: " + std::to_string(soundID));
+		FranAudioShared::Logger::LogError("MiniAudio: Sound ID is not playing: " + std::to_string(soundID));
 		return;
 	}
 	if (!miniaudioSoundData.contains(soundID))
 	{
-		Logger::LogError("MiniAudio: Sound ID has invalid data: " + std::to_string(soundID));
+		FranAudioShared::Logger::LogError("MiniAudio: Sound ID has invalid data: " + std::to_string(soundID));
 		return;
 	}
 
@@ -189,6 +265,54 @@ void FranAudio::Backend::miniaudio::StopPlayingSound(size_t soundID)
 	miniaudioSoundData.erase(soundID);
 	activeSounds.erase(soundID);
 }
+
+void FranAudio::Backend::miniaudio::SetSoundVolume(size_t soundID, float volume)
+{
+	if (!IsSoundValid(soundID))
+	{
+		FranAudioShared::Logger::LogError("MiniAudio: Tried to set volume of an invalid sound.");
+		return;
+	}
+	ma_sound_set_volume(&miniaudioSoundData[soundID]->sound, volume);
+}
+
+float FranAudio::Backend::miniaudio::GetSoundVolume(size_t soundID)
+{
+	if (!IsSoundValid(soundID))
+	{
+		FranAudioShared::Logger::LogError("MiniAudio: Tried to get volume of an invalid sound.");
+		return 0.0f;
+	}
+	return ma_sound_get_volume(&miniaudioSoundData[soundID]->sound);
+}
+
+void FranAudio::Backend::miniaudio::SetSoundPosition(size_t soundID, const float position[3])
+{
+	if (!IsSoundValid(soundID))
+	{
+		FranAudioShared::Logger::LogError("MiniAudio: Tried to set position of an invalid sound.");
+		return;
+	}
+
+	ma_sound_set_position(&miniaudioSoundData[soundID]->sound, position[0], position[1], position[2]);
+}
+
+void FranAudio::Backend::miniaudio::GetSoundPosition(size_t soundID, float outPosition[3])
+{
+	if (!IsSoundValid(soundID))
+	{
+		FranAudioShared::Logger::LogError("MiniAudio: Tried to get position of an invalid sound.");
+		return;
+	}
+	ma_vec3f pos = ma_sound_get_position(&miniaudioSoundData[soundID]->sound);
+	outPosition[0] = pos.x;
+	outPosition[1] = pos.y;
+	outPosition[2] = pos.z;
+}
+
+// ========================
+// Miniaudio Specific
+// ========================
 
 ma_decoder_config* FranAudio::Backend::miniaudio::GetDefaultDecoderConfig()
 {

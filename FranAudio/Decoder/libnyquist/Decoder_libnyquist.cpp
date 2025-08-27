@@ -2,7 +2,7 @@
 
 #include "Decoder_libnyquist.hpp"
 
-#include "Logger/Logger.hpp"
+#include "FranAudioShared/Logger/Logger.hpp"
 
 bool FranAudio::Decoder::libnyquist::Init()
 {

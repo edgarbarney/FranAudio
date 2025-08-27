@@ -7,23 +7,45 @@ A basic audio library made mainly for games and game engines that utilises C++23
 
 # Features:
 - Modular Backend Support with `FranAudio::Backend::Backend` Interface  
-- Local Server-Client Communication for Inter-Process Usage (Mainly for Game Modding)  
+- Optional High-Level Server-Client Communication (localhost) for Inter-Process Usage (Mainly for Game Modding)  
 - **WAV**, **MP3**, **FLAC** and *(optional)* **Vorbis** Support
 - Optional extensive logging for both developers and end users.
+- Dynamic Positional Audio
 
 # To-do:
-- Extend Server-Client Communication to Full Control  
-- Dynamic Positional Audio  
+- Extend Server-Client Communication  
 - Post-Processing Effects  
 - OpenAL Backend  
 - Linux Support  
 - Opus Support  
 - C API  
 
-# Basic Usage
-Since the project is in the initial stages, you may try to use it as a static or dynamic library as you may use any other one. But I suggest waiting for the initial release of the library. Please simply add this library to your watchlist and be patient. Thank you for your time.
+# Modules:
+<b>FranAudioShared</b> - Contains the shared modules for both client-server and the library itself.  
+- FranAudioShared::<b>Logger</b> - The module that contains the logging functionality for the library.  
+- FranAudioShared::<b>Network</b> - The module that contains the network helpers and constants for the library.  
+- FranAudioShared::<b>Containers</b> - The module that contains the container classes for the library.  
 
-But as a proof of concept, you can [build](#requirements-and-building) and [test](#testing) the project using the instructions below.
+### FranAudio Library Structure
+<b>FranAudio</b> - The main module that contains the core functionality of the library.  
+- FranAudio::<b>Backend</b> - The module that contains the backend interface and the default backend implementation.  
+    - FranAudio::Backend::<b>Miniaudio</b> - The module that contains the miniaudio backend implementation.  
+    - FranAudio::Backend::<b>OpenAL</b> - The module that contains the OpenAL backend implementation (not implemented yet).  
+- FranAudio::<b>Decoder</b> - The module that contains the audio decoders for various formats.  
+    - FranAudio::Decoder::<b>Miniaudio</b> - The module that contains the miniaudio decoder implementation.  
+    - FranAudio::Decoder::<b>Libnyquist</b> - The module that contains the libnyquist decoder implementation.  
+
+### FranAudio High-Level Server-Client Structure
+<b>FranAudioClient</b> - Library module that contains the client-side functionality for standalone server-client system. To be linked with target applications.  
+<b>FranAudioServer</b> - Executable module that contains the server-side functionality for standalone server-client system.  
+
+### FranAudio Test Application
+<b>FranAudioTest</b> - Module that contains the test application for the library. Can test both library and server-client system.  
+
+# Basic Usage
+Since the project is in the initial stages, you may try to use it as a static or dynamic library as you may use any other one. But I suggest waiting for the initial release of the library. Please simply add this library to your watchlist and be patient. Thank you for your time.  
+
+But as a proof of concept, you can [build](#requirements-and-building) and [test](#testing) the project using the instructions below.  
 
 # Requirements and Building:
 For now, only Windows is supported. In near future, Linux support will be added.
@@ -45,7 +67,7 @@ For now, only Windows is supported. In near future, Linux support will be added.
     - You can use the `F7` build shortcut.
     - You can use `Build > Build All`
 
-Upon completing the build process, your binaries will be in `FranAudio/out/build/{build_profile}/bin`
+Upon completing the build process, your binaries will be in `FranAudio/out/build/{build_profile}/bin` and your header files will be in `FranAudio/out/build/{build_profile}/include`.
 
 
 # Testing
@@ -57,16 +79,28 @@ After you've done [building](#requirements-and-building) the project, you can te
 - Put them into the same folder as the binaries.
     - e.g. ``FranAudio/out/build/{build_profile}/bin`
 
-- Simply run the `FranAudio_Server` and wait for it to tell you it's waiting for messages. 
+- Simply run the `FranAudio_Server` and wait for it to tell you it's waiting for messages.  
 
-- Run `FranAudio_Test` and switch back to the `FranAudio_Server` window. 
+- Run `FranAudio_Test` and use the UI to test out the library.  
 
-After these steps are done, follow the instructions on the `FranAudio_Server` window. If you hear a sound, congratulations! You've successfully built the library!
-
-# List of used external libraries:   
+# Libraries:  
+## Here are the libraries used in this project:  
+### Directly included: 
+[ankerl::unordered_dense](https://github.com/martinus/unordered_dense "ankerl::unordered_dense") - As STL Unordered Map Replacement   
 [miniaudio](https://miniaud.io/ "miniaudio") - As Backend and Decoder  
 [libnyquist](https://github.com/ddiakopoulos/libnyquist "libnyquist") - As Decoder  
+[ImGui](https://github.com/ocornut/imgui "Dear ImGui") - As Test Application GUI  
+[imgui-filebrowser](https://github.com/AirGuanZ/imgui-filebrowser "imgui-filebrowser") - Extension for ImGui for file browsing  
+[GLFW](https://www.glfw.org "GLFW") - For Test Application GUI  
+[GLAD](https://github.com/Dav1dde/glad "GLAD") - For Test Application GUI  
 
-Libraries can be modified in one way or another. 
-So it's not advised to just replace them when updating.
-Try to do a folder-by-folder diff with a tool like WinMerge or Meld.
+### Optional (Will be fetched by CMake unless disabled):  
+[libogg](https://xiph.org/downloads/ "Xiph libogg") - Vorbis library depends on this.  
+[libvorbis](https://xiph.org/downloads/ "Xiph libvorbis") - Used for OGG/Vorbis support.  
+[libopus](https://opus-codec.org/ "Opus Codec") - Opusfile library depends on this.  
+[libopusfile](https://opus-codec.org/ "Opus Codec") - Used for Opus support.  
+
+## Notes:  
+Libraries can be modified in one way or another.  
+So it's not advised to just replace them drop-in when updating.  
+Try to do a folder-by-folder diff with a tool like WinMerge or Meld.  

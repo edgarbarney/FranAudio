@@ -5,26 +5,15 @@
 
 #include "FranAudioAPI.hpp"
 
-/*
-namespace GameEngine
-{
-	class Vector;
-	class Entity;
-}
-*/
+#include "FranAudioShared/Logger/Logger.hpp"
 
 namespace FranAudio
 {
 	/// <summary>
 	/// Entity handle type.
-	/// You may change this to your engine's entity handle type if needed.
+	/// You may change this to your engine's entity handle type if needed when you're rebuilding FranAudio.
 	/// </summary>
 	using EntityHandle = size_t;
-
-	/// <summary>
-	/// Unique ID type for entities, sounds, etc.
-	/// </summary>
-	using UniqueID = size_t;
 
 	inline const Backend::BackendType defaultBackend = Backend::BackendType::miniaudio;
 
@@ -36,74 +25,44 @@ namespace FranAudio
 
 	extern GlobalData gGlobals;
 
+	/// <summary>
+	/// Initializes the FranAudio library.
+	/// </summary>
 	FRANAUDIO_API void Init();
+
+	/// <summary>
+	/// Resets the FranAudio library.
+	/// This is used to reset the library to its initial state.
+	/// </summary>
 	FRANAUDIO_API void Reset();
+
+	/// <summary>
+	/// Shuts down the FranAudio library and cleans up resources.
+	/// </summary>
 	FRANAUDIO_API void Shutdown();
 
+	/// <summary>
+	/// Routes the library logging output to the specified console stream buffer.
+	/// </summary>
+	/// <param name="consoleBuffer">A pointer to the ConsoleStreamBuffer where client output will be directed.</param>
+	FRANAUDIO_API void RouteLoggingToConsole(FranAudioShared::Logger::ConsoleStreamBuffer* consoleBuffer);
+
+	/// <summary>
+	/// Sets the audio backend to use.
+	/// </summary>
+	/// <param name="type">The backend type to set, specified as a value of Backend::BackendType.</param>
+	/// <returns>This function does not return a value.</returns>
 	FRANAUDIO_API void SetBackend(Backend::BackendType type);
 
+	/// <summary>
+	/// Get the current backend.
+	/// 
+	/// <para>
+	/// NOTE: Do not cache the return of this function.
+	/// It may change if the decoder is changed or destroyed.
+	/// </para>
+	/// 
+	/// </summary>
+	/// <returns>Pointer to the current backend</returns>
 	FRANAUDIO_API Backend::Backend* GetBackend();
 }
-
-/*
-/// <summary>
-/// Engine specific code.
-/// 
-/// This is a placeholder for the engine specific code.
-/// You should either replace this with your engine's code
-/// or use this as a wrapper around your engine's code.
-/// 
-/// This code is used to demonstrate how to integrate 
-/// the FranAudio library with your engine.
-/// </summary>
-namespace GameEngine
-{
-	/// <summary>
-	/// A simple 3D vector class.
-	/// 
-	/// This is a placeholder for the engine specific vector class.
-	/// 
-	/// You should either replace this with your engine's vector class
-	/// or use this as a wrapper around your engine's vector class.
-	/// </summary>
-	class Vector
-	{
-	public:
-		union
-		{
-			struct
-			{
-				float x, y, z;
-			};
-			float components[3];
-		};
-
-		Vector() : x(0), y(0), z(0) {}
-		Vector(float x, float y, float z) : x(x), y(y), z(z) {}
-
-		//Operator to return float array of components
-		operator float* () { return components; }
-	};
-
-	/// <summary>
-	/// A simple entity class.
-	/// 
-	/// Your engine's entity class should have similar functions.
-	/// 
-	/// You should either replace this with your engine's entity class
-	/// or use this as a wrapper around your engine's entity class.
-	/// </summary>
-	class Entity
-	{
-	private:
-		FranAudio::EntityHandle id;
-		Vector position;
-	public:
-		Entity() { static FranAudio::EntityHandle globalid = 0; id = globalid++; position = Vector(); }
-		virtual FranAudio::EntityHandle GetID() { return 0; }
-		virtual Vector GetPosition() { return position; }
-		virtual bool IsPlayer() { return false; }
-		virtual void SetPosition(Vector pos) { position = pos; }
-	};
-}
-*/

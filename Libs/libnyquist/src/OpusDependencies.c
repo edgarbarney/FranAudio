@@ -25,6 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // https://dxr.mozilla.org/mozilla-central/source/media/libopus
 
+#ifndef FRANAUDIO_USE_OPUS
+
 #if (_MSC_VER)
     #pragma warning (push)
     #pragma warning (disable: 181 111 4267 4996 4244 4701 4702 4133 4100 4127 4206 4312 4505 4365 4005 4013 4334 4703)
@@ -100,7 +102,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // SILK Common //
 /////////////////
 
-#include "opus_types.h"
+#include "opus/include/opus_types.h"
 
 #include "opus/silk/control.h"
 #include "opus/silk/debug.h"
@@ -243,28 +245,28 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // LibOpus //
 /////////////
 
-#include "opus/libopus/src/opus.c"
-#include "opus/libopus/src/opus_decoder.c"
-#include "opus/libopus/src/opus_encoder.c"
-#include "opus/libopus/src/opus_multistream.c"
-#include "opus/libopus/src/opus_multistream_decoder.c"
-#include "opus/libopus/src/opus_multistream_encoder.c"
-#include "opus/libopus/src/repacketizer.c"
+#include "opus/src/opus.c"
+#include "opus/src/opus_decoder.c"
+#include "opus/src/opus_encoder.c"
+#include "opus/src/opus_multistream.c"
+#include "opus/src/opus_multistream_decoder.c"
+#include "opus/src/opus_multistream_encoder.c"
+#include "opus/src/repacketizer.c"
 
-#include "opus/libopus/src/analysis.c"
-#include "opus/libopus/src/mlp.c"
-#include "opus/libopus/src/mlp_data.c"
+#include "opus/src/analysis.c"
+#include "opus/src/mlp.c"
+#include "opus/src/mlp_data.c"
 
 //////////////
 // Opusfile //
 //////////////
 
-#include "opus/opusfile/src/http.c"
-#include "opus/opusfile/src/info.c"
-#include "opus/opusfile/src/internal.c"
-#include "opus/opusfile/src/opusfile.c"
-#include "opus/opusfile/src/stream.c"
-#include "opus/opusfile/src/wincerts.c"
+#include "opusfile/src/http.c"
+#include "opusfile/src/info.c"
+#include "opusfile/src/internal.c"
+#include "opusfile/src/opusfile.c"
+#include "opusfile/src/stream.c"
+#include "opusfile/src/wincerts.c"
 
 #ifdef __clang__
     #pragma clang diagnostic pop
@@ -272,4 +274,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if (_MSC_VER)
     #pragma warning (pop)
+#endif
+
 #endif

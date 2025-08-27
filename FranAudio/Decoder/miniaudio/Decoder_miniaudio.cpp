@@ -12,7 +12,7 @@
 #include "Backend/miniaudio/Backend_miniaudio.hpp"
 #include "Decoder_miniaudio.hpp"
 
-#include "Logger/Logger.hpp"
+#include "FranAudioShared/Logger/Logger.hpp"
 
 bool FranAudio::Decoder::miniaudio::Init()
 {
@@ -23,26 +23,31 @@ bool FranAudio::Decoder::miniaudio::Init()
 	}
 
 	isStandalone = true;
-	Logger::LogMessage("MiniAudio S.D.: Miniaudio is initialising as a standalone decoder, without miniaudio backend");
+	FranAudioShared::Logger::LogMessage("MiniAudio S.D.: Miniaudio is initialising as a standalone decoder, without miniaudio backend");
 
 	engineConfig = ma_engine_config_init();
 	if (ma_engine_init(&engineConfig, &engine) != MA_SUCCESS)
 	{
-		Logger::LogError("MiniAudio S.D.: Failed to initialise engine");
+		FranAudioShared::Logger::LogError("MiniAudio S.D.: Failed to initialise engine");
 		return false;
 	}
 
 	deviceConfig = ma_device_config_init(ma_device_type_playback);
 	if (ma_device_init(nullptr, &deviceConfig, &device) != MA_SUCCESS)
 	{
-		Logger::LogError("MiniAudio S.D.: Failed to initialise device");
+		FranAudioShared::Logger::LogError("MiniAudio S.D.: Failed to initialise device");
 		ma_engine_uninit(&engine);
 		return false;
 	}
 
 	// In case we're using miniaudio decoder with custom decoder backend
 	defaultDecoderConfig = ma_decoder_config_init_default();
+
 #if !defined(FRANAUDIO_USE_VORBIS) && !defined(FRANAUDIO_USE_OPUS)
+	defaultDecoderConfig.pCustomBackendUserData = nullptr;
+	defaultDecoderConfig.ppCustomBackendVTables = FranAudio::Backend::miniaudio_backendVTables;
+	defaultDecoderConfig.customBackendCount = std::size(FranAudio::Backend::miniaudio_backendVTables);
+#else
 	defaultDecoderConfig.pCustomBackendUserData = nullptr;
 	defaultDecoderConfig.ppCustomBackendVTables = FranAudio::Backend::miniaudio_backendVTables;
 	defaultDecoderConfig.customBackendCount = std::size(FranAudio::Backend::miniaudio_backendVTables);
@@ -103,17 +108,17 @@ bool FranAudio::Decoder::miniaudio::DecodeAudioFile(const std::string& filename,
 
 	if (ma_decoder_init_file(filename.c_str(), temp, &decoder) != MA_SUCCESS)
 	{
-		Logger::LogError("MiniAudio: Failed to initialise decoder for file: " + filename);
-		Logger::LogError("MiniAudio: Are you sure the audio file is in a supported format?");
-		Logger::LogError("MiniAudio: Supported formats of current backend are: ", false);
+		FranAudioShared::Logger::LogError("MiniAudio: Failed to initialise decoder for file: " + filename);
+		FranAudioShared::Logger::LogError("MiniAudio: Are you sure the audio file is in a supported format?");
+		FranAudioShared::Logger::LogError("MiniAudio: Supported formats of current backend are: ", false);
 
 		bool first = true;
 		for (const auto& format : GetSupportedAudioFormats())
 		{
-			Logger::LogGeneric((first ? "" : " / ") + std::string(format), false);
+			FranAudioShared::Logger::LogGeneric((first ? "" : " / ") + std::string(format), false);
 			first = false;
 		}
-		Logger::LogNewline();
+		FranAudioShared::Logger::LogNewline();
 		return false;
 	}
 
@@ -136,7 +141,7 @@ bool FranAudio::Decoder::miniaudio::DecodeAudioFile(const std::string& filename,
 		ma_uint64 framesRead = 0;
 		if (ma_decoder_read_pcm_frames(&decoder, targetWaveData.GetFramesRef().data(), totalFrameCount, &framesRead) != MA_SUCCESS || framesRead == 0)
 		{
-			Logger::LogError("MiniAudio: Failed to read audio data from file: " + filename);
+			FranAudioShared::Logger::LogError("MiniAudio: Failed to read audio data from file: " + filename);
 			ma_decoder_uninit(&decoder);
 			return false;
 		}
@@ -162,7 +167,7 @@ bool FranAudio::Decoder::miniaudio::DecodeAudioFile(const std::string& filename,
 
 		if (totalFrames == 0)
 		{
-			Logger::LogError("MiniAudio: Failed to read audio data from file: " + filename);
+			FranAudioShared::Logger::LogError("MiniAudio: Failed to read audio data from file: " + filename);
 			ma_decoder_uninit(&decoder);
 			return false;
 		}

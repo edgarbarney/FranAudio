@@ -1,0 +1,15 @@
+# --- Ignore libraries / build stuff ---
+
+# Ignore everything under Libs/ (recursively)
+Libs/** linguist-vendored
+
+# Ignore all CMake scripts
+*.cmake linguist-vendored
+
+# Ignore all CMakeLists.txt (root + subfolders)
+CMakeLists.txt linguist-vendored
+**/CMakeLists.txt linguist-vendored
+
+
+# --- Force .h to count as C++ ---
+*.h linguist-language=C++

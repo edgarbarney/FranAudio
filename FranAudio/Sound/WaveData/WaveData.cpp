@@ -4,7 +4,7 @@
 
 #include "WaveData.hpp"
 
-#include "Logger/Logger.hpp"
+#include "FranAudioShared/Logger/Logger.hpp"
 
 FranAudio::Sound::WaveData::WaveData(const std::string& filename, WaveFormat format, double length, int channels, int sampleRate)
 	: filename(filename), format(format), length(length), channels(channels), sampleRate(sampleRate), frameSize(0)

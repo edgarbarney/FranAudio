@@ -24,6 +24,11 @@ FRANAUDIO_API void FranAudio::Shutdown()
 	gGlobals.currentBackend = nullptr;
 }
 
+FRANAUDIO_API void FranAudio::RouteLoggingToConsole(FranAudioShared::Logger::ConsoleStreamBuffer* consoleBuffer)
+{
+	FranAudioShared::Logger::RouteToConsole(consoleBuffer);
+}
+
 FRANAUDIO_API void FranAudio::SetBackend(Backend::BackendType type)
 {
 	if (gGlobals.currentBackend)
@@ -34,6 +39,8 @@ FRANAUDIO_API void FranAudio::SetBackend(Backend::BackendType type)
 	}
 
 	gGlobals.currentBackend = Backend::Backend::CreateBackend(type);
+	gGlobals.currentBackend->SetDecoder(gGlobals.currentBackend->GetDecoderType(), true); // Initialize with default decoder
+	return;
 }
 
 FRANAUDIO_API FranAudio::Backend::Backend* FranAudio::GetBackend()

@@ -4,18 +4,21 @@
 
 #include <iostream>
 #include <string>
-#include <WinSock2.h>
-#include <ws2tcpip.h>
 
 #include "FranAudio.hpp"
 
+#include <WinSock2.h>
+#include <ws2tcpip.h>
+
 #include "FranAudioClient.hpp"
+
+#include "FranAudioShared/Logger/Logger.hpp"
 
 #pragma comment(lib, "ws2_32.lib")
 
 // Ugh
 WSADATA wsaData;
-SOCKET udpSocket;
+SOCKET tcpSocket;
 sockaddr_in serverAddress;
 
 bool isSocketValid = false;
@@ -30,65 +33,73 @@ static const wchar_t* StringToWideString(const char* asciiStr)
 
 FRANAUDIO_CLIENT_API void FranAudioClient::Init(bool isTestmode)
 {
+	// Setup Logger to route to console
+	FranAudioShared::Logger::FranAudioConsole franConsole;
+	FranAudioShared::Logger::ConsoleStreamBuffer consoleBuffer(franConsole);
+	FranAudioShared::Logger::RouteToConsole(&consoleBuffer);
+
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 	{
-		std::cerr << "WSAStartup failed!\n";
+		FranAudioShared::Logger::LogError("WSAStartup failed!");
 		Shutdown();
 		return;
 	}
 	isWSAInitialised = true;
 
-	udpSocket = socket(AF_INET, SOCK_DGRAM, 0);
-	if (udpSocket == INVALID_SOCKET)
+	tcpSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (tcpSocket == INVALID_SOCKET)
 	{
-		std::cerr << "Socket creation failed!\n";
+		FranAudioShared::Logger::LogError("Socket creation failed!");
 		Shutdown();
 		return;
 	}
 	isSocketValid = true;
 
 	serverAddress.sin_family = AF_INET;
-	serverAddress.sin_port = htons(FranAudioClient::listenPort);
-	if (InetPton(AF_INET, StringToWideString(FranAudioClient::listenAddress), &serverAddress.sin_addr) != 1)
+	serverAddress.sin_port = htons(FranAudioShared::Network::listenPort);
+	if (InetPton(AF_INET, StringToWideString(FranAudioShared::Network::listenAddress), &serverAddress.sin_addr) != 1)
 	{
-		std::cerr << "Invalid address!\n";
+		FranAudioShared::Logger::LogError("Invalid address!");
 		Shutdown();
 		return;
 	}
 
-	if (isTestmode)
+	if (connect(tcpSocket, (sockaddr*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR)
 	{
-		Send("_testmode");
-	}
-	else
-	{
-		Send("initServer");
+		FranAudioShared::Logger::LogError("TCP connection failed!");
+		Shutdown();
+		return;
 	}
 
-	Shutdown();
+	setsockopt(tcpSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&FranAudioShared::Network::messageTimeout, sizeof(FranAudioShared::Network::messageTimeout));
+
+	Send("$server-init");
 }
 
 FRANAUDIO_CLIENT_API void FranAudioClient::Shutdown()
 {
 	if (isSocketValid)
-		closesocket(udpSocket);
+		closesocket(tcpSocket);
 
 	if (isWSAInitialised)
 		WSACleanup();
-
-	//std::cin.get();
 }
 
-FRANAUDIO_CLIENT_API void FranAudioClient::Send(const char* message)
+FRANAUDIO_CLIENT_API std::string FranAudioClient::Send(const char* message)
 {
-	if (sendto(udpSocket, message, (int)strlen(message), 0, (sockaddr*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR)
-	{
-		std::cerr << "Sendto: Send Message Failed!\n Message: " << message;
-	}
-	else
-	{
-		std::cout << "Message sent!\n";
-	}
+	const std::string data(message, message + std::strlen(message));
+	FranAudioShared::Network::Win32Helpers::SendFrame(tcpSocket, data);
+
+	return FranAudioShared::Network::Win32Helpers::RecvFrame(tcpSocket);
+}
+
+FRANAUDIO_CLIENT_API std::string FranAudioClient::Send(const FranAudioShared::Network::NetworkFunction& message)
+{
+#ifdef FRANAUDIO_SERVER_DEBUG
+	FranAudioShared::Logger::LogMessage(std::format("Sending network function: {}", message.ToString()));
+#endif
+
+	return Send(message.ToString().c_str());
 }
 
 #endif // _WIN32

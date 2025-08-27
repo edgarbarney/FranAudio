@@ -1,11 +1,11 @@
-# FranticDreamer 2022-2024
+# FranticDreamer 2022-2025
 
 # ---
 # FranAudio Client Library Files
 # ---
 
 # Header files
-SET(GLOB FRANAUDIOCLIENT_HEADERFILES
+FILE(GLOB FRANAUDIOCLIENT_HEADERFILES
 
 	#Main
 	FranAudioClient/FranAudioClient.hpp
