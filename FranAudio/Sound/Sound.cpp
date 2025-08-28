@@ -34,6 +34,16 @@ void FranAudio::Sound::Sound::Stop() const
 	FranAudio::GetBackend()->StopPlayingSound(soundID);
 }
 
+void FranAudio::Sound::Sound::SetPaused(bool isPaused) const
+{
+	FranAudio::GetBackend()->SetSoundPaused(soundID, isPaused);
+}
+
+bool FranAudio::Sound::Sound::IsPaused() const
+{
+	return FranAudio::GetBackend()->IsSoundPaused(soundID);
+}
+
 void FranAudio::Sound::Sound::SetVolume(float volume) const
 {
 	FranAudio::GetBackend()->SetSoundVolume(soundID, volume);

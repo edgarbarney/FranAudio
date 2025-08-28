@@ -216,28 +216,42 @@ namespace FranAudioClient
 			FRANAUDIO_CLIENT_API void Stop(size_t soundIndex);
 
 			/// <summary>
-			/// Set the volume of a playing sound by its index.
+			/// Set whether the sound is paused or not by its ID.
+			/// </summary>
+			/// <param name="soundID">ID of the sound to modify</param>
+			/// <param name="isPaused">True to pause the sound, false to resume playback</param>
+			FRANAUDIO_CLIENT_API void SetPaused(size_t soundID, bool isPaused);
+
+			/// <summary>
+			/// Check if a sound is paused or not by its index.
+			/// </summary>
+			/// <param name="soundID">ID of the sound to check</param>
+			/// <returns>True if the sound is paused, false if not</returns>
+			FRANAUDIO_CLIENT_API bool IsPaused(size_t soundID);
+
+			/// <summary>
+			/// Set the volume of a playing sound by its ID.
 			/// </summary>
 			/// <param name="soundID">ID of the sound to set the volume of</param>
 			/// <param name="volume">Volume to set the sound to (0.0 - 1.0)</param>
 			FRANAUDIO_CLIENT_API void SetVolume(size_t soundID, float volume);
 
 			/// <summary>
-			/// Get the volume of a playing sound by its index.
+			/// Get the volume of a playing sound by its ID.
 			/// </summary>
 			/// <param name="soundID">ID of the sound to get the volume of</param>
 			/// <returns>Volume of the sound (0.0 - 1.0)</returns>
 			FRANAUDIO_CLIENT_API float GetVolume(size_t soundID);
 
 			/// <summary>
-			/// Set the position of a playing sound by its index.
+			/// Set the position of a playing sound by its ID.
 			/// </summary>
 			/// <param name="soundID">ID of the sound to set the position of</param>
 			/// <param name="position">Position to set the sound to</param>
 			FRANAUDIO_CLIENT_API void SetPosition(size_t soundID, float position[3]);
 
 			/// <summary>
-			/// Get the position of a playing sound by its index.
+			/// Get the position of a playing sound by its ID.
 			/// </summary>
 			/// <param name="soundID">ID of the sound to get the position of</param>
 			/// <param name="position">Output position of the sound</param>

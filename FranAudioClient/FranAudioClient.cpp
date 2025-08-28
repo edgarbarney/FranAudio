@@ -264,6 +264,16 @@ namespace FranAudioClient::Wrapper
 			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("sound-stop", { std::to_string(soundIndex) }));
 		}
 
+		FRANAUDIO_CLIENT_API void SetPaused(size_t soundID, bool isPaused)
+		{
+			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("sound-set_paused", { std::to_string(soundID), isPaused ? "1" : "0" }));
+		}
+
+		FRANAUDIO_CLIENT_API bool IsPaused(size_t soundID)
+		{
+			return FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("sound-is_paused", { std::to_string(soundID) })) != "0";
+		}
+
 		FRANAUDIO_CLIENT_API void SetVolume(size_t soundIndex, float volume)
 		{
 			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("sound-set_volume", { std::to_string(soundIndex), std::to_string(volume) }));

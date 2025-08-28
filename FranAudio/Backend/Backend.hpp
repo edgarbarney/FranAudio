@@ -215,14 +215,28 @@ namespace FranAudio::Backend
 		/// <summary>
 		/// Check if a sound is valid by its index.
 		/// </summary>
-		/// <param name="soundIndex">Index of the sound in the active sounds list</param>
-		virtual bool IsSoundValid(size_t soundIndex);
+		/// <param name="soundID">ID of the sound in to check</param>
+		virtual bool IsSoundValid(size_t soundID);
 
 		/// <summary>
 		/// Stop and clear an active sound by its index.
 		/// </summary>
-		/// <param name="soundIndex">Index of the sound in the active sounds list</param>
-		virtual void StopPlayingSound(size_t soundIndex) = 0;
+		/// <param name="soundID">ID of the sound in to stop</param>
+		virtual void StopPlayingSound(size_t soundID) = 0;
+
+		/// <summary>
+		/// Set whether the sound is paused or not by its ID.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to modify</param>
+		/// <param name="isPaused">True to pause the sound, false to resume playback</param>
+		virtual void SetSoundPaused(size_t soundID, bool isPaused) = 0;
+
+		/// <summary>
+		/// Check if a sound is paused or not by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to check</param>
+		/// <returns>True if the sound is paused, false if not</returns>
+		virtual bool IsSoundPaused(size_t soundID) = 0;
 
 		/// <summary>
 		/// Set the volume of a playing sound by its index.

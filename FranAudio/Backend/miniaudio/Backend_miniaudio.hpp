@@ -58,6 +58,11 @@ namespace FranAudio::Backend
 			ma_audio_buffer_config audioBufferConfig = {};
 			ma_audio_buffer audioBuffer = {};
 			ma_sound sound = {};
+
+			bool isPaused = false;
+			size_t pausedFrame = 0;
+
+			bool isLooping = false;
 		};
 
 		/// <summary>
@@ -202,19 +207,31 @@ namespace FranAudio::Backend
 		// Sound Management
 		// ========================
 
-		/*
 		/// <summary>
 		/// Check if a sound is valid by its index.
 		/// </summary>
-		/// <param name="soundIndex">Index of the sound in the active sounds list</param>
-		virtual bool IsSoundValid(size_t soundIndex) override;
-		*/
+		/// <param name="soundID">ID of the sound in to check</param>
+		virtual bool IsSoundValid(size_t soundID) override;
 
 		/// <summary>
 		/// Stop and clear an active sound by its index.
 		/// </summary>
-		/// <param name="soundIndex">Index of the sound in the active sounds list</param>
-		virtual void StopPlayingSound(size_t soundIndex) override;
+		/// <param name="soundID">ID of the sound in to stop</param>
+		virtual void StopPlayingSound(size_t soundID) override;
+
+		/// <summary>
+		/// Set whether the sound is paused or not by its ID.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to modify</param>
+		/// <param name="isPaused">True to pause the sound, false to resume playback</param>
+		virtual void SetSoundPaused(size_t soundID, bool isPaused) override;
+		
+		/// <summary>
+		/// Check if a sound is paused or not by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to check</param>
+		/// <returns>True if the sound is paused, false if not</returns>
+		virtual bool IsSoundPaused(size_t soundID) override;
 
 		/// <summary>
 		/// Set the volume of a playing sound by its index.

@@ -240,6 +240,11 @@ size_t FranAudio::Backend::miniaudio::PlayAudioFileStream(const std::string& fil
 // Sound Management
 // ========================
 
+bool FranAudio::Backend::miniaudio::IsSoundValid(size_t soundID)
+{
+	return Backend::IsSoundValid(soundID) && miniaudioSoundData.contains(soundID);
+}
+
 void FranAudio::Backend::miniaudio::StopPlayingSound(size_t soundID)
 {
 	if (!IsSoundValid(soundID))
@@ -247,23 +252,50 @@ void FranAudio::Backend::miniaudio::StopPlayingSound(size_t soundID)
 		FranAudioShared::Logger::LogError("MiniAudio: Tried to stop an invalid sound.");
 		return;
 	}
-	if (!activeSounds.contains(soundID))
-	{
-		FranAudioShared::Logger::LogError("MiniAudio: Sound ID is not playing: " + std::to_string(soundID));
-		return;
-	}
-	if (!miniaudioSoundData.contains(soundID))
-	{
-		FranAudioShared::Logger::LogError("MiniAudio: Sound ID has invalid data: " + std::to_string(soundID));
-		return;
-	}
 
 	auto& soundPtr = miniaudioSoundData[soundID];
-	ma_sound_stop(&soundPtr->sound);
+
+	if (!soundPtr->isPaused)
+	{
+		ma_sound_stop(&soundPtr->sound);
+	}
+
 	ma_sound_uninit(&soundPtr->sound);
 
 	miniaudioSoundData.erase(soundID);
 	activeSounds.erase(soundID);
+}
+
+void FranAudio::Backend::miniaudio::SetSoundPaused(size_t soundID, bool isPaused)
+{
+	if (!IsSoundValid(soundID))
+	{
+		FranAudioShared::Logger::LogError("MiniAudio: Tried to pause/resume an invalid sound.");
+		return;
+	}
+
+	if (miniaudioSoundData[soundID]->isPaused == isPaused)
+	{
+		return;
+	}
+
+	if (isPaused)
+	{
+		miniaudioSoundData[soundID]->pausedFrame = ma_sound_get_time_in_pcm_frames (&miniaudioSoundData[soundID]->sound);
+		ma_sound_stop(&miniaudioSoundData[soundID]->sound);
+	}
+	else
+	{
+		ma_sound_start(&miniaudioSoundData[soundID]->sound);
+		ma_sound_seek_to_pcm_frame(&miniaudioSoundData[soundID]->sound, miniaudioSoundData[soundID]->pausedFrame);
+	}
+
+	miniaudioSoundData[soundID]->isPaused = isPaused;
+}
+
+bool FranAudio::Backend::miniaudio::IsSoundPaused(size_t soundID)
+{
+	return miniaudioSoundData[soundID]->isPaused;
 }
 
 void FranAudio::Backend::miniaudio::SetSoundVolume(size_t soundID, float volume)

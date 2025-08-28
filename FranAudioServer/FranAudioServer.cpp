@@ -427,7 +427,6 @@ const FranAudioShared::Containers::UnorderedMap<std::string, std::function<std::
 		}
 	},
 
-
 	// Sound::Stop
 	// Params: soundIndex
 	// Returns: nothing
@@ -458,6 +457,68 @@ const FranAudioShared::Containers::UnorderedMap<std::string, std::function<std::
 			}
 
 			return std::string();
+		}
+	},
+
+	// Sound::SetPaused
+	// Params: soundIndex, isPaused (1 or 0)
+	// Returns: nothing
+	{
+		"sound-set_paused",
+		[](const FranAudioShared::Network::NetworkFunction& fn)
+		{
+			if (fn.params.size() < 2)
+			{
+				FranAudioShared::Logger::LogError("Missing parameters for set_sound_paused");
+				return std::string("err");
+			}
+			if (fn.params[0] == std::to_string(SIZE_MAX))
+			{
+				FranAudioShared::Logger::LogError("Tried to play an unloaded audio file.");
+				return std::string("err");
+			}
+			try
+			{
+				const size_t soundId = std::stoull(fn.params[0]);
+				const bool isPaused = fn.params[1] == "1";
+				FranAudio::GetBackend()->SetSoundPaused(soundId, isPaused);
+			}
+			catch (const std::exception& e)
+			{
+				FranAudioShared::Logger::LogError(std::format("Failed to set sound paused state: {}", e.what()));
+				return std::string("err");
+			}
+			return std::string();
+		}
+	},
+
+	// Sound::IsPaused
+	// Params: soundIndex
+	// Returns: "1" if paused, "0" if not paused, "err" on error
+	{
+		"sound-is_paused",
+		[](const FranAudioShared::Network::NetworkFunction& fn)
+		{
+			if (fn.params.size() < 1)
+			{
+				FranAudioShared::Logger::LogError("Missing sound ID parameter");
+				return std::string("err");
+			}
+			if (fn.params[0] == std::to_string(SIZE_MAX))
+			{
+				FranAudioShared::Logger::LogError("Tried to play an unloaded audio file.");
+				return std::string("err");
+			}
+			try
+			{
+				const size_t soundId = std::stoull(fn.params[0]);
+				return FranAudio::GetBackend()->IsSoundPaused(soundId) ? std::string("1") : std::string("0");
+			}
+			catch (const std::exception& e)
+			{
+				FranAudioShared::Logger::LogError(std::format("Failed to check if sound with ID {} is paused: {}", fn.params[0], e.what()));
+				return std::string("err");
+			}
 		}
 	},
 

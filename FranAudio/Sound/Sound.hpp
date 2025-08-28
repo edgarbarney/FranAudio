@@ -60,6 +60,17 @@ namespace FranAudio::Sound
 		void Stop() const;
 
 		/// <summary>
+		/// Set whether the sound is paused or not.
+		/// </summary>
+		/// <param name="isPaused">True to pause the sound, false to resume playback</param>
+		void SetPaused(bool isPaused) const;
+
+		/// <summary>
+		/// Check if the sound is paused.
+		/// </summary>
+		bool IsPaused() const;
+
+		/// <summary>
 		/// Set the volume of the sound.
 	 	/// </summary>
  		/// <param name="volume">Volume to set the sound to (0.0 - 1.0)</param>
