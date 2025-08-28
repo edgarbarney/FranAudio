@@ -351,22 +351,6 @@ const FranAudioShared::Containers::UnorderedMap<std::string, std::function<std::
 		}
 	},
 
-	// Backend::PlayAudioFileNoChecks
-	// Params: filename
-	// Returns: sound index
-	{
-		"backend-play_audio_file_no_checks",
-		[](const FranAudioShared::Network::NetworkFunction& fn)
-		{
-			if (fn.params.size() < 1)
-			{
-				FranAudioShared::Logger::LogError("Missing filename parameter");
-				return std::string("err");
-			}
-			return std::to_string(FranAudio::GetBackend()->PlayAudioFileNoChecks(fn.params[0]));
-		}
-	},
-
 	// Backend::PlayAudioFileStream
 	// Params: filename
 	// Returns: sound index

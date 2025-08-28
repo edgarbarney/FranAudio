@@ -6,8 +6,8 @@
 
 #include "FranAudioShared/Logger/Logger.hpp"
 
-FranAudio::Sound::WaveData::WaveData(const std::string& filename, WaveFormat format, double length, int channels, int sampleRate)
-	: filename(filename), format(format), length(length), channels(channels), sampleRate(sampleRate), frameSize(0)
+FranAudio::Sound::WaveData::WaveData(const std::string& filename, size_t waveDataIndex, WaveFormat format, double length, int channels, int sampleRate)
+	: filename(filename), waveDataIndex(waveDataIndex), format(format), length(length), channels(channels), sampleRate(sampleRate), frameSize(0)
 {
 	//sizeInFrames = frames.size() / channels;
 	//frameSize = sizeof(float) * channels;
@@ -17,6 +17,11 @@ FranAudio::Sound::WaveData::WaveData(const std::string& filename, WaveFormat for
 void FranAudio::Sound::WaveData::SetFilename(const std::string& filename)
 {
 	this->filename = filename;
+}
+
+void FranAudio::Sound::WaveData::SetWaveDataIndex(size_t index)
+{
+	this->waveDataIndex = index;
 }
 
 void FranAudio::Sound::WaveData::SetFormat(WaveFormat format)
@@ -42,6 +47,11 @@ void FranAudio::Sound::WaveData::SetSampleRate(int sampleRate)
 const std::string& FranAudio::Sound::WaveData::GetFilename() const
 {
 	return filename;
+}
+
+size_t FranAudio::Sound::WaveData::GetWaveDataIndex() const
+{
+	return waveDataIndex;
 }
 
 FranAudio::Sound::WaveFormat FranAudio::Sound::WaveData::GetFormat() const

@@ -177,14 +177,6 @@ namespace FranAudioClient
 			FRANAUDIO_CLIENT_API size_t PlayAudioFile(const std::string& filename);
 
 			/// <summary>
-			/// Play an audio file without checking if it's loaded.
-			/// If the audio file is not loaded, it won't be played and will be ignored.
-			/// </summary>
-			/// <param name="filename">Path to the audio file</param>
-			/// <returns>Active Sounds List Index</returns>
-			FRANAUDIO_CLIENT_API size_t PlayAudioFileNoChecks(const std::string& filename);
-
-			/// <summary>
 			/// Play an audio file without loading it, stream it from the disk.
 			/// This is used to play an audio file without loading it into memory.
 			/// </summary>

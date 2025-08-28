@@ -153,6 +153,27 @@ float FranAudio::Backend::miniaudio::GetMasterVolume()
 // Audio File Management
 // ========================
 
+size_t FranAudio::Backend::miniaudio::PlayAudioWave(const FranAudio::Sound::WaveData& waveData)
+{
+	auto miniaudioSound = std::make_unique<MiniaudioSound>();
+
+	miniaudioSound->audioBufferConfig = ma_audio_buffer_config_init(ConvertFormat(waveData.GetFormat()), waveData.GetChannels(), waveData.SizeInFrames(), waveData.GetFrames().data(), nullptr);
+	miniaudioSound->audioBufferConfig.sampleRate = waveData.GetSampleRate(); // Why is this not set in the config init function?
+	ma_audio_buffer_init(&miniaudioSound->audioBufferConfig, &miniaudioSound->audioBuffer);
+	ma_sound_init_from_data_source(&engine, &miniaudioSound->audioBuffer, 0, nullptr, &miniaudioSound->sound);
+
+	// Generate our unique ID
+	const size_t soundID = nextSoundID++;
+
+	activeSounds[soundID] = FranAudio::Sound::Sound(soundID, waveData.GetWaveDataIndex());
+	ma_sound_set_volume(&miniaudioSound->sound, 1.0f);
+	ma_sound_start(&miniaudioSound->sound);
+
+	miniaudioSoundData[soundID] = std::move(miniaudioSound);
+
+	return soundID;
+}
+
 size_t FranAudio::Backend::miniaudio::LoadAudioFile(const std::string& filename)
 {
 	std::filesystem::path filePath(filename);
@@ -184,25 +205,16 @@ size_t FranAudio::Backend::miniaudio::LoadAudioFile(const std::string& filename)
 		return SIZE_MAX;
 	}
 
+	const size_t index = waveDataCache.size();
+	waveData.SetWaveDataIndex(index);
 	waveDataCache.emplace_back(waveData);
-	size_t index = waveDataCache.size() - 1;
 	filenameWaveMap[filename] = index;
-
-	// Debug
-	// TODO: Remove this
-	//PlayAudioFileNoChecks(filename);
-
 	FranAudioShared::Logger::LogSuccess(std::format("MiniAudio: Decoder {} loaded audio file: {}", FranAudio::Decoder::DecoderTypeNames[(int)currentDecoder->GetDecoderType()], filename));
 
 	return index;
 }
 
 size_t FranAudio::Backend::miniaudio::PlayAudioFile(const std::string& filename)
-{
-	return PlayAudioFileNoChecks(filename);
-}
-
-size_t FranAudio::Backend::miniaudio::PlayAudioFileNoChecks(const std::string& filename)
 {
 	auto it = filenameWaveMap.find(filename); // Filename - Wave data cache index
 	if (it == filenameWaveMap.end())
@@ -212,23 +224,7 @@ size_t FranAudio::Backend::miniaudio::PlayAudioFileNoChecks(const std::string& f
 	}
 
 	const auto& waveData = waveDataCache[it->second];
-	auto miniaudioSound = std::make_unique<MiniaudioSound>();
-
-	miniaudioSound->audioBufferConfig = ma_audio_buffer_config_init(ConvertFormat(waveData.GetFormat()), waveData.GetChannels(), waveData.SizeInFrames(), waveData.GetFrames().data(), nullptr);
-	miniaudioSound->audioBufferConfig.sampleRate = waveData.GetSampleRate(); // Why is this not set in the config init function?
-	ma_audio_buffer_init(&miniaudioSound->audioBufferConfig, &miniaudioSound->audioBuffer);
-	ma_sound_init_from_data_source(&engine, &miniaudioSound->audioBuffer, 0, nullptr, &miniaudioSound->sound);
-
-	// Generate our unique ID
-	const size_t soundID = nextSoundID++;
-
-	activeSounds[soundID] = FranAudio::Sound::Sound(soundID, it->second);
-	ma_sound_set_volume(&miniaudioSound->sound, 1.0f);
-	ma_sound_start(&miniaudioSound->sound);
-
-	miniaudioSoundData[soundID] = std::move(miniaudioSound);
-
-	return soundID;
+	return PlayAudioWave(waveData);
 }
 
 size_t FranAudio::Backend::miniaudio::PlayAudioFileStream(const std::string& filename)
@@ -255,13 +251,15 @@ void FranAudio::Backend::miniaudio::StopPlayingSound(size_t soundID)
 
 	auto& soundPtr = miniaudioSoundData[soundID];
 
-	if (!soundPtr->isPaused)
+	if (!activeSounds[soundID]._Internal_GetPaused())
 	{
 		ma_sound_stop(&soundPtr->sound);
 	}
 
 	ma_sound_uninit(&soundPtr->sound);
+	ma_audio_buffer_uninit(&soundPtr->audioBuffer);
 
+	soundPtr.reset();
 	miniaudioSoundData.erase(soundID);
 	activeSounds.erase(soundID);
 }
@@ -274,28 +272,39 @@ void FranAudio::Backend::miniaudio::SetSoundPaused(size_t soundID, bool isPaused
 		return;
 	}
 
-	if (miniaudioSoundData[soundID]->isPaused == isPaused)
+	auto& activeSound = activeSounds[soundID];
+	auto* maSoundData = &miniaudioSoundData[soundID]->sound;
+
+	//if (IsSoundPaused(soundID) == isPaused)
+	if(activeSound._Internal_GetPaused() == isPaused)
 	{
 		return;
 	}
 
 	if (isPaused)
 	{
-		miniaudioSoundData[soundID]->pausedFrame = ma_sound_get_time_in_pcm_frames (&miniaudioSoundData[soundID]->sound);
-		ma_sound_stop(&miniaudioSoundData[soundID]->sound);
+		activeSound._Internal_SetPausedFrame(ma_sound_get_time_in_pcm_frames(maSoundData));
+		ma_sound_stop(maSoundData);
 	}
 	else
 	{
-		ma_sound_start(&miniaudioSoundData[soundID]->sound);
-		ma_sound_seek_to_pcm_frame(&miniaudioSoundData[soundID]->sound, miniaudioSoundData[soundID]->pausedFrame);
+		ma_sound_start(maSoundData);
+		ma_sound_seek_to_pcm_frame(maSoundData, activeSound._Internal_GetPausedFrame());
+		activeSound._Internal_SetPausedFrame(0);
 	}
 
-	miniaudioSoundData[soundID]->isPaused = isPaused;
+	activeSounds[soundID]._Internal_SetPaused(isPaused);
 }
 
 bool FranAudio::Backend::miniaudio::IsSoundPaused(size_t soundID)
 {
-	return miniaudioSoundData[soundID]->isPaused;
+	if (!IsSoundValid(soundID))
+	{
+		FranAudioShared::Logger::LogError("MiniAudio: Tried to check paused state of an invalid sound.");
+		return false;
+	}
+
+	return activeSounds[soundID]._Internal_GetPaused();
 }
 
 void FranAudio::Backend::miniaudio::SetSoundVolume(size_t soundID, float volume)

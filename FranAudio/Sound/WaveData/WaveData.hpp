@@ -27,6 +27,7 @@ namespace FranAudio::Sound
 	{
 	private:
 		std::string filename;			///<summary> Filename of the audio file. </summary>
+		size_t waveDataIndex;			///<summary> ID of the wave data. </summary>
 
 		WaveFormat format;				///<summary> Audio format. </summary>
 		double length;					///<summary> Length of the audio in seconds. </summary>
@@ -46,15 +47,17 @@ namespace FranAudio::Sound
 		/// <summary>
 		/// Default constructor.
 		/// </summary>
-		WaveData(const std::string& filename = "", WaveFormat format = WaveFormat::Unknown, double length = 0.0, int channels = 0, int sampleRate = 0);
+		WaveData(const std::string& filename = "", size_t waveDataIndex = 0, WaveFormat format = WaveFormat::Unknown, double length = 0.0, int channels = 0, int sampleRate = 0);
 
 		void SetFilename(const std::string& filename);
+		void SetWaveDataIndex(size_t index);
 		void SetFormat(WaveFormat format);
 		void SetLength(double length);
 		void SetChannels(char channels);
 		void SetSampleRate(int sampleRate);
 
 		[[nodiscard]] const std::string& GetFilename() const;
+		[[nodiscard]] size_t GetWaveDataIndex() const;
 		[[nodiscard]] WaveFormat GetFormat() const;
 		[[nodiscard]] double GetLength() const;
 		[[nodiscard]] char GetChannels() const;

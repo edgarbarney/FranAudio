@@ -28,6 +28,16 @@ namespace FranAudio::Sound
 		/// </summary>
 		size_t waveDataIndex;
 
+		/// <summary>
+		/// Whether the sound is paused or not.
+		/// </summary>
+		bool isPaused;
+
+		/// <summary>
+		/// Frame the sound was paused at.
+		/// </summary>
+		size_t pausedFrame;
+
 	public:
 		/// <summary>
 		/// Constructor.
@@ -91,5 +101,40 @@ namespace FranAudio::Sound
 		/// Get the position of the sound.
 		/// </summary>
 		void GetPosition(float outPosition[3]) const;
+
+		// ========================
+		// INTERNAL USE ONLY
+		// ========================
+
+		/// <summary>
+		/// <para>INTERNAL USE ONLY</para>
+		/// 
+		/// Sets only the internal paused state of the sound.
+		/// </summary>
+		void _Internal_SetPaused(bool isPaused);
+
+		/// <summary>
+		/// <para>INTERNAL USE ONLY</para>
+		/// 
+		/// Gets only the internal paused state of the sound.
+		/// </summary>
+		/// <returns>True if the sound is paused, false otherwise</returns>
+		bool _Internal_GetPaused() const;
+
+		/// <summary>
+		/// <para>INTERNAL USE ONLY</para>
+		/// 
+		/// Sets only the internal paused frame of the sound.
+		/// </summary>
+		/// <param name="frame">Frame to set the paused frame to</param>
+		void _Internal_SetPausedFrame(size_t frame);
+
+		/// <summary>
+		/// <para>INTERNAL USE ONLY</para>
+		/// 
+		/// Gets only the internal paused frame of the sound.
+		/// </summary>
+		/// <returns>Frame the sound was paused at</returns>
+		size_t _Internal_GetPausedFrame() const;
 	};
 }

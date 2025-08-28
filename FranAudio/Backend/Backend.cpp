@@ -91,7 +91,7 @@ bool FranAudio::Backend::Backend::IsSoundValid(size_t soundIndex)
 
 FranAudio::Sound::Sound& FranAudio::Backend::Backend::GetSound(size_t soundID)
 {
-	return activeSounds.at(soundID);
+	return activeSounds[soundID];
 } 
 
 const FranAudioShared::Containers::UnorderedMap<size_t, FranAudio::Sound::Sound>& FranAudio::Backend::Backend::GetActiveSounds() const

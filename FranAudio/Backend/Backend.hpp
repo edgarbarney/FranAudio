@@ -178,6 +178,13 @@ namespace FranAudio::Backend
 		// ========================
 
 		/// <summary>
+		/// Play an audio file that is already loaded into memory.
+		/// </summary>
+		/// <param name="waveData">Wave data to play</param>
+		/// <returns>Active Sounds List Index</returns>
+		virtual size_t PlayAudioWave(const FranAudio::Sound::WaveData& waveData) = 0;
+
+		/// <summary>
 		/// Decode an audio file and load it into the memory.
 		/// </summary>
 		/// <param name="filename">Path to the audio file</param>
@@ -191,14 +198,6 @@ namespace FranAudio::Backend
 		/// <param name="filename">Path to the audio file</param>
 		/// <returns>Active Sounds List Index</returns>
 		virtual size_t PlayAudioFile(const std::string& filename) = 0;
-
-		/// <summary>
-		/// Play an audio file without checking if it's loaded.
-		/// If the audio file is not loaded, it won't be played and will be ignored.
-		/// </summary>
-		/// <param name="filename">Path to the audio file</param>
-		/// <returns>Active Sounds List Index</returns>
-		virtual size_t PlayAudioFileNoChecks(const std::string& filename) = 0;
 
 		/// <summary>
 		/// Play an audio file without loading it, stream it from the disk.
@@ -268,7 +267,7 @@ namespace FranAudio::Backend
 
 		/// <summary>
 		/// Get a reference to a playing sound by its index.
-		/// Index MUST be valid.
+		/// Index MUST be valid. Check with IsSoundValid() first.
 		/// </summary>
 		/// <param name="soundID">ID of the sound to get</param>
 		virtual Sound::Sound& GetSound(size_t soundID);

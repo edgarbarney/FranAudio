@@ -58,11 +58,6 @@ namespace FranAudio::Backend
 			ma_audio_buffer_config audioBufferConfig = {};
 			ma_audio_buffer audioBuffer = {};
 			ma_sound sound = {};
-
-			bool isPaused = false;
-			size_t pausedFrame = 0;
-
-			bool isLooping = false;
 		};
 
 		/// <summary>
@@ -173,6 +168,13 @@ namespace FranAudio::Backend
 		// ========================
 
 		/// <summary>
+		/// Play an audio file that is already loaded into memory.
+		/// </summary>
+		/// <param name="waveData">Wave data to play</param>
+		/// <returns>Active Sounds List Index</returns>
+		virtual size_t PlayAudioWave(const FranAudio::Sound::WaveData& waveData) override;
+
+		/// <summary>
 		/// Decode an audio file and load it into the memory.
 		/// </summary>
 		/// <param name="filename">Path to the audio file</param>
@@ -186,15 +188,7 @@ namespace FranAudio::Backend
 		/// <param name="filename">Path to the audio file</param>
 		/// <returns>Active Sounds List Index</returns>
 		virtual size_t PlayAudioFile(const std::string& filename) override;
-
-		/// <summary>
-		/// Play an audio file without checking if it's loaded.
-		/// If the audio file is not loaded, it won't be played and will be ignored.
-		/// </summary>
-		/// <param name="filename">Path to the audio file</param>
-		/// <returns>Active Sounds List Index</returns>
-		virtual size_t PlayAudioFileNoChecks(const std::string& filename) override;
-
+		
 		/// <summary>
 		/// Play an audio file without loading it, stream it from the disk.
 		/// This is used to play an audio file without loading it into memory.

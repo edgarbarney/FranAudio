@@ -8,58 +8,85 @@
 
 #include "FranAudioShared/Logger/Logger.hpp"
 
-FranAudio::Sound::Sound::Sound(size_t soundID, size_t waveDataIndex)
-	: soundID(soundID), waveDataIndex(waveDataIndex)
+namespace FranAudio::Sound
 {
+	Sound::Sound(size_t soundID, size_t waveDataIndex)
+		: soundID(soundID), waveDataIndex(waveDataIndex), isPaused(false), pausedFrame(0)
+	{
 
-}
+	}
 
-bool FranAudio::Sound::Sound::IsValid() const
-{
-	return FranAudio::GetBackend()->IsSoundValid(soundID);
-}
+	bool Sound::IsValid() const
+	{
+		return FranAudio::GetBackend()->IsSoundValid(soundID);
+	}
 
-size_t FranAudio::Sound::Sound::GetSoundID() const
-{
-    return soundID;
-}
+	size_t Sound::GetSoundID() const
+	{
+		return soundID;
+	}
 
-size_t FranAudio::Sound::Sound::GetWaveDataIndex() const
-{
-	return waveDataIndex;
-}
+	size_t Sound::GetWaveDataIndex() const
+	{
+		return waveDataIndex;
+	}
 
-void FranAudio::Sound::Sound::Stop() const
-{
-	FranAudio::GetBackend()->StopPlayingSound(soundID);
-}
+	void Sound::Stop() const
+	{
+		FranAudio::GetBackend()->StopPlayingSound(soundID);
+	}
 
-void FranAudio::Sound::Sound::SetPaused(bool isPaused) const
-{
-	FranAudio::GetBackend()->SetSoundPaused(soundID, isPaused);
-}
+	void Sound::SetPaused(bool isPaused) const
+	{
+		FranAudio::GetBackend()->SetSoundPaused(soundID, isPaused);
+	}
 
-bool FranAudio::Sound::Sound::IsPaused() const
-{
-	return FranAudio::GetBackend()->IsSoundPaused(soundID);
-}
+	bool Sound::IsPaused() const
+	{
+		return FranAudio::GetBackend()->IsSoundPaused(soundID);
+	}
 
-void FranAudio::Sound::Sound::SetVolume(float volume) const
-{
-	FranAudio::GetBackend()->SetSoundVolume(soundID, volume);
-}
+	void Sound::SetVolume(float volume) const
+	{
+		FranAudio::GetBackend()->SetSoundVolume(soundID, volume);
+	}
 
-float FranAudio::Sound::Sound::GetVolume() const
-{
-	return FranAudio::GetBackend()->GetSoundVolume(soundID);
-}
+	float Sound::GetVolume() const
+	{
+		return FranAudio::GetBackend()->GetSoundVolume(soundID);
+	}
 
-void FranAudio::Sound::Sound::SetPosition(const float position[3]) const
-{
-	FranAudio::GetBackend()->SetSoundPosition(soundID, position);
-}
+	void Sound::SetPosition(const float position[3]) const
+	{
+		FranAudio::GetBackend()->SetSoundPosition(soundID, position);
+	}
 
-void FranAudio::Sound::Sound::GetPosition(float outPosition[3]) const
-{
-	FranAudio::GetBackend()->GetSoundPosition(soundID, outPosition);
+	void Sound::GetPosition(float outPosition[3]) const
+	{
+		FranAudio::GetBackend()->GetSoundPosition(soundID, outPosition);
+	}
+
+	// ========================
+	// INTERNAL USE ONLY
+	// ========================
+
+	void Sound::_Internal_SetPaused(bool isPaused)
+	{
+		this->isPaused = isPaused;
+	}
+
+	bool Sound::_Internal_GetPaused() const
+	{
+		return isPaused;
+	}
+
+	void Sound::_Internal_SetPausedFrame(size_t frame)
+	{
+		pausedFrame = frame;
+	}
+
+	size_t Sound::_Internal_GetPausedFrame() const
+	{
+		return pausedFrame;
+	}
 }
