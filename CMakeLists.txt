@@ -5,9 +5,9 @@
 cmake_minimum_required(VERSION 3.23)
 
 project("FranAudio"
-    VERSION 0.1.0
-    DESCRIPTION "FranAudio - Audio Library, Mainly for Games and Game Engines"
-    LANGUAGES CXX C
+	VERSION 0.1.0
+	DESCRIPTION "FranAudio - Audio Library, Mainly for Games and Game Engines"
+	LANGUAGES CXX C
 )
 
 set(CMAKE_CXX_STANDARD 23)
@@ -50,17 +50,17 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 # Windows Specifics
 # =================
 if (WIN32)
-    add_compile_definitions(
-        _CRT_SECURE_NO_DEPRECATE
-        _USE_MATH_DEFINES
-        NOMINMAX
-        _UNICODE
-        UNICODE
-    )
-    if (MSVC)
-        set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
-        set(BUILD_SHARED_LIBS TRUE)
-    endif()
+	add_compile_definitions(
+		_CRT_SECURE_NO_DEPRECATE
+		_USE_MATH_DEFINES
+		NOMINMAX
+		_UNICODE
+		UNICODE
+	)
+	if (MSVC)
+		set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+		set(BUILD_SHARED_LIBS TRUE)
+	endif()
 elseif (UNIX)
 	# TODO: Linux Support
 endif()
@@ -76,11 +76,11 @@ include("CMakeMacros.cmake")
 include("FranAudio/Files.cmake")
 include("FranAudioShared/Files.cmake")
 if (FRANAUDIO_USE_TEST)
-    include("FranAudioTest/Files.cmake")
+	include("FranAudioTest/Files.cmake")
 endif()
 if (FRANAUDIO_USE_SERVER)
-    include("FranAudioServer/Files.cmake")
-    include("FranAudioClient/Files.cmake")
+	include("FranAudioServer/Files.cmake")
+	include("FranAudioClient/Files.cmake")
 endif()
 
 # =================
@@ -121,7 +121,7 @@ endif()
 if (FRANAUDIO_USE_OPUS)
 	set(OP_DISABLE_HTTP ON CACHE BOOL "Disable HTTP/HTTPS support" FORCE)
 
-    # Opus
+	# Opus
 	FetchContent_Declare(
 		opus
 		GIT_REPOSITORY https://github.com/xiph/opus.git
@@ -153,7 +153,7 @@ add_subdirectory("Libs/miniaudio")
 add_subdirectory("Libs/libnyquist")
 
 if (FRANAUDIO_USE_TEST)
-    # GLWF
+	# GLWF
 	FetchContent_Declare(
 		glfw
 		GIT_REPOSITORY https://github.com/glfw/glfw.git
@@ -171,95 +171,95 @@ endif()
 # FranAudio Library
 # =================
 add_library(FranAudio SHARED
-    ${FRANAUDIO_SOURCEFILES}
-    ${FRANAUDIOSHARED_SOURCEFILES}
+	${FRANAUDIO_SOURCEFILES}
+	${FRANAUDIOSHARED_SOURCEFILES}
 )
 
 target_compile_definitions(FranAudio PRIVATE
-    FRANAUDIO_DYNAMIC
-    FRANAUDIO_EXPORTS
-    $<$<BOOL:${FRANAUDIO_USE_VORBIS}>:FRANAUDIO_USE_VORBIS>
-    $<$<BOOL:${FRANAUDIO_USE_OPUS}>:FRANAUDIO_USE_OPUS>
+	FRANAUDIO_DYNAMIC
+	FRANAUDIO_EXPORTS
+	$<$<BOOL:${FRANAUDIO_USE_VORBIS}>:FRANAUDIO_USE_VORBIS>
+	$<$<BOOL:${FRANAUDIO_USE_OPUS}>:FRANAUDIO_USE_OPUS>
 )
 
 target_link_libraries(FranAudio
-    PRIVATE miniaudio libnyquist
-    PRIVATE $<$<BOOL:${FRANAUDIO_USE_VORBIS}>:miniaudio_libvorbis>
-    PRIVATE $<$<BOOL:${FRANAUDIO_USE_OPUS}>:miniaudio_libopus>
+	PRIVATE miniaudio libnyquist
+	PRIVATE $<$<BOOL:${FRANAUDIO_USE_VORBIS}>:miniaudio_libvorbis>
+	PRIVATE $<$<BOOL:${FRANAUDIO_USE_OPUS}>:miniaudio_libopus>
 )
 
 # Export headers
 target_sources(FranAudio
-    PUBLIC
-        FILE_SET HEADERS
-        BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
-        FILES
-            ${FRANAUDIO_HEADERFILES}
-            ${FRANAUDIOSHARED_HEADERFILES}
+	PUBLIC
+		FILE_SET HEADERS
+		BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
+		FILES
+			${FRANAUDIO_HEADERFILES}
+			${FRANAUDIOSHARED_HEADERFILES}
 )
 
 # =================
 # FranAudio Server & Client
 # =================
 if (FRANAUDIO_USE_SERVER)
-    add_executable(FranAudioServer
-        ${FRANAUDIOSERVER_SOURCEFILES}
-        ${FRANAUDIOSHARED_SOURCEFILES}
-    )
-    target_link_libraries(FranAudioServer PRIVATE FranAudio)
+	add_executable(FranAudioServer
+		${FRANAUDIOSERVER_SOURCEFILES}
+		${FRANAUDIOSHARED_SOURCEFILES}
+	)
+	target_link_libraries(FranAudioServer PRIVATE FranAudio)
 
-    add_library(FranAudioClient SHARED
-        ${FRANAUDIOCLIENT_SOURCEFILES}
-        ${FRANAUDIOSHARED_SOURCEFILES}
-    )
-    target_compile_definitions(FranAudioClient PRIVATE FRANAUDIO_CLIENT_DYNAMIC)
+	add_library(FranAudioClient SHARED
+		${FRANAUDIOCLIENT_SOURCEFILES}
+		${FRANAUDIOSHARED_SOURCEFILES}
+	)
+	target_compile_definitions(FranAudioClient PRIVATE FRANAUDIO_CLIENT_DYNAMIC)
 
-    target_sources(FranAudioClient
-        PUBLIC
-            FILE_SET HEADERS
-            BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
-            FILES ${FRANAUDIOCLIENT_HEADERFILES}
-    )
+	target_sources(FranAudioClient
+		PUBLIC
+			FILE_SET HEADERS
+			BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
+			FILES ${FRANAUDIOCLIENT_HEADERFILES}
+	)
 endif()
 
 # =================
 # FranAudio Test Application
 # =================
 if (FRANAUDIO_USE_TEST)
-    find_package(OpenGL REQUIRED)
+	find_package(OpenGL REQUIRED)
 
-    add_executable(FranAudioTest
-        ${FRANAUDIOTEST_SOURCEFILES}
-        ${FRANAUDIOSHARED_SOURCEFILES}
+	add_executable(FranAudioTest
+		${FRANAUDIOTEST_SOURCEFILES}
+		${FRANAUDIOSHARED_SOURCEFILES}
 
-        # ImGui sources
-        Libs/imgui/imgui.cpp
-        Libs/imgui/imgui_draw.cpp
-        Libs/imgui/imgui_tables.cpp
-        Libs/imgui/imgui_widgets.cpp
-        Libs/imgui/backends/imgui_impl_glfw.cpp
-        Libs/imgui/backends/imgui_impl_opengl3.cpp
-    )
+		# ImGui sources
+		Libs/imgui/imgui.cpp
+		Libs/imgui/imgui_draw.cpp
+		Libs/imgui/imgui_tables.cpp
+		Libs/imgui/imgui_widgets.cpp
+		Libs/imgui/backends/imgui_impl_glfw.cpp
+		Libs/imgui/backends/imgui_impl_opengl3.cpp
+	)
 
-    set_target_properties(FranAudioTest PROPERTIES
-        WIN32_EXECUTABLE TRUE
-    )
+	set_target_properties(FranAudioTest PROPERTIES
+		WIN32_EXECUTABLE TRUE
+	)
 
-    target_include_directories(FranAudioTest PRIVATE
-        Libs/glad/include
-        Libs/imgui
-        ${OPENGL_INCLUDE_DIR}
-    )
+	target_include_directories(FranAudioTest PRIVATE
+		Libs/glad/include
+		Libs/imgui
+		${OPENGL_INCLUDE_DIR}
+	)
 
-    target_link_libraries(FranAudioTest
-        PRIVATE FranAudio
-        PRIVATE ${OPENGL_LIBRARIES}
+	target_link_libraries(FranAudioTest
+		PRIVATE FranAudio
+		PRIVATE ${OPENGL_LIBRARIES}
 		PRIVATE glfw
-    )
+	)
 
-    if (FRANAUDIO_USE_SERVER)
-        target_link_libraries(FranAudioTest PRIVATE FranAudioClient)
-    endif()
+	if (FRANAUDIO_USE_SERVER)
+		target_link_libraries(FranAudioTest PRIVATE FranAudioClient)
+	endif()
 endif()
 
 # =================
@@ -268,15 +268,15 @@ endif()
 include(GNUInstallDirs)
 
 install(TARGETS FranAudio
-    EXPORT FranAudioTargets
-    FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	EXPORT FranAudioTargets
+	FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
 install(EXPORT FranAudioTargets
-    FILE FranAudioConfig.cmake
-    NAMESPACE FranAudio::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FranAudio
+	FILE FranAudioConfig.cmake
+	NAMESPACE FranAudio::
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FranAudio
 )
