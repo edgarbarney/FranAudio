@@ -85,12 +85,57 @@ FRANAUDIO_CLIENT_API void FranAudioClient::Shutdown()
 		WSACleanup();
 }
 
+FRANAUDIO_CLIENT_API bool FranAudioClient::Reconnect()
+{
+	if (isSocketValid)
+	{
+		closesocket(tcpSocket);
+		isSocketValid = false;
+	}
+
+	tcpSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (tcpSocket == INVALID_SOCKET)
+		return false;
+
+	if (connect(tcpSocket, (sockaddr*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR)
+		return false;
+
+	isSocketValid = true;
+	return true;
+}
+
 FRANAUDIO_CLIENT_API std::string FranAudioClient::Send(const char* message)
 {
 	const std::string data(message, message + std::strlen(message));
-	FranAudioShared::Network::Win32Helpers::SendFrame(tcpSocket, data);
 
-	return FranAudioShared::Network::Win32Helpers::RecvFrame(tcpSocket);
+	if (!FranAudioShared::Network::Win32Helpers::SendFrame(tcpSocket, data))
+	{
+		if (Reconnect())
+		{
+			FranAudioShared::Logger::LogMessage("Reconnected to server, retrying...");
+			FranAudioShared::Network::Win32Helpers::SendFrame(tcpSocket, data);
+		}
+		else
+		{
+			FranAudioShared::Logger::LogError("Failed to send message and reconnect to server.");
+			return {};
+		}
+	}
+
+	auto reply = FranAudioShared::Network::Win32Helpers::RecvFrame(tcpSocket);
+	if (!reply)
+	{
+		if (Reconnect())
+		{
+			FranAudioShared::Logger::LogMessage("Reconnected to server, but no reply received.");
+			return {};
+		}
+
+		FranAudioShared::Logger::LogError("Failed to receive reply from server.");
+		return {};
+	}
+
+	return *reply;
 }
 
 FRANAUDIO_CLIENT_API std::string FranAudioClient::Send(const FranAudioShared::Network::NetworkFunction& message)

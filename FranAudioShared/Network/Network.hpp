@@ -7,6 +7,7 @@
 #include <string_view>
 #include <vector>
 #include <ranges>
+#include <optional>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -25,7 +26,7 @@ namespace FranAudioShared
 		constexpr size_t messageBufferSize = 1024;
 		constexpr const char* listenAddress = "127.0.0.1"; // localhost
 		constexpr unsigned short listenPort = 31069; // Hehe
-		constexpr const int messageTimeout = 1000; //In milliseconds
+		constexpr const int messageTimeout = 10000; // Reasonable file read time
 
 		/// <summary>
 		/// Represents a network function with a name and parameters.
@@ -33,6 +34,7 @@ namespace FranAudioShared
 		/// This is used for client-server communication in FranAudio.
 		/// The function name is the first part of the message, followed by parameters separated by '|'.
 		/// Example: "$[functionName]|[param1]|[param2]|...|[paramN]"
+		/// </summary>
 		struct NetworkFunction
 		{
 			std::string functionName;
@@ -72,8 +74,8 @@ namespace FranAudioShared
 			/// "$[functionName]|[param1]|[param2]|...|[paramN]"
 			/// </summary>
 			/// 
-			/// <param name="input">Input string, generally the received network message.</param>
-			/// <returns></returns>
+			/// <param name="input">Input string, generally the received network message</param>
+			/// <returns>Parsed NetworkFunction object</returns>
 			static NetworkFunction ParseFunction(std::string_view input)
 			{
 				if (input.size() < 3 || input.front() != '$')
@@ -146,8 +148,8 @@ namespace FranAudioShared
 			/// <summary>
 			/// Converts a 64-bit unsigned integer from host byte order to big-endian byte order.
 			/// </summary>
-			/// <param name="data">The 64-bit unsigned integer value in host byte order.</param>
-			/// <returns>The 64-bit unsigned integer value in big-endian byte order.</returns>
+			/// <param name="data">The 64-bit unsigned integer value in host byte order</param>
+			/// <returns>The 64-bit unsigned integer value in big-endian byte order</returns>
 			inline uint64_t hostToBE64(uint64_t data)
 			{
 				uint32_t hi = htonl(static_cast<uint32_t>(data >> 32));
@@ -158,8 +160,8 @@ namespace FranAudioShared
 			/// <summary>
 			/// Converts a 64-bit unsigned integer from big-endian byte order to the host's native byte order.
 			/// </summary>
-			/// <param name="data">The 64-bit unsigned integer in big-endian byte order.</param>
-			/// <returns>The 64-bit unsigned integer converted to the host's native byte order.</returns>
+			/// <param name="data">The 64-bit unsigned integer in big-endian byte order</param>
+			/// <returns>The 64-bit unsigned integer converted to the host's native byte order</returns>
 			inline uint64_t be64ToHost(uint64_t data)
 			{
 				uint32_t lo = ntohl(static_cast<uint32_t>(data >> 32));
@@ -168,12 +170,13 @@ namespace FranAudioShared
 			}
 
 			/// <summary>
-			/// Sends all data over a socket, ensuring the entire buffer is transmitted.
+			/// Tries to send all data over a socket, ensuring the entire buffer is transmitted.
 			/// </summary>
-			/// <param name="socket">The socket through which data will be sent.</param>
-			/// <param name="data">Pointer to the buffer containing the data to send.</param>
-			/// <param name="length">The number of bytes to send from the buffer.</param>
-			inline void SendAll(SOCKET socket, const char* data, size_t length)
+			/// <param name="socket">The socket through which data will be sent</param>
+			/// <param name="data">Pointer to the buffer containing the data to send</param>
+			/// <param name="length">The number of bytes to send from the buffer</param>
+			/// <returns>True if all data was sent successfully, false if an error occurred</returns>
+			inline bool SendAll(SOCKET socket, const char* data, size_t length)
 			{
 				while (length > 0)
 				{
@@ -182,21 +185,23 @@ namespace FranAudioShared
 					if (sent == SOCKET_ERROR)
 					{
 						FranAudioShared::Logger::LogError("SendAll: Connection closed or error happened in send.");
-						return;
+						return false;
 					}
 
 					data += sent;
 					length -= sent;
 				}
+				return true;
 			}
 
 			/// <summary>
-			/// Receives exactly the specified number of bytes from a socket.
+			/// Tries to receive exactly the specified number of bytes from a socket.
 			/// </summary>
-			/// <param name="socket">The socket from which to receive data.</param>
-			/// <param name="data">A pointer to the buffer where the received data will be stored.</param>
-			/// <param name="length">The exact number of bytes to receive.</param>
-			inline void RecvExactly(SOCKET socket, char* data, size_t length)
+			/// <param name="socket">The socket from which to receive data</param>
+			/// <param name="data">A pointer to the buffer where the received data will be stored</param>
+			/// <param name="length">The exact number of bytes to receive</param>
+			/// <returns>True if the exact number of bytes was received, false if the connection was closed or an error occurred</returns>
+			inline bool RecvExactly(SOCKET socket, char* data, size_t length)
 			{
 				while (length > 0)
 				{
@@ -204,47 +209,55 @@ namespace FranAudioShared
 
 					if (received <= 0)
 					{
-						FranAudioShared::Logger::LogError("RecvExactly: Connection closed or error happened in receieve.");
-						return;
+						FranAudioShared::Logger::LogError("RecvExactly: Connection closed or error happened in receive.");
+						return false;
 					}
 
 					data += received;
 					length -= received;
 				}
+				return true;
 			}
 
 			/// <summary>
-			/// Sends a data frame over a socket, including the data size in big-endian format followed by the data.
+			/// Tries to send a data frame over a socket, including the data size in big-endian format followed by the data.
 			/// </summary>
-			/// <param name="socket">The socket through which the frame will be sent.</param>
-			/// <param name="data">The data to be sent as the frame.</param>
-			inline void SendFrame(SOCKET socket, const std::string& data)
+			/// <param name="socket">The socket through which the frame will be sent</param>
+			/// <param name="data">The data to be sent as the frame</param>
+			/// <returns>True if the frame was sent successfully, false if an error occurred</returns>
+			inline bool SendFrame(SOCKET socket, const std::string& data)
 			{
 				uint64_t length = hostToBE64(static_cast<uint64_t>(data.size()));
-				SendAll(socket, reinterpret_cast<const char*>(&length), sizeof(length));
-				SendAll(socket, data.data(), data.size());
+				return SendAll(socket, reinterpret_cast<const char*>(&length), sizeof(length)) && SendAll(socket, data.data(), data.size());
 			}
 
 			/// <summary>
-			/// Receives a data frame from a socket, reading its length prefix and contents.
+			/// Tries to receive a data frame from a socket, reading its length prefix and contents.
 			/// </summary>
-			/// <param name="socket">The socket from which to receive the frame.</param>
-			/// <returns>A string containing the received frame data.</returns>
-			inline std::string RecvFrame(SOCKET socket)
+			/// <param name="socket">The socket from which to receive the frame</param>
+			/// <returns>An optional string containing the received frame data, or std::nullopt if an error occurred</returns>
+			inline std::optional<std::string> RecvFrame(SOCKET socket)
 			{
 				uint64_t bigEndianLength = 0;
-				RecvExactly(socket, reinterpret_cast<char*>(&bigEndianLength), sizeof(bigEndianLength));
+				if (!RecvExactly(socket, reinterpret_cast<char*>(&bigEndianLength), sizeof(bigEndianLength)))
+				{
+					return std::nullopt;
+				}
+
 				uint64_t length = be64ToHost(bigEndianLength);
 
 				if (length > (1ull << 32))
 				{
 					FranAudioShared::Logger::LogError("RecvFrame: Frame too large.");
-					return {};
+					return std::nullopt;
 				}
 
 				std::string buffer;
 				buffer.resize(static_cast<size_t>(length));
-				RecvExactly(socket, buffer.data(), buffer.size());
+				if (!RecvExactly(socket, buffer.data(), buffer.size()))
+				{
+					return std::nullopt;
+				}
 
 				return buffer;
 			}

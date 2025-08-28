@@ -78,6 +78,25 @@ void StopTestSound(size_t soundId)
 	FranAudioShared::Logger::LogMessage(std::format("Stopped sound ID: {}", soundId));
 }
 
+void PauseTestSound(size_t soundId, bool pause)
+{
+#ifndef FRANAUDIO_USE_SERVER
+	FranAudio::GetBackend()->SetSoundPaused(soundId, pause);
+#else
+	FranAudioClient::Wrapper::Sound::SetPaused(soundId, pause);
+#endif
+}
+
+bool IsTestSoundPaused(size_t soundId)
+{
+#ifndef FRANAUDIO_USE_SERVER
+	//return FranAudio::GetBackend()->GetSound(soundId).IsPaused();
+	return FranAudio::GetBackend()->IsSoundPaused(soundId);
+#else
+	return FranAudioClient::Wrapper::Sound::IsPaused(soundId);
+#endif
+}
+
 void SetListenerTransform(float position[3], float forward[3], float up[3])
 {
 #ifndef FRANAUDIO_USE_SERVER
@@ -165,7 +184,7 @@ int main()
 		return -1;
 	}
 
-	GLFWwindow* window = glfwCreateWindow(1280, 720, "ImGui Example", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(1280, 720, "FranAudio Test App", nullptr, nullptr);
 	if (!window)
 	{
 		glfwTerminate();
@@ -211,8 +230,9 @@ int main()
 		ImGui::NewFrame();
 
 		// Controls
-		
-		// Let's create a simple ImGui window with some controls
+
+		// ID to prevent conflicts
+		size_t orderedID = 0;
 
 		ImGui::Begin("FranAudio Test Controls", nullptr, ImGuiWindowFlags_NoResize);
 		ImGui::Text("This is a simple test window for FranAudio.");
@@ -256,7 +276,6 @@ int main()
 		}
 #else
 #endif
-		auto eben = FranAudio::GetBackend();
 
 		if (ImGui::Button("Browse file to play"))
 		{
@@ -330,7 +349,7 @@ int main()
 			{
 					for (size_t i = 0; i < franConsole.GetEntries().size(); i++)
 					{
-						ImGui::PushID(i);
+						ImGui::PushID(orderedID++);
 						if (ImGui::Selectable(franConsole.GetEntries()[i].text.c_str()))
 						{
 							franConsole.Remove(i);
@@ -365,9 +384,26 @@ int main()
 					StopTestSound(soundId);
 				}
 
-				if (ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 2.0f, "%.2f"))
+				ImGui::Text("Sound Volume: ");
+
+				if (ImGui::SliderFloat("##soundvolume", &soundVolume, 0.0f, 2.0f, "%.2f"))
 				{
 					SetSoundVolume(soundId, soundVolume);
+				}
+
+				if (IsTestSoundPaused(soundId))
+				{
+					if (ImGui::Button(std::format("Resume Sound ID: {}", soundId).c_str()))
+					{
+						PauseTestSound(soundId, false);
+					}
+				}
+				else
+				{
+					if (ImGui::Button(std::format("Pause Sound ID: {}", soundId).c_str()))
+					{
+						PauseTestSound(soundId, true);
+					}
 				}
 			ImGui::End();
 		}

@@ -28,6 +28,12 @@ namespace FranAudioClient
 	FRANAUDIO_CLIENT_API void Shutdown();
 
 	/// <summary>
+	/// Attempt to reconnect to the server.
+	/// </summary>
+	/// <returns>True if reconnection was successful, false otherwise</returns>
+	FRANAUDIO_CLIENT_API bool Reconnect();
+
+	/// <summary>
 	/// Send a message to the server, and wait for a response.
 	/// Response will be returned as a string, and will be empty if no response is received.
 	///
