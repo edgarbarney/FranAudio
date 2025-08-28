@@ -239,7 +239,8 @@ int main()
 		ImGui::Text("You can test audio files by clicking the buttons below.");
 #ifndef FRANAUDIO_USE_SERVER
 		ImGui::Text("Backend:");
-		if (ImGui::BeginCombo("##backend", FranAudio::Backend::BackendTypeNames[(size_t)FranAudio::GetBackend()->GetBackendType()]))
+		auto eben = FranAudio::Backend::BackendTypeNames[(size_t)FranAudio::GetBackend()->GetBackendType()];
+		if (ImGui::BeginCombo("##backend", eben))
 		{
 			for (size_t backendId = 0; backendId < std::size(FranAudio::Backend::BackendTypeNames); backendId++)
 			{
@@ -363,8 +364,11 @@ int main()
 			ImGui::Separator();
 		ImGui::End();
 
+		auto soundIDs = GetActiveSoundIDs();
+		auto activeSounds = FranAudio::GetBackend()->GetActiveSounds();
+
 		// Display currently playing sounds
-		for (size_t soundId : GetActiveSoundIDs())
+		for (size_t soundId : soundIDs)
 		{
 			ImVec2 soundPos;
 			float soundPosition[3] = { 0.0f, 0.0f, 0.0f };
@@ -378,11 +382,6 @@ int main()
 				SetSoundPosition(soundId, soundPosition);
 
 				ImGui::Text("Sound ID: %zu", soundId);
-
-				if (ImGui::Button(std::format("Stop Sound ID: {}", soundId).c_str()))
-				{
-					StopTestSound(soundId);
-				}
 
 				ImGui::Text("Sound Volume: ");
 
@@ -404,6 +403,11 @@ int main()
 					{
 						PauseTestSound(soundId, true);
 					}
+				}
+
+				if (ImGui::Button(std::format("Stop Sound ID: {}", soundId).c_str()))
+				{
+					StopTestSound(soundId);
 				}
 			ImGui::End();
 		}
