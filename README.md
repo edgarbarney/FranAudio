@@ -7,17 +7,15 @@ A basic audio library made mainly for games and game engines that utilises C++23
 
 # Features:
 - Modular Backend Support with `FranAudio::Backend::Backend` Interface  
-- Optional High-Level Server-Client Communication (localhost) for Inter-Process Usage (Mainly for Game Modding)  
-- **WAV**, **MP3**, **FLAC** and *(optional)* **Vorbis** Support
+- Optional High-Level Local Server-Client Communication for Inter-Process Usage (Mainly for Game Modding)  
+- **WAV**, **MP3**, **FLAC** support, along with *optional* **Vorbis** and **Opus** extensions.
 - Optional extensive logging for both developers and end users.
 - Dynamic Positional Audio
 
 # To-do:
-- Extend Server-Client Communication  
-- Post-Processing Effects  
 - OpenAL Backend  
+- Post-Processing Effects  
 - Linux Support  
-- Opus Support  
 - C API  
 
 # Modules:
@@ -55,7 +53,7 @@ For now, only Windows is supported. In near future, Linux support will be added.
 - CMake 3.20 or newer
 - A Compiler that supports C++23
 
-#### Build Steps for Visual Studio 2022 (MSVC)
+#### Build an Install Steps for Visual Studio 2022 (MSVC)
 - Get the code
     - (Recommended) Use git to clone the repo (For example, using `git clone https://github.com/edgarbarney/FranAudio`)
     - Download the code using the `<> Code` button and `Download ZIP` option.
@@ -66,8 +64,16 @@ For now, only Windows is supported. In near future, Linux support will be added.
 - Choose your desired profile and build the project.
     - You can use the `F7` build shortcut.
     - You can use `Build > Build All`
+- After chosing your desired profile, you can also install the project.
+    - You can use `Build > Install FranAudio`
 
-Upon completing the build process, your binaries will be in `FranAudio/out/build/{build_profile}/bin` and your header files will be in `FranAudio/out/build/{build_profile}/include`.
+Upon completing the build process;  
+ your binaries will be in `FranAudio/out/build/{build_profile}/bin`  
+
+Upon completing the installation;  
+your binaries will be in `FranAudio/out/install/{build_profile}/bin`  
+your headers will be in `FranAudio/out/install/{build_profile}/include`  
+your libraries will be in `FranAudio/out/install/{build_profile}/lib`  
 
 
 # Testing
