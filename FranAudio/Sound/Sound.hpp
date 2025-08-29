@@ -34,9 +34,9 @@ namespace FranAudio::Sound
 		bool isPaused;
 
 		/// <summary>
-		/// Frame the sound was paused at.
+		/// Time the sound was paused at in miliseconds.
 		/// </summary>
-		size_t pausedFrame;
+		size_t pausedTime;
 
 	public:
 		/// <summary>
@@ -124,17 +124,17 @@ namespace FranAudio::Sound
 		/// <summary>
 		/// <para>INTERNAL USE ONLY</para>
 		/// 
-		/// Sets only the internal paused frame of the sound.
+		/// Sets only the internal paused time of the sound in miliseconds.
 		/// </summary>
-		/// <param name="frame">Frame to set the paused frame to</param>
-		void _Internal_SetPausedFrame(size_t frame);
+		/// <param name="frame">Time to set the paused time in miliseconds</param>
+		void _Internal_SetPausedTime(size_t timeInMs);
 
 		/// <summary>
 		/// <para>INTERNAL USE ONLY</para>
 		/// 
-		/// Gets only the internal paused frame of the sound.
+		/// Gets only the internal paused time of the sound in miliseconds.
 		/// </summary>
-		/// <returns>Frame the sound was paused at</returns>
-		size_t _Internal_GetPausedFrame() const;
+		/// <returns>Time the sound was paused at in miliseconds</returns>
+		size_t _Internal_GetPausedTime() const;
 	};
 }

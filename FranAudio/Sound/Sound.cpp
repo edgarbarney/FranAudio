@@ -11,7 +11,7 @@
 namespace FranAudio::Sound
 {
 	Sound::Sound(size_t soundID, size_t waveDataIndex)
-		: soundID(soundID), waveDataIndex(waveDataIndex), isPaused(false), pausedFrame(0)
+		: soundID(soundID), waveDataIndex(waveDataIndex), isPaused(false), pausedTime(0)
 	{
 
 	}
@@ -80,13 +80,13 @@ namespace FranAudio::Sound
 		return isPaused;
 	}
 
-	void Sound::_Internal_SetPausedFrame(size_t frame)
+	void Sound::_Internal_SetPausedTime(size_t timeInMs)
 	{
-		pausedFrame = frame;
+		pausedTime = timeInMs;
 	}
 
-	size_t Sound::_Internal_GetPausedFrame() const
+	size_t Sound::_Internal_GetPausedTime() const
 	{
-		return pausedFrame;
+		return pausedTime;
 	}
 }

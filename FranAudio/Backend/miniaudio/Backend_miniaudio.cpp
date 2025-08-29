@@ -288,14 +288,14 @@ void FranAudio::Backend::miniaudio::SetSoundPaused(size_t soundID, bool isPaused
 
 	if (isPaused)
 	{
-		activeSound._Internal_SetPausedFrame(ma_sound_get_time_in_pcm_frames(maSoundData));
+		activeSound._Internal_SetPausedTime(ma_sound_get_time_in_milliseconds(maSoundData));
 		ma_sound_stop(maSoundData);
 	}
 	else
 	{
 		ma_sound_start(maSoundData);
-		ma_sound_seek_to_pcm_frame(maSoundData, activeSound._Internal_GetPausedFrame());
-		activeSound._Internal_SetPausedFrame(0);
+		ma_sound_seek_to_second(maSoundData, activeSound._Internal_GetPausedTime());
+		activeSound._Internal_SetPausedTime(0);
 	}
 
 	activeSounds[soundID]._Internal_SetPaused(isPaused);
