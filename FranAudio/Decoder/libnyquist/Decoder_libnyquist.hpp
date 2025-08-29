@@ -73,7 +73,63 @@ namespace FranAudio::Decoder
 		/// </summary>
 		/// <param name="audioData">libnyquist AudioData to convert into WaveData</param>
 		static void ConvertNyqDataToFranData(const nqr::AudioData& audioData, FranAudio::Sound::WaveData& targetWaveData);
-	
+		
+		/// <summary>
+		/// Convert a float sample to an unsigned 8-bit integer sample.
+		/// </summary>
+		/// <param name="sample">Float sample to convert</param>
+		/// <returns>Converted unsigned 8-bit integer sample</returns>
+		static FranAudio::Sound::U8Sample FloatToU8(FranAudio::Sound::FloatSample sample);
+
+		/// <summary>
+		/// Convert an unsigned 8-bit integer sample to a float sample.
+		/// </summary>
+		/// <param name="sample">Unsigned 8-bit integer sample to convert</param>
+		/// <returns>Converted float sample</returns>
+		static FranAudio::Sound::FloatSample U8ToFloat(FranAudio::Sound::U8Sample sample);
+
+		/// <summary>
+		/// Convert a float sample to a signed 16-bit integer sample.
+		/// </summary>
+		/// <param name="sample">Float sample to convert</param>
+		/// <returns>Converted signed 16-bit integer sample</returns>
+		static FranAudio::Sound::S16Sample FloatToS16(FranAudio::Sound::FloatSample sample);
+
+		/// <summary>
+		/// Convert a signed 16-bit integer sample to a float sample.
+		/// </summary>
+		/// <param name="sample">Signed 16-bit integer sample to convert</param>
+		/// <returns>Converted float sample</returns>
+		static FranAudio::Sound::FloatSample S16ToFloat(FranAudio::Sound::S16Sample sample);
+
+		/// <summary>
+		/// Convert a buffer of float samples to a buffer of unsigned 8-bit integer samples.
+		/// </summary>
+		/// <param name="samples">Buffer of float samples to convert</param>
+		/// <returns>Converted buffer of unsigned 8-bit integer samples</returns>
+		static FranAudio::Sound::U8SampleContainer FloatBufferToU8(const FranAudio::Sound::FloatSampleContainer& samples);
+
+		/// <summary>
+		/// Convert a buffer of unsigned 8-bit integer samples to a buffer of float samples.
+		/// </summary>
+		/// <param name="samples">Buffer of unsigned 8-bit integer samples to convert</param>
+		/// <returns>Converted buffer of float samples</returns>
+		static FranAudio::Sound::FloatSampleContainer U8BufferToFloat(const FranAudio::Sound::U8SampleContainer& samples);
+
+		/// <summary>
+		/// Convert a buffer of float samples to a buffer of signed 16-bit integer samples.
+		/// </summary>
+		/// <param name="samples">Buffer of float samples to convert</param>
+		/// <returns>Converted buffer of signed 16-bit integer samples</returns>
+		static FranAudio::Sound::S16SampleContainer FloatBufferToS16(const FranAudio::Sound::FloatSampleContainer& samples);
+
+		/// <summary>
+		/// Convert a buffer of signed 16-bit integer samples to a buffer of float samples.
+		/// </summary>
+		/// <param name="samples">Buffer of signed 16-bit integer samples to convert</param>
+		/// <returns>Converted buffer of float samples</returns>
+		static FranAudio::Sound::FloatSampleContainer S16BufferToFloat(const FranAudio::Sound::S16SampleContainer& samples);
+
 		static FranAudio::Sound::WaveFormat ConvertWaveFormat(const nqr::PCMFormat& format);
 
 		static nqr::PCMFormat ConvertWaveFormat(const FranAudio::Sound::WaveFormat& format);
