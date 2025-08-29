@@ -157,7 +157,12 @@ size_t FranAudio::Backend::miniaudio::PlayAudioWave(const FranAudio::Sound::Wave
 {
 	auto miniaudioSound = std::make_unique<MiniaudioSound>();
 
-	miniaudioSound->audioBufferConfig = ma_audio_buffer_config_init(ConvertFormat(waveData.GetFormat()), waveData.GetChannels(), waveData.SizeInFrames(), waveData.GetFrames().data(), nullptr);
+	std::visit([&waveData, &miniaudioSound](auto&& formattedWaveData)
+	{
+		miniaudioSound->audioBufferConfig = ma_audio_buffer_config_init(ConvertFormat(waveData.GetFormat()), waveData.GetChannels(), waveData.SizeInFrames(), formattedWaveData.data(), nullptr);
+	}, waveData.GetFrames());
+
+	
 	miniaudioSound->audioBufferConfig.sampleRate = waveData.GetSampleRate(); // Why is this not set in the config init function?
 	ma_audio_buffer_init(&miniaudioSound->audioBufferConfig, &miniaudioSound->audioBuffer);
 	ma_sound_init_from_data_source(&engine, &miniaudioSound->audioBuffer, 0, nullptr, &miniaudioSound->sound);

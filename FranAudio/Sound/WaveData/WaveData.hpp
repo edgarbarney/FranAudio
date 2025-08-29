@@ -4,22 +4,10 @@
 #include <vector>
 #include <string>
 
+#include "WaveFormats.hpp"
+
 namespace FranAudio::Sound
 {
-	/// <summary>
-	/// Possible audio wave formats.
-	/// </summary>
-	enum class WaveFormat : uint8_t
-	{
-		Unknown = 0,	///<summary> Unknown format, used for errors, wildcards etc. </summary>
-		PCM_8bit,		///<summary> Unsigned 8-bit PCM  </summary>
-		PCM_16bit,		///<summary> Signed 16-bit PCM </summary>
-		PCM_24bit,		///<summary> Signed 24-bit PCM </summary>
-		PCM_32bit,		///<summary> Signed 32-bit PCM </summary>
-		IEEE_FLOAT,		///<summary> 32-bit IEEE floating point </summary>
-		IEEE_DOUBLE		///<summary> 64-bit IEEE floating point. Not really supported, use with caution. </summary>
-	};
-
 	/// <summary>
 	/// Contains decoded audio data.
 	/// </summary>
@@ -38,10 +26,8 @@ namespace FranAudio::Sound
 		// Frames
 		// =========
 
-		//std::vector<uint8_t> frames8;		///<summary> Unsigned 8-bit PCM samples. </summary>
-		//std::vector<int16_t> frames16;	///<summary> Signed 16-bit PCM samples. </summary>
-		std::vector<float> framesFloat;		///<summary> Float Audio samples. </summary>
-		unsigned char frameSize;			///<summary> Bits per frame * channels. </summary>
+		SampleFrameContainer frames;	///<summary> Audio samples. </summary>
+		unsigned char frameSize;		///<summary> Bits per frame * channels. </summary>
 
 	public:
 		/// <summary>
@@ -90,16 +76,16 @@ namespace FranAudio::Sound
 		/// This will set frame vector.
 		/// </summary>
 		/// <param name="frames"></param>
-		void SetFrames(const std::vector<float>& frames);
+		void SetFrames(const SampleFrameContainer& frames);
 
 		/// <summary>
 		/// Get a reference to frames vector.
 		/// </summary>
-		std::vector<float>& GetFramesRef();
+		SampleFrameContainer& GetFramesRef();
 
 		/// <summary>
 		/// Get frames.
 		/// </summary>
-		[[nodiscard]] const std::vector<float>& GetFrames() const;
+		[[nodiscard]] const SampleFrameContainer& GetFrames() const;
 	};
 }

@@ -21,9 +21,11 @@ FILE(GLOB FRANAUDIO_HEADERFILES
 
 	#WaveData
 	FranAudio/Sound/WaveData/WaveData.hpp
+	FranAudio/Sound/WaveData/WaveFormats.hpp
 
 	#Backend
 	FranAudio/Backend/Backend.hpp
+	FranAudio/Backend/BackendTypes.hpp
 	FranAudio/Backend/miniaudio/Backend_miniaudio.hpp
 	#FranAudio/Backend/OpenALSoft/OpenALSoft.hpp
 

@@ -7,6 +7,7 @@
 
 #include "Decoder/DecoderTypes.hpp"
 #include "Backend/BackendTypes.hpp"
+#include "Sound/WaveData/WaveFormats.hpp"
 
 namespace FranAudioClient
 {
@@ -98,6 +99,42 @@ namespace FranAudioClient
 			/// </summary>
 			/// <returns>Type of the current decoder used by this backend</returns>
 			FRANAUDIO_CLIENT_API FranAudio::Decoder::DecoderType GetDecoderType();
+
+			/// <summary>
+			/// Sets forced decode format for decoding.
+			/// </summary>
+			/// <param name="format">Forced format to be used in decoding</param>
+			FRANAUDIO_CLIENT_API void SetForcedDecodeFormat(FranAudio::Sound::WaveFormat format);
+
+			/// <summary>
+			/// Gets forced decode format for decoding.
+			/// </summary>
+			/// <returns>The forced decode format</returns>
+			FRANAUDIO_CLIENT_API FranAudio::Sound::WaveFormat GetForcedDecodeFormat();
+
+			/// <summary>
+			/// Sets the number of channels to be used in decoding.
+			/// </summary>
+			/// <param name="channels">Forced number of channels in decoding</param>
+			FRANAUDIO_CLIENT_API void SetForcedDecodeChannels(char channels);
+
+			/// <summary>
+			/// Gets forced number of channels for decoding.
+			/// </summary>
+			/// <returns>The forced number of channels</returns>
+			FRANAUDIO_CLIENT_API char GetForcedDecodeChannels();
+
+			/// <summary>
+			/// Sets forced sample rate for decoding.
+			/// </summary>
+			/// <param name="sampleRate">Forced sample rate to be used for decoding</param>
+			FRANAUDIO_CLIENT_API void SetForcedDecodeSampleRate(int sampleRate);
+
+			/// <summary>
+			/// Gets forced sample rate for decoding.
+			/// </summary>
+			/// <returns>The forced sample rate</returns>
+			FRANAUDIO_CLIENT_API int GetForcedDecodeSampleRate();
 
 			// ========================
 			// Listener (3D Audio)

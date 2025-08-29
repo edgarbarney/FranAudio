@@ -59,6 +59,63 @@ namespace FranAudioClient::Wrapper
 			}
 		}
 
+		FRANAUDIO_CLIENT_API void SetForcedDecodeFormat(FranAudio::Sound::WaveFormat format)
+		{
+			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_forced_decode_format", { std::to_string(static_cast<int>(format)) }));
+		}
+
+		FRANAUDIO_CLIENT_API FranAudio::Sound::WaveFormat GetForcedDecodeFormat()
+		{
+			auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-get_forced_decode_format", {}));
+			try
+			{
+				return static_cast<FranAudio::Sound::WaveFormat>(std::stoi(response));
+			}
+			catch (const std::exception& e)
+			{
+				FranAudioShared::Logger::LogError("Failed to get forced decode format from server!");
+				return FranAudio::Sound::WaveFormat::Unknown;
+			}
+		}
+
+		FRANAUDIO_CLIENT_API void SetForcedDecodeChannels(char channels)
+		{
+			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_forced_decode_channels", { std::to_string(static_cast<int>(channels)) }));
+		}
+
+		FRANAUDIO_CLIENT_API char GetForcedDecodeChannels()
+		{
+			auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-get_forced_decode_channels", {}));
+			try
+			{
+				return static_cast<char>(std::stoi(response));
+			}
+			catch (const std::exception& e)
+			{
+				FranAudioShared::Logger::LogError("Failed to get forced decode channels from server!");
+				return 0;
+			}
+		}
+
+		FRANAUDIO_CLIENT_API void SetForcedDecodeSampleRate(int sampleRate)
+		{
+			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_forced_decode_sample_rate", { std::to_string(sampleRate) }));
+		}
+
+		FRANAUDIO_CLIENT_API int GetForcedDecodeSampleRate()
+		{
+			auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-get_forced_decode_sample_rate", {}));
+			try
+			{
+				return std::stoi(response);
+			}
+			catch (const std::exception& e)
+			{
+				FranAudioShared::Logger::LogError("Failed to get forced decode sample rate from server!");
+				return 0;
+			}
+		}
+
 		// ========================
 		// Listener (3D Audio)
 		// ========================

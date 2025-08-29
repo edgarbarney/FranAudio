@@ -56,7 +56,7 @@ void FranAudio::Decoder::libnyquist::ConvertFranDataToNyqData(const FranAudio::S
 	targetAudioData.channelCount = waveData.GetChannels();
 	targetAudioData.sampleRate = waveData.GetSampleRate();
 	targetAudioData.frameSize = waveData.GetFrameSize();
-	targetAudioData.samples = waveData.GetFrames();
+	//targetAudioData.samples = waveData.GetFrames();
 	// TODO: Test the format stuff
 	targetAudioData.sourceFormat = ConvertWaveFormat(waveData.GetFormat());
 }
@@ -76,7 +76,7 @@ FranAudio::Sound::WaveFormat FranAudio::Decoder::libnyquist::ConvertWaveFormat(c
 {
 	switch (format)
 	{
-	case nqr::PCMFormat::PCM_S8: // Should we ignore signed one?
+	case nqr::PCMFormat::PCM_S8: // Should we not ignore signed one?
 	case nqr::PCMFormat::PCM_U8:
 		return FranAudio::Sound::WaveFormat::PCM_8bit;
 	case nqr::PCMFormat::PCM_16:

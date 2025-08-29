@@ -106,6 +106,20 @@ bool FranAudio::Decoder::miniaudio::DecodeAudioFile(const std::string& filename,
 		temp = miniAudioRef.GetDefaultDecoderConfig();
 	}
 
+	// Apply forced decode settings from the backend, if any
+	if (FranAudio::gGlobals.currentBackend->GetForcedDecodeFormat() != FranAudio::Sound::WaveFormat::Unknown)
+	{
+		temp->format = FranAudio::Backend::miniaudio::ConvertFormat(FranAudio::gGlobals.currentBackend->GetForcedDecodeFormat());
+	}
+	if (FranAudio::gGlobals.currentBackend->GetForcedDecodeChannels() != 0)
+	{
+		temp->channels = FranAudio::gGlobals.currentBackend->GetForcedDecodeChannels();
+	}
+	if (FranAudio::gGlobals.currentBackend->GetForcedDecodeSampleRate() != 0)
+	{
+		temp->sampleRate = FranAudio::gGlobals.currentBackend->GetForcedDecodeSampleRate();
+	}
+
 	if (ma_decoder_init_file(filename.c_str(), temp, &decoder) != MA_SUCCESS)
 	{
 		FranAudioShared::Logger::LogError("MiniAudio: Failed to initialise decoder for file: " + filename);
@@ -124,22 +138,34 @@ bool FranAudio::Decoder::miniaudio::DecodeAudioFile(const std::string& filename,
 
 	const auto channels = decoder.outputChannels;
 	const auto sampleRate = decoder.outputSampleRate;
+	const auto format = FranAudio::Backend::miniaudio::ConvertFormat(decoder.outputFormat);
 
 	targetWaveData.SetFilename(filename);
-	targetWaveData.SetFormat(FranAudio::Backend::miniaudio::ConvertFormat(decoder.outputFormat));
+	targetWaveData.SetFormat(format);
 	targetWaveData.SetLength(0.0f);
 	targetWaveData.SetChannels(channels);
 	targetWaveData.SetSampleRate(sampleRate);
-	targetWaveData.SetFrameSize(sizeof(float) * channels);
+	targetWaveData.SetFrameSize(FranAudio::Sound::GetWaveFormatSize(format) * channels);
+
+	// Set the appropriate container type based on the format
+	targetWaveData.GetFramesRef() = FranAudio::Sound::CreateWaveFormatContainer(format);
 
 	ma_uint64 totalFrameCount = 0;
 	if (ma_decoder_get_length_in_pcm_frames(&decoder, &totalFrameCount) == MA_SUCCESS && totalFrameCount > 0)
 	{
-		// Let's preallocate the buffer if we can get the total frame count.
-		targetWaveData.GetFramesRef().resize(static_cast<size_t>(totalFrameCount) * channels);
-
 		ma_uint64 framesRead = 0;
-		if (ma_decoder_read_pcm_frames(&decoder, targetWaveData.GetFramesRef().data(), totalFrameCount, &framesRead) != MA_SUCCESS || framesRead == 0)
+		ma_result decodeResult = MA_ERROR;
+
+		std::visit([&decodeResult, &framesRead, &totalFrameCount, &channels, &decoder](auto&& formattedWaveData)
+		{
+			// Let's preallocate the buffer if we can get the total frame count.
+			formattedWaveData.resize(static_cast<size_t>(totalFrameCount) * channels);
+			decodeResult = ma_decoder_read_pcm_frames(&decoder, formattedWaveData.data(), totalFrameCount, &framesRead);
+
+		}, targetWaveData.GetFramesRef());
+
+
+		if (decodeResult != MA_SUCCESS || framesRead == 0)
 		{
 			FranAudioShared::Logger::LogError("MiniAudio: Failed to read audio data from file: " + filename);
 			ma_decoder_uninit(&decoder);
@@ -150,9 +176,9 @@ bool FranAudio::Decoder::miniaudio::DecodeAudioFile(const std::string& filename,
 	}
 	else
 	{
-		// Full file read fallback (e.g., for Vorbis/Opus)
-		const size_t bufferFrames = 64u * 1024u; // 64K frames
-		std::vector<float> buffer(bufferFrames * channels);
+		// Full file read fallback (e.g., for Vorbis)
+		const size_t bufferFrames = 64ull * 1024ull; // 64K frames
+		FranAudio::Sound::FloatSampleContainer buffer(bufferFrames * channels);
 		size_t totalFrames = 0;
 
 		while (true)
@@ -161,8 +187,19 @@ bool FranAudio::Decoder::miniaudio::DecodeAudioFile(const std::string& filename,
 			if (ma_decoder_read_pcm_frames(&decoder, buffer.data(), bufferFrames, &framesRead) != MA_SUCCESS || framesRead == 0)
 				break;
 
-			totalFrames += static_cast<size_t>(framesRead);
-			targetWaveData.GetFramesRef().insert(targetWaveData.GetFramesRef().end(), buffer.begin(), buffer.begin() + (framesRead * channels));
+			totalFrames += framesRead;
+
+			std::visit([&buffer, &framesRead, &channels](auto& formattedWaveData)
+			{
+				using SampleType = typename std::decay_t<decltype(formattedWaveData)>::value_type;
+				size_t samples = framesRead * channels;
+				formattedWaveData.reserve(formattedWaveData.size() + samples);
+
+				for (size_t i = 0; i < samples; ++i)
+				{ 
+					formattedWaveData.push_back(FranAudio::Sound::ConvertSample<SampleType>(buffer[i]));
+				}
+			}, targetWaveData.GetFramesRef());
 		}
 
 		if (totalFrames == 0)

@@ -46,6 +46,28 @@ namespace FranAudio::Backend
 		/// </summary>
 		FranAudioShared::Containers::UnorderedMap<size_t, FranAudio::Sound::Sound> activeSounds;
 
+		// ========================
+		// Forced Decode Settings
+		// ========================
+
+		/// <summary>
+		/// Forced format for decoding audio files.
+		/// WaveFormat::Unknown means no forced format.
+		/// </summary>
+		FranAudio::Sound::WaveFormat forcedFormat = FranAudio::Sound::WaveFormat::Unknown;
+
+		/// <summary>
+		/// Forced number of channels for decoding audio files.
+		/// 0 means no forced channels.
+		/// </summary>
+		char forcedChannels = 0;
+
+		/// <summary>
+		/// Forced sample rate for decoding audio files.
+		/// 0 means no forced sample rate.
+		/// </summary>
+		int forcedSampleRate = 0;
+
 	public:
 		Backend() = default;
 		~Backend();
@@ -114,6 +136,42 @@ namespace FranAudio::Backend
 		/// Destroy the current decoder.
 		/// </summary>
 		void DestroyDecoder();
+
+		/// <summary>
+		/// Sets forced decode format for decoding.
+		/// </summary>
+		/// <param name="format">Forced format to be used in decoding</param>
+		void SetForcedDecodeFormat(FranAudio::Sound::WaveFormat format);
+
+		/// <summary>
+		/// Gets forced decode format for decoding.
+		/// </summary>
+		/// <returns>The forced decode format</returns>
+		FranAudio::Sound::WaveFormat GetForcedDecodeFormat() const;
+
+		/// <summary>
+		/// Sets the number of channels to be used in decoding.
+		/// </summary>
+		/// <param name="channels">Forced number of channels in decoding</param>
+		void SetForcedDecodeChannels(char channels);
+
+		/// <summary>
+		/// Gets forced number of channels for decoding.
+		/// </summary>
+		/// <returns>The forced number of channels</returns>
+		char GetForcedDecodeChannels() const;
+
+		/// <summary>
+		/// Sets forced sample rate for decoding.
+		/// </summary>
+		/// <param name="sampleRate">Forced sample rate to be used for decoding</param>
+		void SetForcedDecodeSampleRate(int sampleRate);
+
+		/// <summary>
+		/// Gets forced sample rate for decoding.
+		/// </summary>
+		/// <returns>The forced sample rate</returns>
+		int GetForcedDecodeSampleRate() const;
 
 		// ========================
 		// Listener (3D Audio)

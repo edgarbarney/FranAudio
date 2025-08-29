@@ -53,14 +53,14 @@ void FranAudio::Backend::Backend::SetDecoder(FranAudio::Decoder::DecoderType dec
 		{
 			currentDecoder = FranAudio::Decoder::Decoder::CreateDecoder(decoderType);
 			currentDecoderType = decoderType;
-			FranAudioShared::Logger::LogMessage(std::format("{}: Initialised decoder type {}", FranAudio::Backend::BackendTypeViews[(size_t)GetBackendType()], FranAudio::Decoder::DecoderTypeViews[(size_t)decoderType]));
+			FranAudioShared::Logger::LogMessage(std::format("{}: Initialised decoder type {}", FranAudio::Backend::BackendTypeNames[(size_t)GetBackendType()], FranAudio::Decoder::DecoderTypeNames[(size_t)decoderType]));
 			return;
 		}
 	}
 
 	if (currentDecoder == nullptr)
 	{
-		FranAudioShared::Logger::LogError(std::format("{}: Decoder type not supported", FranAudio::Backend::BackendTypeViews[(size_t)GetBackendType()]));
+		FranAudioShared::Logger::LogError(std::format("{}: Decoder type not supported", FranAudio::Backend::BackendTypeNames[(size_t)GetBackendType()]));
 		return;
 	}
 }
@@ -73,6 +73,36 @@ void FranAudio::Backend::Backend::DestroyDecoder()
 		delete currentDecoder;
 		currentDecoder = nullptr;
 	}
+}
+
+void FranAudio::Backend::Backend::SetForcedDecodeFormat(FranAudio::Sound::WaveFormat format)
+{
+	forcedFormat = format;
+}
+
+FranAudio::Sound::WaveFormat FranAudio::Backend::Backend::GetForcedDecodeFormat() const
+{
+	return forcedFormat;
+}
+
+void FranAudio::Backend::Backend::SetForcedDecodeChannels(char channels)
+{
+	forcedChannels = channels;
+}
+
+char FranAudio::Backend::Backend::GetForcedDecodeChannels() const
+{
+	return forcedChannels;
+}
+
+void FranAudio::Backend::Backend::SetForcedDecodeSampleRate(int sampleRate)
+{
+	forcedSampleRate = sampleRate;
+}
+
+int FranAudio::Backend::Backend::GetForcedDecodeSampleRate() const
+{
+	return forcedSampleRate;
 }
 
 // ========================

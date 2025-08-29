@@ -136,6 +136,132 @@ const FranAudioShared::Containers::UnorderedMap<std::string, std::function<std::
 		}
 	},
 
+	// Backend::SetForcedDecodeFormat
+	// Params: format
+	// Returns: nothing
+	{
+		"backend-set_forced_decode_format",
+		[](const FranAudioShared::Network::NetworkFunction& fn)
+		{
+			if (fn.params.size() < 1)
+			{
+				FranAudioShared::Logger::LogError("Missing parameters for set_forced_decode_format");
+				return std::string("err");
+			}
+			try
+			{
+				const auto format = static_cast<FranAudio::Sound::WaveFormat>(std::stoi(fn.params[0]));
+				FranAudio::GetBackend()->SetForcedDecodeFormat(format);
+			}
+			catch (const std::exception& e)
+			{
+				FranAudioShared::Logger::LogError("Failed to set forced decode format: {}", e.what());
+				return std::string("err");
+			}
+			return std::string();
+		}
+	},
+
+	// Backend::GetForcedDecodeFormat
+	// Params: none
+	// Returns: format
+	{
+		"backend-get_forced_decode_format",
+		[](const FranAudioShared::Network::NetworkFunction& fn)
+		{
+			if (FranAudio::GetBackend() == nullptr)
+			{
+				FranAudioShared::Logger::LogError("Backend is not initialised!");
+				return std::string("err");
+			}
+			return std::to_string(static_cast<int>(FranAudio::GetBackend()->GetForcedDecodeFormat()));
+		}
+	},
+
+	// Backend::SetForcedDecodeChannels
+	// Params: channels
+	// Returns: nothing
+	{
+		"backend-set_forced_decode_channels",
+		[](const FranAudioShared::Network::NetworkFunction& fn)
+		{
+			if (fn.params.size() < 1)
+			{
+				FranAudioShared::Logger::LogError("Missing parameters for set_forced_decode_channels");
+				return std::string("err");
+			}
+			try
+			{
+				const char channels = static_cast<char>(std::stoi(fn.params[0]));
+				FranAudio::GetBackend()->SetForcedDecodeChannels(channels);
+			}
+			catch (const std::exception& e)
+			{
+				FranAudioShared::Logger::LogError("Failed to set forced decode channels: {}", e.what());
+				return std::string("err");
+			}
+			return std::string();
+		}
+	},
+
+	// Backend::GetForcedDecodeChannels
+	// Params: none
+	// Returns: channels
+	{
+		"backend-get_forced_decode_channels",
+		[](const FranAudioShared::Network::NetworkFunction& fn)
+		{
+			if (FranAudio::GetBackend() == nullptr)
+			{
+				FranAudioShared::Logger::LogError("Backend is not initialised!");
+				return std::string("err");
+			}
+			return std::to_string(static_cast<int>(FranAudio::GetBackend()->GetForcedDecodeChannels()));
+		}
+	},
+
+	// Backend::SetForcedDecodeSampleRate
+	// Params: sampleRate
+	// Returns: nothing
+	{
+		"backend-set_forced_decode_sample_rate",
+		[](const FranAudioShared::Network::NetworkFunction& fn)
+		{
+			if (fn.params.size() < 1)
+			{
+				FranAudioShared::Logger::LogError("Missing parameters for set_forced_decode_sample_rate");
+				return std::string("err");
+			}
+			try
+			{
+				const int sampleRate = std::stoi(fn.params[0]);
+				FranAudio::GetBackend()->SetForcedDecodeSampleRate(sampleRate);
+			}
+			catch (const std::exception& e)
+			{
+				FranAudioShared::Logger::LogError("Failed to set forced decode sample rate: {}", e.what());
+				return std::string("err");
+			}
+			return std::string();
+		}
+	},
+
+	// Backend::GetForcedDecodeSampleRate
+	// Params: none
+	// Returns: sampleRate
+	{
+		"backend-get_forced_decode_sample_rate",
+		[](const FranAudioShared::Network::NetworkFunction& fn)
+		{
+			if (FranAudio::GetBackend() == nullptr)
+			{
+				FranAudioShared::Logger::LogError("Backend is not initialised!");
+				return std::string("err");
+			}
+			return std::to_string(FranAudio::GetBackend()->GetForcedDecodeSampleRate());
+		}
+	},
+
 	// ========================
 	// Listener (3D Audio)
 	// ========================

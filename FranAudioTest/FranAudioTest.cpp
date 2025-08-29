@@ -205,6 +205,9 @@ int main()
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
+	io.LogFilename = nullptr;
+	io.IniFilename = nullptr;
+
 	ImGui::FileBrowser fileBrowser;
 
 	//io.ConfigWindowsMoveFromTitleBarOnly = true; // Allow moving windows only from the title bar. To prevent teleportation of listener.
@@ -277,6 +280,63 @@ int main()
 		}
 #else
 #endif
+		const char* formatDisplay = (size_t)FranAudio::GetBackend()->GetForcedDecodeFormat() == 0 ? "Auto" : FranAudio::Sound::WaveFormatNames[(size_t)FranAudio::GetBackend()->GetForcedDecodeFormat()];
+		ImGui::Separator();
+		ImGui::Text("Forced Decoder Settings: (0 means disabled)");
+		ImGui::Text("Format:");
+		if (ImGui::BeginCombo("##forceformat", formatDisplay))
+		{
+			for (size_t formatId = 0; formatId < std::size(FranAudio::Sound::WaveFormatNames); formatId++)
+			{
+				bool isSelected = (formatId == (size_t)FranAudio::GetBackend()->GetForcedDecodeFormat());
+				if (ImGui::Selectable(FranAudio::Sound::WaveFormatNames[formatId], isSelected))
+				{
+					FranAudio::GetBackend()->SetForcedDecodeFormat((FranAudio::Sound::WaveFormat)formatId);
+				}
+				if (isSelected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+
+			ImGui::EndCombo();
+		}
+		const char* channelDisplay = (size_t)FranAudio::GetBackend()->GetForcedDecodeChannels() == 0 ? "Auto" : std::to_string(FranAudio::GetBackend()->GetForcedDecodeChannels()).c_str();
+		ImGui::Text("Channels:");
+		if (ImGui::BeginCombo("##forcechannels", channelDisplay))
+		{
+			for (size_t channels = 0; channels <= 2; channels++)
+			{
+				bool isSelected = (channels == (size_t)FranAudio::GetBackend()->GetForcedDecodeChannels());
+				if (ImGui::Selectable(std::to_string(channels).c_str(), isSelected))
+				{
+					FranAudio::GetBackend()->SetForcedDecodeChannels((uint8_t)channels);
+				}
+				if (isSelected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+		const char* sampleRateDisplay = (size_t)FranAudio::GetBackend()->GetForcedDecodeSampleRate() == 0 ? "Auto" : std::to_string(FranAudio::GetBackend()->GetForcedDecodeSampleRate()).c_str();
+		ImGui::Text("Sample Rate:");
+		if (ImGui::BeginCombo("##forcesamplerate", "Sample Rate"))
+		{
+			for (int samplerate : FranAudio::Sound::StandardSampleRates)
+			{
+				bool isSelected = (samplerate == FranAudio::GetBackend()->GetForcedDecodeSampleRate());
+				if (ImGui::Selectable(std::to_string(samplerate).c_str(), isSelected))
+				{
+					FranAudio::GetBackend()->SetForcedDecodeSampleRate(samplerate);
+				}
+				if (isSelected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
 
 		if (ImGui::Button("Browse file to play"))
 		{
