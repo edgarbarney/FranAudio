@@ -57,9 +57,6 @@ if (WIN32)
 		_UNICODE
 		UNICODE
 	)
-	if (MSVC)
-		set(BUILD_SHARED_LIBS TRUE)
-	endif()
 elseif (UNIX)
 	# TODO: Linux Support
 endif()
