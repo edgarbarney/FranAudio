@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "FranAudioAPI.hpp"
+
 #include "Backend/BackendTypes.hpp"
 
 #include "FranAudioShared/Containers/UnorderedMap.hpp"
@@ -70,7 +72,7 @@ namespace FranAudio::Backend
 
 	public:
 		Backend() = default;
-		~Backend();
+		FRANAUDIO_API ~Backend();
 
 		/// <summary>
 		/// Initialise the backend.
@@ -94,7 +96,7 @@ namespace FranAudio::Backend
 		/// Get the backend type.
 		/// </summary>
 		/// <returns>Type of this Backend instance</returns>
-		virtual constexpr BackendType GetBackendType() const noexcept;
+		virtual constexpr FRANAUDIO_API BackendType GetBackendType() const noexcept;
 
 		// ========================
 		// Decoder Management
@@ -111,7 +113,7 @@ namespace FranAudio::Backend
 		/// Get the decoder type.
 		/// </summary>
 		/// <returns>Type of the current decoder used by this backend</returns>
-		FranAudio::Decoder::DecoderType GetDecoderType() const;
+		FRANAUDIO_API FranAudio::Decoder::DecoderType GetDecoderType() const;
 
 		/// <summary>
 		/// Get the current decoder.
@@ -123,55 +125,55 @@ namespace FranAudio::Backend
 		/// 
 		/// </summary>
 		/// <returns>Pointer to the current decoder used by this backend</returns>
-		FranAudio::Decoder::Decoder* GetCurrentDecoder() const;
+		FRANAUDIO_API FranAudio::Decoder::Decoder* GetCurrentDecoder() const;
 
 		/// <summary>
 		/// Set the decoder type.
 		/// </summary>
 		/// <param name="decoderType">Type of the decoder to replace the current one</param>
 		/// <param name="force">Force the decoder to be replaced even if it's the same type</param>
-		void SetDecoder(FranAudio::Decoder::DecoderType decoderType, bool force = false);
+		FRANAUDIO_API void SetDecoder(FranAudio::Decoder::DecoderType decoderType, bool force = false);
 
 		/// <summary>
 		/// Destroy the current decoder.
 		/// </summary>
-		void DestroyDecoder();
+		FRANAUDIO_API void DestroyDecoder();
 
 		/// <summary>
 		/// Sets forced decode format for decoding.
 		/// </summary>
 		/// <param name="format">Forced format to be used in decoding</param>
-		void SetForcedDecodeFormat(FranAudio::Sound::WaveFormat format);
+		FRANAUDIO_API void SetForcedDecodeFormat(FranAudio::Sound::WaveFormat format);
 
 		/// <summary>
 		/// Gets forced decode format for decoding.
 		/// </summary>
 		/// <returns>The forced decode format</returns>
-		FranAudio::Sound::WaveFormat GetForcedDecodeFormat() const;
+		FRANAUDIO_API FranAudio::Sound::WaveFormat GetForcedDecodeFormat() const;
 
 		/// <summary>
 		/// Sets the number of channels to be used in decoding.
 		/// </summary>
 		/// <param name="channels">Forced number of channels in decoding</param>
-		void SetForcedDecodeChannels(char channels);
+		FRANAUDIO_API void SetForcedDecodeChannels(char channels);
 
 		/// <summary>
 		/// Gets forced number of channels for decoding.
 		/// </summary>
 		/// <returns>The forced number of channels</returns>
-		char GetForcedDecodeChannels() const;
+		FRANAUDIO_API char GetForcedDecodeChannels() const;
 
 		/// <summary>
 		/// Sets forced sample rate for decoding.
 		/// </summary>
 		/// <param name="sampleRate">Forced sample rate to be used for decoding</param>
-		void SetForcedDecodeSampleRate(int sampleRate);
+		FRANAUDIO_API void SetForcedDecodeSampleRate(int sampleRate);
 
 		/// <summary>
 		/// Gets forced sample rate for decoding.
 		/// </summary>
 		/// <returns>The forced sample rate</returns>
-		int GetForcedDecodeSampleRate() const;
+		FRANAUDIO_API int GetForcedDecodeSampleRate() const;
 
 		// ========================
 		// Listener (3D Audio)
@@ -273,7 +275,7 @@ namespace FranAudio::Backend
 		/// Check if a sound is valid by its index.
 		/// </summary>
 		/// <param name="soundID">ID of the sound in to check</param>
-		virtual bool IsSoundValid(size_t soundID);
+		virtual FRANAUDIO_API bool IsSoundValid(size_t soundID);
 
 		/// <summary>
 		/// Stop and clear an active sound by its index.
@@ -328,19 +330,19 @@ namespace FranAudio::Backend
 		/// Index MUST be valid. Check with IsSoundValid() first.
 		/// </summary>
 		/// <param name="soundID">ID of the sound to get</param>
-		virtual Sound::Sound& GetSound(size_t soundID);
+		virtual FRANAUDIO_API Sound::Sound& GetSound(size_t soundID);
 		
 		/// <summary>
 		/// Get the map of currently active sounds.
  		/// </summary>
  		/// <returns>Map of currently active sounds</returns>
-		virtual const FranAudioShared::Containers::UnorderedMap<size_t, Sound::Sound>& GetActiveSounds() const;
+		virtual const FRANAUDIO_API FranAudioShared::Containers::UnorderedMap<size_t, Sound::Sound>& GetActiveSounds() const;
 
 		/// <summary>
 		/// Retrieves a list of active sound IDs.
 		/// </summary>
 		/// <returns>A vector containing the IDs of currently active sounds.</returns>
-		virtual const std::vector<size_t> GetActiveSoundIDs() const;
+		virtual const FRANAUDIO_API std::vector<size_t> GetActiveSoundIDs() const;
 
 		// ========================
 		// Backend
@@ -351,6 +353,6 @@ namespace FranAudio::Backend
 		/// </summary>
 		/// <param name="backendType">Type of the backend to create</param>
 		/// <returns>Pointer to the created backend instance</returns>
-		static Backend* CreateBackend(BackendType backendType);
+		static FRANAUDIO_API Backend* CreateBackend(BackendType backendType);
 	};
 }

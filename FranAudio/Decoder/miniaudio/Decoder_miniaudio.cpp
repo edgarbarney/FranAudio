@@ -16,7 +16,7 @@
 
 namespace FranAudio::Decoder
 {
-	bool miniaudio::Init()
+	FRANAUDIO_API bool miniaudio::Init()
 	{
 		if (FranAudio::gGlobals.currentBackend && FranAudio::gGlobals.currentBackend->GetBackendType() == FranAudio::Backend::BackendType::miniaudio)
 		{
@@ -58,7 +58,7 @@ namespace FranAudio::Decoder
 		return true;
 	}
 
-	void miniaudio::Reset()
+	FRANAUDIO_API void miniaudio::Reset()
 	{
 		if (isStandalone)
 		{
@@ -72,7 +72,7 @@ namespace FranAudio::Decoder
 		}
 	}
 
-	void miniaudio::Shutdown()
+	FRANAUDIO_API void miniaudio::Shutdown()
 	{
 		if (isStandalone)
 		{
@@ -87,12 +87,12 @@ namespace FranAudio::Decoder
 		}
 	}
 
-	DecoderType miniaudio::GetDecoderType()
+	FRANAUDIO_API DecoderType miniaudio::GetDecoderType()
 	{
 		return DecoderType::miniaudio;
 	}
 
-	bool miniaudio::DecodeAudioFile(const std::string& filename, FranAudio::Sound::WaveData& targetWaveData, FranAudio::Backend::Backend& caller)
+	FRANAUDIO_API bool miniaudio::DecodeAudioFile(const std::string& filename, FranAudio::Sound::WaveData& targetWaveData, FranAudio::Backend::Backend& caller)
 	{
 		ma_decoder decoder;
 		ma_decoder_config* temp = nullptr;
@@ -219,7 +219,7 @@ namespace FranAudio::Decoder
 		return true;
 	}
 
-	const std::span<const std::string_view> miniaudio::GetSupportedAudioFormats() const
+	const FRANAUDIO_API std::span<const std::string_view> miniaudio::GetSupportedAudioFormats() const
 	{
 		static constexpr std::array formats =
 		{

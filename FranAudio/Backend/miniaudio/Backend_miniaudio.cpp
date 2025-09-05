@@ -10,7 +10,7 @@
 
 namespace FranAudio::Backend
 {
-	bool miniaudio::Init(FranAudio::Decoder::DecoderType decoderType)
+	FRANAUDIO_API bool miniaudio::Init(FranAudio::Decoder::DecoderType decoderType)
 	{
 		engineConfig = ma_engine_config_init();
 		if (ma_engine_init(&engineConfig, &engine) != MA_SUCCESS)
@@ -68,13 +68,13 @@ namespace FranAudio::Backend
 		return true;
 	}
 
-	void miniaudio::Reset()
+	FRANAUDIO_API void miniaudio::Reset()
 	{
 		ma_engine_uninit(&engine);
 		ma_engine_init(&engineConfig, &engine);
 	}
 
-	void miniaudio::Shutdown()
+	FRANAUDIO_API void miniaudio::Shutdown()
 	{
 		ma_engine_uninit(&engine);
 	}
@@ -83,7 +83,7 @@ namespace FranAudio::Backend
 	// Decoder Management
 	// ========================
 
-	const std::vector<FranAudio::Decoder::DecoderType>& miniaudio::GetSupportedDecoders() const
+	const FRANAUDIO_API std::vector<FranAudio::Decoder::DecoderType>& miniaudio::GetSupportedDecoders() const
 	{
 		static const std::vector<FranAudio::Decoder::DecoderType> supportedDecoders = 
 		{
@@ -98,24 +98,24 @@ namespace FranAudio::Backend
 	// Listener (3D Audio)
 	// ========================
 
-	void miniaudio::SetListenerTransform(const float position[3], const float forward[3], const float up[3])
+	FRANAUDIO_API void miniaudio::SetListenerTransform(const float position[3], const float forward[3], const float up[3])
 	{
 		SetListenerPosition(position);
 		SetListenerOrientation(forward, up);
 	}
 
-	void miniaudio::GetListenerTransform(float position[3], float forward[3], float up[3])
+	FRANAUDIO_API void miniaudio::GetListenerTransform(float position[3], float forward[3], float up[3])
 	{
 		GetListenerPosition(position);
 		GetListenerOrientation(forward, up);
 	}
 
-	void miniaudio::SetListenerPosition(const float position[3])
+	FRANAUDIO_API void miniaudio::SetListenerPosition(const float position[3])
 	{
 		ma_engine_listener_set_position(&engine, 0, position[0], position[1], position[2]);
 	}
 
-	void miniaudio::GetListenerPosition(float position[3])
+	FRANAUDIO_API void miniaudio::GetListenerPosition(float position[3])
 	{
 		ma_vec3f result = ma_engine_listener_get_position(&engine, 0);
 		position[0] = result.x;
@@ -123,13 +123,13 @@ namespace FranAudio::Backend
 		position[2] = result.z;
 	}
 
-	void miniaudio::SetListenerOrientation(const float forward[3], const float up[3])
+	FRANAUDIO_API void miniaudio::SetListenerOrientation(const float forward[3], const float up[3])
 	{
 		ma_engine_listener_set_direction(&engine, 0, forward[0], forward[1], forward[2]);
 		ma_engine_listener_set_world_up(&engine, 0, up[0], up[1], up[2]);
 	}
 
-	void miniaudio::GetListenerOrientation(float forward[3], float up[3])
+	FRANAUDIO_API void miniaudio::GetListenerOrientation(float forward[3], float up[3])
 	{
 		ma_vec3f fwd = ma_engine_listener_get_direction(&engine, 0);
 		ma_vec3f u = ma_engine_listener_get_world_up(&engine, 0);
@@ -141,12 +141,12 @@ namespace FranAudio::Backend
 		up[2] = u.z;
 	}
 
-	void miniaudio::SetMasterVolume(float volume)
+	FRANAUDIO_API void miniaudio::SetMasterVolume(float volume)
 	{
 		ma_engine_set_volume(&engine, volume);
 	}
 
-	float miniaudio::GetMasterVolume()
+	FRANAUDIO_API float miniaudio::GetMasterVolume()
 	{
 		return ma_engine_get_volume(&engine);
 	}
@@ -155,7 +155,7 @@ namespace FranAudio::Backend
 	// Audio File Management
 	// ========================
 
-	size_t miniaudio::PlayAudioWave(const FranAudio::Sound::WaveData& waveData)
+	FRANAUDIO_API size_t miniaudio::PlayAudioWave(const FranAudio::Sound::WaveData& waveData)
 	{
 		auto miniaudioSound = std::make_unique<MiniaudioSound>();
 
@@ -181,7 +181,7 @@ namespace FranAudio::Backend
 		return soundID;
 	}
 
-	size_t miniaudio::LoadAudioFile(const std::string& filename)
+	FRANAUDIO_API size_t miniaudio::LoadAudioFile(const std::string& filename)
 	{
 		std::filesystem::path filePath(filename);
 
@@ -221,7 +221,7 @@ namespace FranAudio::Backend
 		return index;
 	}
 
-	size_t miniaudio::PlayAudioFile(const std::string& filename)
+	FRANAUDIO_API size_t miniaudio::PlayAudioFile(const std::string& filename)
 	{
 		auto it = filenameWaveMap.find(filename); // Filename - Wave data cache index
 		if (it == filenameWaveMap.end())
@@ -234,7 +234,7 @@ namespace FranAudio::Backend
 		return PlayAudioWave(waveData);
 	}
 
-	size_t miniaudio::PlayAudioFileStream(const std::string& filename)
+	FRANAUDIO_API size_t miniaudio::PlayAudioFileStream(const std::string& filename)
 	{
 		return SIZE_MAX;
 	}
@@ -243,12 +243,12 @@ namespace FranAudio::Backend
 	// Sound Management
 	// ========================
 
-	bool miniaudio::IsSoundValid(size_t soundID)
+	FRANAUDIO_API bool miniaudio::IsSoundValid(size_t soundID)
 	{
 		return Backend::IsSoundValid(soundID) && miniaudioSoundData.contains(soundID);
 	}
 
-	void miniaudio::StopPlayingSound(size_t soundID)
+	FRANAUDIO_API void miniaudio::StopPlayingSound(size_t soundID)
 	{
 		if (!IsSoundValid(soundID))
 		{
@@ -271,7 +271,7 @@ namespace FranAudio::Backend
 		activeSounds.erase(soundID);
 	}
 
-	void miniaudio::SetSoundPaused(size_t soundID, bool isPaused)
+	FRANAUDIO_API void miniaudio::SetSoundPaused(size_t soundID, bool isPaused)
 	{
 		if (!IsSoundValid(soundID))
 		{
@@ -303,7 +303,7 @@ namespace FranAudio::Backend
 		activeSounds[soundID]._Internal_SetPaused(isPaused);
 	}
 
-	bool miniaudio::IsSoundPaused(size_t soundID)
+	FRANAUDIO_API bool miniaudio::IsSoundPaused(size_t soundID)
 	{
 		if (!IsSoundValid(soundID))
 		{
@@ -314,7 +314,7 @@ namespace FranAudio::Backend
 		return activeSounds[soundID]._Internal_GetPaused();
 	}
 
-	void miniaudio::SetSoundVolume(size_t soundID, float volume)
+	FRANAUDIO_API void miniaudio::SetSoundVolume(size_t soundID, float volume)
 	{
 		if (!IsSoundValid(soundID))
 		{
@@ -324,7 +324,7 @@ namespace FranAudio::Backend
 		ma_sound_set_volume(&miniaudioSoundData[soundID]->sound, volume);
 	}
 
-	float miniaudio::GetSoundVolume(size_t soundID)
+	FRANAUDIO_API float miniaudio::GetSoundVolume(size_t soundID)
 	{
 		if (!IsSoundValid(soundID))
 		{
@@ -334,7 +334,7 @@ namespace FranAudio::Backend
 		return ma_sound_get_volume(&miniaudioSoundData[soundID]->sound);
 	}
 
-	void miniaudio::SetSoundPosition(size_t soundID, const float position[3])
+	FRANAUDIO_API void miniaudio::SetSoundPosition(size_t soundID, const float position[3])
 	{
 		if (!IsSoundValid(soundID))
 		{
@@ -345,7 +345,7 @@ namespace FranAudio::Backend
 		ma_sound_set_position(&miniaudioSoundData[soundID]->sound, position[0], position[1], position[2]);
 	}
 
-	void miniaudio::GetSoundPosition(size_t soundID, float outPosition[3])
+	FRANAUDIO_API void miniaudio::GetSoundPosition(size_t soundID, float outPosition[3])
 	{
 		if (!IsSoundValid(soundID))
 		{

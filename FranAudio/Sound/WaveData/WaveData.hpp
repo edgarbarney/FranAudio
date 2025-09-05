@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+#include "FranAudioAPI.hpp"
+
 #include "WaveFormats.hpp"
 
 namespace FranAudio::Sound
@@ -33,21 +35,21 @@ namespace FranAudio::Sound
 		/// <summary>
 		/// Default constructor.
 		/// </summary>
-		WaveData(const std::string& filename = "", size_t waveDataIndex = 0, WaveFormat format = WaveFormat::Unknown, double length = 0.0, int channels = 0, int sampleRate = 0);
+		FRANAUDIO_API WaveData(const std::string& filename = "", size_t waveDataIndex = 0, WaveFormat format = WaveFormat::Unknown, double length = 0.0, int channels = 0, int sampleRate = 0);
 
-		void SetFilename(const std::string& filename);
-		void SetWaveDataIndex(size_t index);
-		void SetFormat(WaveFormat format);
-		void SetLength(double length);
-		void SetChannels(char channels);
-		void SetSampleRate(int sampleRate);
+		FRANAUDIO_API void SetFilename(const std::string& filename);
+		FRANAUDIO_API void SetWaveDataIndex(size_t index);
+		FRANAUDIO_API void SetFormat(WaveFormat format);
+		FRANAUDIO_API void SetLength(double length);
+		FRANAUDIO_API void SetChannels(char channels);
+		FRANAUDIO_API void SetSampleRate(int sampleRate);
 
-		[[nodiscard]] const std::string& GetFilename() const;
-		[[nodiscard]] size_t GetWaveDataIndex() const;
-		[[nodiscard]] WaveFormat GetFormat() const;
-		[[nodiscard]] double GetLength() const;
-		[[nodiscard]] char GetChannels() const;
-		[[nodiscard]] int GetSampleRate() const;
+		[[nodiscard]] FRANAUDIO_API const std::string& GetFilename() const;
+		[[nodiscard]] FRANAUDIO_API size_t GetWaveDataIndex() const;
+		[[nodiscard]] FRANAUDIO_API WaveFormat GetFormat() const;
+		[[nodiscard]] FRANAUDIO_API double GetLength() const;
+		[[nodiscard]] FRANAUDIO_API char GetChannels() const;
+		[[nodiscard]] FRANAUDIO_API int GetSampleRate() const;
 
 		// =========
 		// Frame Stuff
@@ -57,35 +59,35 @@ namespace FranAudio::Sound
 		/// Size in frames.
 		/// Aka: Total Frames / Channels.
 		/// </summary>
-		[[nodiscard]] const size_t SizeInFrames() const;
+		[[nodiscard]] const FRANAUDIO_API size_t SizeInFrames() const;
 
 		/// <summary>
 		/// Set size per frame.
 		/// Aka: Bits per frame * channels.
 		/// </summary>
-		void SetFrameSize(unsigned char frameSize);
+		FRANAUDIO_API void SetFrameSize(unsigned char frameSize);
 
 		/// <summary>
 		/// Size per frame.
 		/// Aka: Bits per frame * channels.
 		/// </summary>
-		[[nodiscard]] unsigned char GetFrameSize() const;
+		[[nodiscard]] FRANAUDIO_API unsigned char GetFrameSize() const;
 
 		/// <summary>
 		/// Set the frames manually.
 		/// This will set frame vector.
 		/// </summary>
 		/// <param name="frames"></param>
-		void SetFrames(const SampleFrameContainer& frames);
+		FRANAUDIO_API void SetFrames(const SampleFrameContainer& frames);
 
 		/// <summary>
 		/// Get a reference to frames vector.
 		/// </summary>
-		SampleFrameContainer& GetFramesRef();
+		FRANAUDIO_API SampleFrameContainer& GetFramesRef();
 
 		/// <summary>
 		/// Get frames.
 		/// </summary>
-		[[nodiscard]] const SampleFrameContainer& GetFrames() const;
+		[[nodiscard]] const FRANAUDIO_API SampleFrameContainer& GetFrames() const;
 	};
 }

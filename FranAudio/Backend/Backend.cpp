@@ -7,13 +7,13 @@
 
 namespace FranAudio::Backend
 {
-	Backend::~Backend()
+	FRANAUDIO_API Backend::~Backend()
 	{
 		//Shutdown();
 		DestroyDecoder();
 	}
 
-	constexpr BackendType Backend::GetBackendType() const noexcept
+	constexpr FRANAUDIO_API BackendType Backend::GetBackendType() const noexcept
 	{
 		return BackendType::None;
 	}
@@ -22,17 +22,17 @@ namespace FranAudio::Backend
 	// Decoder Management
 	// ========================
 
-	FranAudio::Decoder::DecoderType Backend::GetDecoderType() const
+	FRANAUDIO_API FranAudio::Decoder::DecoderType Backend::GetDecoderType() const
 	{
 		return currentDecoderType;
 	}
 
-	FranAudio::Decoder::Decoder* Backend::GetCurrentDecoder() const
+	FRANAUDIO_API FranAudio::Decoder::Decoder* Backend::GetCurrentDecoder() const
 	{
 		return currentDecoder;
 	}
 
-	void Backend::SetDecoder(FranAudio::Decoder::DecoderType decoderType, bool force)
+	FRANAUDIO_API void Backend::SetDecoder(FranAudio::Decoder::DecoderType decoderType, bool force)
 	{
 		if (currentDecoderType == decoderType && !force)
 		{
@@ -67,7 +67,7 @@ namespace FranAudio::Backend
 		}
 	}
 
-	void Backend::DestroyDecoder()
+	FRANAUDIO_API void Backend::DestroyDecoder()
 	{
 		if (currentDecoder != nullptr)
 		{
@@ -77,32 +77,32 @@ namespace FranAudio::Backend
 		}
 	}
 
-	void Backend::SetForcedDecodeFormat(FranAudio::Sound::WaveFormat format)
+	FRANAUDIO_API void Backend::SetForcedDecodeFormat(FranAudio::Sound::WaveFormat format)
 	{
 		forcedFormat = format;
 	}
 
-	FranAudio::Sound::WaveFormat Backend::GetForcedDecodeFormat() const
+	FRANAUDIO_API FranAudio::Sound::WaveFormat Backend::GetForcedDecodeFormat() const
 	{
 		return forcedFormat;
 	}
 
-	void Backend::SetForcedDecodeChannels(char channels)
+	FRANAUDIO_API void Backend::SetForcedDecodeChannels(char channels)
 	{
 		forcedChannels = channels;
 	}
 
-	char Backend::GetForcedDecodeChannels() const
+	FRANAUDIO_API char Backend::GetForcedDecodeChannels() const
 	{
 		return forcedChannels;
 	}
 
-	void Backend::SetForcedDecodeSampleRate(int sampleRate)
+	FRANAUDIO_API void Backend::SetForcedDecodeSampleRate(int sampleRate)
 	{
 		forcedSampleRate = sampleRate;
 	}
 
-	int Backend::GetForcedDecodeSampleRate() const
+	FRANAUDIO_API int Backend::GetForcedDecodeSampleRate() const
 	{
 		return forcedSampleRate;
 	}
@@ -111,7 +111,7 @@ namespace FranAudio::Backend
 	// Sound Management
 	// ========================
 
-	bool Backend::IsSoundValid(size_t soundIndex)
+	FRANAUDIO_API bool Backend::IsSoundValid(size_t soundIndex)
 	{
 		if (soundIndex == SIZE_MAX)
 		{
@@ -121,17 +121,17 @@ namespace FranAudio::Backend
 		return activeSounds.contains(soundIndex);
 	}
 
-	FranAudio::Sound::Sound& Backend::GetSound(size_t soundID)
+	FRANAUDIO_API FranAudio::Sound::Sound& Backend::GetSound(size_t soundID)
 	{
 		return activeSounds[soundID];
 	} 
 
-	const FranAudioShared::Containers::UnorderedMap<size_t, FranAudio::Sound::Sound>& Backend::GetActiveSounds() const
+	const FRANAUDIO_API FranAudioShared::Containers::UnorderedMap<size_t, FranAudio::Sound::Sound>& Backend::GetActiveSounds() const
 	{
 		return activeSounds;
 	}
 
-	const std::vector<size_t> Backend::GetActiveSoundIDs() const
+	const FRANAUDIO_API std::vector<size_t> Backend::GetActiveSoundIDs() const
 	{
 		// No need to reallocate every time
 		static std::vector<size_t> soundIDs;
@@ -147,7 +147,7 @@ namespace FranAudio::Backend
 		return soundIDs;
 	}
 
-	Backend* Backend::CreateBackend(BackendType backendType)
+	FRANAUDIO_API Backend* Backend::CreateBackend(BackendType backendType)
 	{
 		Backend* newBackend = nullptr;
 
@@ -157,8 +157,8 @@ namespace FranAudio::Backend
 			newBackend = new miniaudio();
 			break;
 		case BackendType::OpenALSoft:
-			//newBackend = OpenALSoft();
-			//break;
+			newBackend = new OpenALSoft();
+			break;
 		default:
 			return nullptr;
 			break;

@@ -6,27 +6,27 @@
 
 namespace FranAudio::Decoder
 {
-	bool libnyquist::Init()
+	FRANAUDIO_API bool libnyquist::Init()
 	{
 		return true;
 	}
 
-	void libnyquist::Reset()
+	FRANAUDIO_API void libnyquist::Reset()
 	{
 
 	}
 
-	void libnyquist::Shutdown()
+	FRANAUDIO_API void libnyquist::Shutdown()
 	{
 
 	}
 
-	DecoderType libnyquist::GetDecoderType()
+	FRANAUDIO_API DecoderType libnyquist::GetDecoderType()
 	{
 		return DecoderType::libnyquist;
 	}
 
-	bool libnyquist::DecodeAudioFile(const std::string& filename, FranAudio::Sound::WaveData& targetWaveData, FranAudio::Backend::Backend& caller)
+	FRANAUDIO_API bool libnyquist::DecodeAudioFile(const std::string& filename, FranAudio::Sound::WaveData& targetWaveData, FranAudio::Backend::Backend& caller)
 	{
 		nqr::AudioData audioData;
 		soundLoader.Load(&audioData, filename);
@@ -36,7 +36,7 @@ namespace FranAudio::Decoder
 		return true;
 	}
 
-	const std::span<const std::string_view> libnyquist::GetSupportedAudioFormats() const
+	const FRANAUDIO_API std::span<const std::string_view> libnyquist::GetSupportedAudioFormats() const
 	{
 		static constexpr std::array formats = 
 		{

@@ -7,6 +7,8 @@
 #include <span>
 #include <array>
 
+#include "FranAudioAPI.hpp"
+
 #include "Decoder/DecoderTypes.hpp"
 
 #include "Sound/WaveData/WaveData.hpp"
@@ -51,7 +53,7 @@ namespace FranAudio::Decoder
 		/// Get the decoder type.
 		/// </summary>
 		/// <returns>Type of this decoder instance</returns>
-		virtual DecoderType GetDecoderType() { return DecoderType::None; }
+		virtual FRANAUDIO_API DecoderType GetDecoderType();
 
 		/// <summary>
 		/// Decode an audio file.
@@ -79,6 +81,6 @@ namespace FranAudio::Decoder
 		/// </summary>
 		/// <param name="decoderType">Type of the decoder to create</param>
 		/// <returns>New decoder instance</returns>
-		static Decoder* CreateDecoder(DecoderType decoderType);
+		static FRANAUDIO_API Decoder* CreateDecoder(DecoderType decoderType);
 	};
 }

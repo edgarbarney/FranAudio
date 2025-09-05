@@ -10,58 +10,58 @@
 
 namespace FranAudio::Sound
 {
-	Sound::Sound(size_t soundID, size_t waveDataIndex)
+	FRANAUDIO_API Sound::Sound(size_t soundID, size_t waveDataIndex)
 		: soundID(soundID), waveDataIndex(waveDataIndex), isPaused(false), pausedTime(0)
 	{
 
 	}
 
-	bool Sound::IsValid() const
+	FRANAUDIO_API bool Sound::IsValid() const
 	{
 		return FranAudio::GetBackend()->IsSoundValid(soundID);
 	}
 
-	size_t Sound::GetSoundID() const
+	FRANAUDIO_API size_t Sound::GetSoundID() const
 	{
 		return soundID;
 	}
 
-	size_t Sound::GetWaveDataIndex() const
+	FRANAUDIO_API size_t Sound::GetWaveDataIndex() const
 	{
 		return waveDataIndex;
 	}
 
-	void Sound::Stop() const
+	FRANAUDIO_API void Sound::Stop() const
 	{
 		FranAudio::GetBackend()->StopPlayingSound(soundID);
 	}
 
-	void Sound::SetPaused(bool isPaused) const
+	FRANAUDIO_API void Sound::SetPaused(bool isPaused) const
 	{
 		FranAudio::GetBackend()->SetSoundPaused(soundID, isPaused);
 	}
 
-	bool Sound::IsPaused() const
+	FRANAUDIO_API bool Sound::IsPaused() const
 	{
 		return FranAudio::GetBackend()->IsSoundPaused(soundID);
 	}
 
-	void Sound::SetVolume(float volume) const
+	FRANAUDIO_API void Sound::SetVolume(float volume) const
 	{
 		FranAudio::GetBackend()->SetSoundVolume(soundID, volume);
 	}
 
-	float Sound::GetVolume() const
+	FRANAUDIO_API float Sound::GetVolume() const
 	{
 		return FranAudio::GetBackend()->GetSoundVolume(soundID);
 	}
 
-	void Sound::SetPosition(const float position[3]) const
+	FRANAUDIO_API void Sound::SetPosition(const float position[3]) const
 	{
 		FranAudio::GetBackend()->SetSoundPosition(soundID, position);
 	}
 
-	void Sound::GetPosition(float outPosition[3]) const
+	FRANAUDIO_API void Sound::GetPosition(float outPosition[3]) const
 	{
 		FranAudio::GetBackend()->GetSoundPosition(soundID, outPosition);
 	}
@@ -70,22 +70,22 @@ namespace FranAudio::Sound
 	// INTERNAL USE ONLY
 	// ========================
 
-	void Sound::_Internal_SetPaused(bool isPaused)
+	FRANAUDIO_API void Sound::_Internal_SetPaused(bool isPaused)
 	{
 		this->isPaused = isPaused;
 	}
 
-	bool Sound::_Internal_GetPaused() const
+	FRANAUDIO_API bool Sound::_Internal_GetPaused() const
 	{
 		return isPaused;
 	}
 
-	void Sound::_Internal_SetPausedTime(size_t timeInMs)
+	FRANAUDIO_API void Sound::_Internal_SetPausedTime(size_t timeInMs)
 	{
 		pausedTime = timeInMs;
 	}
 
-	size_t Sound::_Internal_GetPausedTime() const
+	FRANAUDIO_API size_t Sound::_Internal_GetPausedTime() const
 	{
 		return pausedTime;
 	}

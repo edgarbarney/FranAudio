@@ -1,4 +1,4 @@
-﻿# FranticDreamer 2022-2025
+# FranticDreamer 2022-2025
 # CMakeLists file for CMake Configuration
 
 # At least 3.20 Needed for C++23
@@ -58,7 +58,6 @@ if (WIN32)
 		UNICODE
 	)
 	if (MSVC)
-		set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 		set(BUILD_SHARED_LIBS TRUE)
 	endif()
 elseif (UNIX)

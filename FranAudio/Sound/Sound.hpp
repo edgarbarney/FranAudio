@@ -3,6 +3,8 @@
 
 #include <memory>
 
+#include "FranAudioAPI.hpp"
+
 #include "WaveData/WaveData.hpp"
 
 namespace FranAudio::Sound
@@ -42,65 +44,65 @@ namespace FranAudio::Sound
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		Sound(size_t soundID = SIZE_MAX, size_t waveDataIndex = SIZE_MAX);
+		FRANAUDIO_API Sound(size_t soundID = SIZE_MAX, size_t waveDataIndex = SIZE_MAX);
 
 		/// <summary>
 		/// Destructor.
 		/// </summary>
-		virtual ~Sound() = default;
+		virtual FRANAUDIO_API ~Sound() = default;
 
 		/// <summary>
 		/// Check if the sound is valid.
 		/// </summary>
-		bool IsValid() const;
+		FRANAUDIO_API bool IsValid() const;
 	
 		/// <summary>
 		/// Get the sound ID.
 		/// </summary>
-		size_t GetSoundID() const;
+		FRANAUDIO_API size_t GetSoundID() const;
 
 		/// <summary>
 		/// Get the wave data index.
 		/// </summary>
-		size_t GetWaveDataIndex() const;
+		FRANAUDIO_API size_t GetWaveDataIndex() const;
 
 		/// <summary>
 		/// Stop and clear the sound.
 		/// </summary>
-		void Stop() const;
+		FRANAUDIO_API void Stop() const;
 
 		/// <summary>
 		/// Set whether the sound is paused or not.
 		/// </summary>
 		/// <param name="isPaused">True to pause the sound, false to resume playback</param>
-		void SetPaused(bool isPaused) const;
+		FRANAUDIO_API void SetPaused(bool isPaused) const;
 
 		/// <summary>
 		/// Check if the sound is paused.
 		/// </summary>
-		bool IsPaused() const;
+		FRANAUDIO_API bool IsPaused() const;
 
 		/// <summary>
 		/// Set the volume of the sound.
 	 	/// </summary>
  		/// <param name="volume">Volume to set the sound to (0.0 - 1.0)</param>
- 		void SetVolume(float volume) const;
+		FRANAUDIO_API void SetVolume(float volume) const;
 
 		/// <summary>
 		/// Get the volume of the sound.
  		/// </summary>
  		/// <returns>Current volume of the sound (0.0 - 1.0)</returns>
-		float GetVolume() const;
+		FRANAUDIO_API float GetVolume() const;
 
 		/// <summary>
 		/// Set the position of the sound.
  		/// </summary>
-		void SetPosition(const float position[3]) const;
+		FRANAUDIO_API void SetPosition(const float position[3]) const;
 
 		/// <summary>
 		/// Get the position of the sound.
 		/// </summary>
-		void GetPosition(float outPosition[3]) const;
+		FRANAUDIO_API void GetPosition(float outPosition[3]) const;
 
 		// ========================
 		// INTERNAL USE ONLY
@@ -111,7 +113,7 @@ namespace FranAudio::Sound
 		/// 
 		/// Sets only the internal paused state of the sound.
 		/// </summary>
-		void _Internal_SetPaused(bool isPaused);
+		FRANAUDIO_API void _Internal_SetPaused(bool isPaused);
 
 		/// <summary>
 		/// <para>INTERNAL USE ONLY</para>
@@ -119,7 +121,7 @@ namespace FranAudio::Sound
 		/// Gets only the internal paused state of the sound.
 		/// </summary>
 		/// <returns>True if the sound is paused, false otherwise</returns>
-		bool _Internal_GetPaused() const;
+		FRANAUDIO_API bool _Internal_GetPaused() const;
 
 		/// <summary>
 		/// <para>INTERNAL USE ONLY</para>
@@ -127,7 +129,7 @@ namespace FranAudio::Sound
 		/// Sets only the internal paused time of the sound in miliseconds.
 		/// </summary>
 		/// <param name="frame">Time to set the paused time in miliseconds</param>
-		void _Internal_SetPausedTime(size_t timeInMs);
+		FRANAUDIO_API void _Internal_SetPausedTime(size_t timeInMs);
 
 		/// <summary>
 		/// <para>INTERNAL USE ONLY</para>
@@ -135,6 +137,6 @@ namespace FranAudio::Sound
 		/// Gets only the internal paused time of the sound in miliseconds.
 		/// </summary>
 		/// <returns>Time the sound was paused at in miliseconds</returns>
-		size_t _Internal_GetPausedTime() const;
+		FRANAUDIO_API size_t _Internal_GetPausedTime() const;
 	};
 }

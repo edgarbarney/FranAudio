@@ -1,9 +1,9 @@
 // FranticDreamer 2022-2025
 #pragma once
 
-#include "Backend/Backend.hpp"
-
 #include "FranAudioAPI.hpp"
+
+#include "Backend/Backend.hpp"
 
 #include "FranAudioShared/Logger/Logger.hpp"
 
