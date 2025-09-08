@@ -1,5 +1,7 @@
 // FranticDreamer 2022-2025
 
+#include <filesystem>
+
 #include "Backend.hpp"
 #include "miniaudio/Backend_miniaudio.hpp"
 
@@ -13,9 +15,67 @@ namespace FranAudio::Backend
 		DestroyDecoder();
 	}
 
+	FRANAUDIO_API bool Backend::Init(FranAudio::Decoder::DecoderType decoderType)
+	{
+		bool decoderFail = false;
+
+		if (decoderType == FranAudio::Decoder::DecoderType::None)
+		{
+			FranAudioShared::Logger::LogError(std::format("{}: No decoder type specified", GetBackendName()));
+			decoderFail = true;
+		}
+
+		// Check if the requested decoder is supported
+		const auto& supportedDecoders = GetSupportedDecoders();
+		if (std::find(supportedDecoders.begin(), supportedDecoders.end(), decoderType) == supportedDecoders.end())
+		{
+			FranAudioShared::Logger::LogError(std::format("{}: Requested decoder is not supported by this backend", GetBackendName()));
+			decoderFail = true;
+		}
+
+		if (decoderFail)
+		{
+			FranAudioShared::Logger::LogError(std::format("{}: Defaulting to miniaudio decoder", GetBackendName()));
+			decoderType = FranAudio::Decoder::DecoderType::miniaudio;
+		}
+
+		// Decoder will be initialised by the FranAudio::Init
+		currentDecoderType = decoderType;
+
+		FranAudioShared::Logger::LogError(std::format("{}: Initialised Backend.", GetBackendName()));
+		return true; // Default backend does nothing
+	}
+
+	FRANAUDIO_API void Backend::Reset()
+	{
+		Shutdown(true);
+		currentDecoder->Reset();
+		Init(currentDecoderType);
+	}
+
+	FRANAUDIO_API void Backend::Shutdown(bool forReset)
+	{
+		FranAudioShared::Logger::LogError(std::format("{}: Shutting down backend...", GetBackendName()));
+
+		nextSoundID = 0;
+		activeSounds.clear();
+
+		if (!forReset)
+		{
+			DestroyDecoder();
+		}
+
+		FranAudioShared::Logger::LogError(std::format("{}: Backend shut down.", GetBackendName()));
+	}
+
 	constexpr FRANAUDIO_API BackendType Backend::GetBackendType() const noexcept
 	{
 		return BackendType::None;
+	}
+
+	constexpr FRANAUDIO_API const char* Backend::GetBackendName() const noexcept
+	{
+		return BackendTypeNames[(size_t)GetBackendType()];
 	}
 
 	// ========================
@@ -25,6 +85,11 @@ namespace FranAudio::Backend
 	FRANAUDIO_API FranAudio::Decoder::DecoderType Backend::GetDecoderType() const
 	{
 		return currentDecoderType;
+	}
+
+	constexpr FRANAUDIO_API const char* Backend::GetDecoderName() const noexcept
+	{
+		return currentDecoder->GetDecoderName();
 	}
 
 	FRANAUDIO_API FranAudio::Decoder::Decoder* Backend::GetCurrentDecoder() const
@@ -54,14 +119,14 @@ namespace FranAudio::Backend
 			{
 				currentDecoder = FranAudio::Decoder::Decoder::CreateDecoder(decoderType);
 				currentDecoderType = decoderType;
-				FranAudioShared::Logger::LogMessage(std::format("{}: Initialised decoder type {}", BackendTypeNames[(size_t)GetBackendType()], FranAudio::Decoder::DecoderTypeNames[(size_t)decoderType]));
+				FranAudioShared::Logger::LogMessage(std::format("{}: Initialised decoder type {}", GetBackendName(), GetDecoderName()));
 				return;
 			}
 		}
 
 		if (currentDecoder == nullptr)
 		{
-			FranAudioShared::Logger::LogError(std::format("{}: Decoder type not supported", BackendTypeNames[(size_t)GetBackendType()]));
+			FranAudioShared::Logger::LogError(std::format("{}: Decoder type not supported", GetBackendName()));
 			return;
 		}
 	}
@@ -103,6 +168,68 @@ namespace FranAudio::Backend
 	FRANAUDIO_API int Backend::GetForcedDecodeSampleRate() const
 	{
 		return forcedSampleRate;
+	}
+
+	// ========================
+	// Audio File Management
+	// ========================
+
+	FRANAUDIO_API size_t Backend::LoadAudioFile(const std::string& filename)
+	{
+		std::filesystem::path filePath(filename);
+
+		if (!std::filesystem::exists(filePath))
+		{
+			FranAudioShared::Logger::LogError(std::format("{}: File does not exist: {}", GetBackendName(), filename));
+			return SIZE_MAX;
+		}
+
+		if (std::filesystem::is_directory(filePath))
+		{
+			FranAudioShared::Logger::LogError(std::format("{}: File is a directory: {}", GetBackendName(), filename));
+			return SIZE_MAX;
+		}
+
+		if (std::filesystem::is_empty(filePath))
+		{
+			FranAudioShared::Logger::LogError(std::format("{}: File is empty: {}", GetBackendName(), filename));
+			return SIZE_MAX;
+		}
+
+		FranAudio::Sound::WaveData waveData;
+		bool result = currentDecoder->DecodeAudioFile(filename, waveData, *this);
+
+		if (!result)
+		{
+			FranAudioShared::Logger::LogError(std::format("{}: Failed to decode audio file: {}", GetBackendName(), filename));
+			return SIZE_MAX;
+		}
+
+		const size_t index = waveDataCache.size();
+		waveData.SetWaveDataIndex(index);
+		waveDataCache.emplace_back(waveData);
+		filenameWaveMap[filename] = index;
+		FranAudioShared::Logger::LogMessage(std::format("{}: Loaded audio file: {} ({}s, {} channels, {}Hz, Format: {})", GetBackendName(), filename, waveData.GetLength(), (int)waveData.GetChannels(), waveData.GetSampleRate(), FranAudio::Sound::WaveFormatNames[(size_t)waveData.GetFormat()]));
+
+		return index;
+	}
+
+	FRANAUDIO_API size_t Backend::PlayAudioFile(const std::string& filename)
+	{
+		auto it = filenameWaveMap.find(filename); // Filename - Wave data cache index
+		if (it == filenameWaveMap.end())
+		{
+			FranAudioShared::Logger::LogError(std::format("{}: Audio file not loaded: {}", GetBackendName(), filename));
+			return SIZE_MAX;
+		}
+
+		const auto& waveData = waveDataCache[it->second];
+		return PlayAudioWave(waveData);
+	}
+
+	FRANAUDIO_API size_t Backend::PlayAudioFileStream(const std::string& filename)
+	{
+		return SIZE_MAX;
 	}
 
 	// ========================

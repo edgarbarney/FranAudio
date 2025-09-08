@@ -87,7 +87,7 @@ namespace FranAudio::Decoder
 		}
 	}
 
-	FRANAUDIO_API DecoderType miniaudio::GetDecoderType()
+	constexpr FRANAUDIO_API DecoderType miniaudio::GetDecoderType() const noexcept
 	{
 		return DecoderType::miniaudio;
 	}

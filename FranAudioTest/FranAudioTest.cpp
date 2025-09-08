@@ -242,8 +242,7 @@ int main()
 		ImGui::Text("You can test audio files by clicking the buttons below.");
 #ifndef FRANAUDIO_USE_SERVER
 		ImGui::Text("Backend:");
-		auto eben = FranAudio::Backend::BackendTypeNames[(size_t)FranAudio::GetBackend()->GetBackendType()];
-		if (ImGui::BeginCombo("##backend", eben))
+		if (ImGui::BeginCombo("##backend", FranAudio::GetBackend()->GetBackendName()))
 		{
 			for (size_t backendId = 0; backendId < std::size(FranAudio::Backend::BackendTypeNames); backendId++)
 			{
@@ -262,7 +261,7 @@ int main()
 		}
 
 		ImGui::Text("Decoder:");
-		if (ImGui::BeginCombo("##decoder", FranAudio::Decoder::DecoderTypeNames[(size_t)FranAudio::GetBackend()->GetDecoderType()]))
+		if (ImGui::BeginCombo("##decoder", FranAudio::GetBackend()->GetDecoderName()))
 		{
 			for (size_t decoderId = 0; decoderId < std::size(FranAudio::Decoder::DecoderTypeNames); decoderId++)
 			{

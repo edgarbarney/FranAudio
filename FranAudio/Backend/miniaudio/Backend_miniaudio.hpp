@@ -77,26 +77,37 @@ namespace FranAudio::Backend
 		/// <summary>
 		/// Initialise the backend.
 		/// This is used to initialise the backend and set it up for use.
+		/// Called by CreateBackend(). Unless you're manually managing backends, you shouldn't need to call this.
+		/// 
+		/// <para/> Note: The decoderType parameter is a hint, the backend may choose to ignore it and use its own default decoder.
+		/// <para/> Note: Decoder is not initialised by this function, call SetDecoder() to initialise it if you're manually managing backends.
 		/// </summary>
 		virtual FRANAUDIO_API bool Init(FranAudio::Decoder::DecoderType decoderType = FranAudio::Decoder::DecoderType::None) override;
 
 		/// <summary>
 		/// Reset the backend. 
 		/// This is used to reset the backend to its initial state.
+		/// 
+		/// <para/> Note: This will stop all currently playing sounds and clear the active sounds list.
+		/// <para/> Note: This will call Reset() on the decoder.
 		/// </summary>
 		virtual FRANAUDIO_API void Reset() override;
 
 		/// <summary>
 		/// Shutdown the backend.
 		/// This is used to shutdown the backend and clean up any resources.
+		///
+		/// <para/> Note: Called by DestroyBackend(). Unless you're manually managing backends, you shouldn't need to call this.
+		/// <para/> Note: Unlike Init(), this function will also de-initialise the decoder if it was initialised since Decoder is managed by the backend after it's set.
 		/// </summary>
-		virtual FRANAUDIO_API void Shutdown() override;
+		/// <param name="forReset">If true, the shutdown is for a reset operation. If false, it's a complete shutdown.</param>
+		virtual FRANAUDIO_API void Shutdown(bool forReset = false) override;
 
 		/// <summary>
 		/// Get the backend type.
 		/// </summary>
 		/// <returns>Type of this Backend instance</returns>
-		virtual constexpr FRANAUDIO_API BackendType GetBackendType() const noexcept override { return BackendType::miniaudio; }
+		virtual constexpr FRANAUDIO_API BackendType GetBackendType() const noexcept override;
 
 		// ========================
 		// Decoder Management
@@ -191,14 +202,6 @@ namespace FranAudio::Backend
 		/// <param name="filename">Path to the audio file</param>
 		/// <returns>Active Sounds List Index</returns>
 		virtual FRANAUDIO_API size_t PlayAudioFile(const std::string& filename) override;
-		
-		/// <summary>
-		/// Play an audio file without loading it, stream it from the disk.
-		/// This is used to play an audio file without loading it into memory.
-		/// </summary>
-		/// <param name="filename">Path to the audio file</param>
-		/// <returns>Active Sounds List Index</returns>
-		virtual FRANAUDIO_API size_t PlayAudioFileStream(const std::string& filename) override;
 
 		// ========================
 		// Sound Management

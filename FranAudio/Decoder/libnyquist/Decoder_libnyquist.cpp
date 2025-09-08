@@ -21,7 +21,7 @@ namespace FranAudio::Decoder
 
 	}
 
-	FRANAUDIO_API DecoderType libnyquist::GetDecoderType()
+	constexpr FRANAUDIO_API DecoderType libnyquist::GetDecoderType() const noexcept
 	{
 		return DecoderType::libnyquist;
 	}
@@ -118,80 +118,7 @@ namespace FranAudio::Decoder
 		}
 	}
 
-	FranAudio::Sound::U8Sample libnyquist::FloatToU8(FranAudio::Sound::FloatSample sample)
-	{
-		return static_cast<FranAudio::Sound::U8Sample>((std::clamp(sample, -1.0f, 1.0f) * 127.5f) + 128.0f);
-	}
-
-	FranAudio::Sound::FloatSample libnyquist::U8ToFloat(FranAudio::Sound::U8Sample sample)
-	{
-		return (static_cast<FranAudio::Sound::FloatSample>(sample) - 128.0f) / 127.5f;
-	}
-
-	FranAudio::Sound::S16Sample libnyquist::FloatToS16(FranAudio::Sound::FloatSample sample)
-	{
-		return static_cast<FranAudio::Sound::S16Sample>(std::clamp(sample, -1.0f, 1.0f) * 32767.0f);
-	}
-
-	FranAudio::Sound::FloatSample libnyquist::S16ToFloat(FranAudio::Sound::S16Sample sample)
-	{
-		return static_cast<FranAudio::Sound::FloatSample>(sample) / 32767.0f;
-	}
-
-	FranAudio::Sound::U8SampleContainer libnyquist::FloatBufferToU8(const FranAudio::Sound::FloatSampleContainer& samples)
-	{
-		FranAudio::Sound::U8SampleContainer outSamples;
-		outSamples.reserve(samples.size());
-
-		for (auto floatSample : samples)
-		{
-			outSamples.push_back(FloatToU8(floatSample));
-		}
-
-		return outSamples;
-	}
-
-	FranAudio::Sound::FloatSampleContainer libnyquist::U8BufferToFloat(const FranAudio::Sound::U8SampleContainer& samples)
-	{
-		FranAudio::Sound::FloatSampleContainer outSamples;
-		outSamples.reserve(samples.size());
-
-		for (auto u8Sample : samples)
-		{
-			outSamples.push_back(U8ToFloat(u8Sample));
-		}
-
-		return outSamples;
-	}
-
-	FranAudio::Sound::S16SampleContainer libnyquist::FloatBufferToS16(const FranAudio::Sound::FloatSampleContainer& samples)
-	{
-		FranAudio::Sound::S16SampleContainer outSamples;
-		outSamples.reserve(samples.size());
-
-		for (auto floatSample : samples)
-		{
-			outSamples.push_back(FloatToS16(floatSample));
-		}
-
-		return outSamples;
-	}
-
-
-	FranAudio::Sound::FloatSampleContainer libnyquist::S16BufferToFloat(const FranAudio::Sound::S16SampleContainer& samples)
-	{
-		FranAudio::Sound::FloatSampleContainer outSamples;
-		outSamples.reserve(samples.size());
-
-		for (auto s16Sample : samples)
-		{
-			outSamples.push_back(S16ToFloat(s16Sample));
-		}
-
-		return outSamples;
-	}
-
-	FranAudio::Sound::WaveFormat libnyquist::ConvertWaveFormat(const nqr::PCMFormat& format)
+    FranAudio::Sound::WaveFormat libnyquist::ConvertWaveFormat(const nqr::PCMFormat& format)
 	{
 		switch (format)
 		{

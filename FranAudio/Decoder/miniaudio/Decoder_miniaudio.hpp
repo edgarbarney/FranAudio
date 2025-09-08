@@ -51,7 +51,7 @@ namespace FranAudio::Decoder
 		/// Get the decoder type.
 		/// </summary>
 		/// <returns>Type of this decoder instance</returns>
-		virtual FRANAUDIO_API DecoderType GetDecoderType() override;
+		virtual constexpr FRANAUDIO_API DecoderType GetDecoderType() const noexcept override;
 
 		/// <summary>
 		/// Decode an audio file.

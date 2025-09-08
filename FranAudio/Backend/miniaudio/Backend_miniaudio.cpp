@@ -1,7 +1,6 @@
 // FranticDreamer 2022-2025
 
 #include <iterator>
-#include <filesystem>
 #include <thread>
 
 #include "Backend_miniaudio.hpp"
@@ -65,18 +64,34 @@ namespace FranAudio::Backend
 		// Decoder will be initialised by the FranAudio::Init
 		currentDecoderType = decoderType;
 
-		return true;
+		return Backend::Init();
 	}
 
 	FRANAUDIO_API void miniaudio::Reset()
 	{
-		ma_engine_uninit(&engine);
-		ma_engine_init(&engineConfig, &engine);
+		Backend::Reset();
 	}
 
-	FRANAUDIO_API void miniaudio::Shutdown()
+	FRANAUDIO_API void miniaudio::Shutdown(bool forReset)
 	{
+		// Stop and uninit all active sounds
+		for (auto& [soundID, soundData] : miniaudioSoundData)
+		{
+			ma_sound_stop(&soundData->sound);
+			ma_sound_uninit(&soundData->sound);
+			ma_audio_buffer_uninit(&soundData->audioBuffer);
+		}
+
+		miniaudioSoundData.clear();
+		ma_device_uninit(&device);
 		ma_engine_uninit(&engine);
+
+		Backend::Shutdown(forReset);
+	}
+
+	constexpr FRANAUDIO_API BackendType miniaudio::GetBackendType() const noexcept
+	{
+		return BackendType::miniaudio;
 	}
 
 	// ========================
@@ -183,60 +198,12 @@ namespace FranAudio::Backend
 
 	FRANAUDIO_API size_t miniaudio::LoadAudioFile(const std::string& filename)
 	{
-		std::filesystem::path filePath(filename);
-
-		if (!std::filesystem::exists(filePath))
-		{
-			FranAudioShared::Logger::LogError("MiniAudio: File does not exist: " + filename);
-			return SIZE_MAX;
-		}
-
-		if (std::filesystem::is_directory(filePath))
-		{
-			FranAudioShared::Logger::LogError("MiniAudio: File is a directory: " + filename);
-			return SIZE_MAX;
-		}
-
-		if (std::filesystem::is_empty(filePath))
-		{
-			FranAudioShared::Logger::LogError("MiniAudio: File is empty: " + filename);
-			return SIZE_MAX;
-		}
-
-		FranAudio::Sound::WaveData waveData;
-		bool result = currentDecoder->DecodeAudioFile(filename, waveData, *this);
-
-		if (!result)
-		{
-			FranAudioShared::Logger::LogError("MiniAudio: Failed to decode audio file: " + filename);
-			return SIZE_MAX;
-		}
-
-		const size_t index = waveDataCache.size();
-		waveData.SetWaveDataIndex(index);
-		waveDataCache.emplace_back(waveData);
-		filenameWaveMap[filename] = index;
-		FranAudioShared::Logger::LogSuccess(std::format("MiniAudio: Decoder {} loaded audio file: {}", FranAudio::Decoder::DecoderTypeNames[(int)currentDecoder->GetDecoderType()], filename));
-
-		return index;
+		return Backend::LoadAudioFile(filename);
 	}
 
 	FRANAUDIO_API size_t miniaudio::PlayAudioFile(const std::string& filename)
 	{
-		auto it = filenameWaveMap.find(filename); // Filename - Wave data cache index
-		if (it == filenameWaveMap.end())
-		{
-			FranAudioShared::Logger::LogError("MiniAudio: Audio file not loaded: " + filename);
-			return SIZE_MAX;
-		}
-
-		const auto& waveData = waveDataCache[it->second];
-		return PlayAudioWave(waveData);
-	}
-
-	FRANAUDIO_API size_t miniaudio::PlayAudioFileStream(const std::string& filename)
-	{
-		return SIZE_MAX;
+		return Backend::PlayAudioFile(filename);
 	}
 
 	// ========================
@@ -321,6 +288,7 @@ namespace FranAudio::Backend
 			FranAudioShared::Logger::LogError("MiniAudio: Tried to set volume of an invalid sound.");
 			return;
 		}
+
 		ma_sound_set_volume(&miniaudioSoundData[soundID]->sound, volume);
 	}
 
@@ -331,6 +299,7 @@ namespace FranAudio::Backend
 			FranAudioShared::Logger::LogError("MiniAudio: Tried to get volume of an invalid sound.");
 			return 0.0f;
 		}
+
 		return ma_sound_get_volume(&miniaudioSoundData[soundID]->sound);
 	}
 
