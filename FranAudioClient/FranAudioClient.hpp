@@ -213,14 +213,6 @@ namespace FranAudioClient
 			/// <returns>Active Sounds List Index</returns>
 			FRANAUDIO_CLIENT_API size_t PlayAudioFile(const std::string& filename);
 
-			/// <summary>
-			/// Play an audio file without loading it, stream it from the disk.
-			/// This is used to play an audio file without loading it into memory.
-			/// </summary>
-			/// <param name="filename">Path to the audio file</param>
-			/// <returns>Active Sounds List Index</returns>
-			FRANAUDIO_CLIENT_API size_t PlayAudioFileStream(const std::string& filename);
-
 			// ========================
 			// Macro Sound Management
 			// ========================

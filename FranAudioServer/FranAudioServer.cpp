@@ -479,22 +479,6 @@ namespace FranAudioServer
 			}
 		},
 
-		// Backend::PlayAudioFileStream
-		// Params: filename
-		// Returns: sound index
-		{
-			"backend-play_audio_file_stream",
-			[](const FranAudioShared::Network::NetworkFunction& fn)
-			{
-				if (fn.params.size() < 1)
-				{
-					FranAudioShared::Logger::LogError("Missing filename parameter");
-					return std::string("err");
-				}
-				return std::to_string(FranAudio::GetBackend()->PlayAudioFileStream(fn.params[0]));
-			}
-		},
-
 		// Sound::GetActiveSoundIDs
 		// Params: none
 		// Returns: Active sound ids as a binary serialised vector

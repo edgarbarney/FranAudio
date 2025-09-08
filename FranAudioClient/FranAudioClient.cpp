@@ -264,20 +264,6 @@ namespace FranAudioClient::Wrapper
 				return SIZE_MAX;
 			}
 		}
-
-		FRANAUDIO_CLIENT_API size_t PlayAudioFileStream(const std::string& filename)
-		{
-			auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-play_audio_file_stream", { filename }));
-			try
-			{
-				return std::stoull(response);
-			}
-			catch (const std::exception& e)
-			{
-				FranAudioShared::Logger::LogError("Failed to play audio file stream: " + filename);
-				return SIZE_MAX;
-			}
-		}
 		
 		// ========================
 		// Macro Sound Management

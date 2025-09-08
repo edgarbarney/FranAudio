@@ -227,11 +227,6 @@ namespace FranAudio::Backend
 		return PlayAudioWave(waveData);
 	}
 
-	FRANAUDIO_API size_t Backend::PlayAudioFileStream(const std::string& filename)
-	{
-		return SIZE_MAX;
-	}
-
 	// ========================
 	// Sound Management
 	// ========================
