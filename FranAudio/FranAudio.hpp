@@ -1,6 +1,8 @@
 // FranticDreamer 2022-2025
 #pragma once
 
+#include <memory>
+
 #include "FranAudioAPI.hpp"
 
 #include "Backend/Backend.hpp"
@@ -20,7 +22,7 @@ namespace FranAudio
 	class GlobalData
 	{
 	public:
-		inline static Backend::Backend* currentBackend = nullptr;
+		inline static std::unique_ptr<Backend::Backend> currentBackend = nullptr;
 	};
 
 	extern GlobalData gGlobals;
@@ -48,10 +50,14 @@ namespace FranAudio
 	FRANAUDIO_API void RouteLoggingToConsole(FranAudioShared::Logger::ConsoleStreamBuffer* consoleBuffer);
 
 	/// <summary>
+	/// Checks if the current backend is valid for use.
+	/// </summary>
+	FRANAUDIO_API bool IsBackendValid();
+
+	/// <summary>
 	/// Sets the audio backend to use.
 	/// </summary>
 	/// <param name="type">The backend type to set, specified as a value of Backend::BackendType.</param>
-	/// <returns>This function does not return a value.</returns>
 	FRANAUDIO_API void SetBackend(Backend::BackendType type);
 
 	/// <summary>

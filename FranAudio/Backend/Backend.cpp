@@ -29,7 +29,7 @@ namespace FranAudio::Backend
 
 	FRANAUDIO_API FranAudio::Decoder::Decoder* Backend::GetCurrentDecoder() const
 	{
-		return currentDecoder;
+		return currentDecoder.get();
 	}
 
 	FRANAUDIO_API void Backend::SetDecoder(FranAudio::Decoder::DecoderType decoderType, bool force)
@@ -42,8 +42,7 @@ namespace FranAudio::Backend
 		if (currentDecoder != nullptr)
 		{
 			currentDecoder->Shutdown();
-			delete currentDecoder;
-			currentDecoder = nullptr;
+			currentDecoder.reset();
 		}
 
 		// Check if the decoder type is supported
@@ -72,8 +71,7 @@ namespace FranAudio::Backend
 		if (currentDecoder != nullptr)
 		{
 			currentDecoder->Shutdown();
-			delete currentDecoder;
-			currentDecoder = nullptr;
+			currentDecoder.reset();
 		}
 	}
 
@@ -147,17 +145,17 @@ namespace FranAudio::Backend
 		return soundIDs;
 	}
 
-	FRANAUDIO_API Backend* Backend::CreateBackend(BackendType backendType)
+	FRANAUDIO_API std::unique_ptr<Backend> Backend::CreateBackend(BackendType backendType)
 	{
-		Backend* newBackend = nullptr;
+		std::unique_ptr<Backend> newBackend = nullptr;
 
 		switch (backendType)
 		{
 		case BackendType::miniaudio:
-			newBackend = new miniaudio();
+			newBackend = std::make_unique<FranAudio::Backend::miniaudio>();
 			break;
 		case BackendType::OpenALSoft:
-			newBackend = new OpenALSoft();
+			newBackend = std::make_unique<FranAudio::Backend::OpenALSoft>();
 			break;
 		default:
 			return nullptr;
@@ -166,7 +164,6 @@ namespace FranAudio::Backend
 
 		if (!newBackend->Init())
 		{
-			delete newBackend;
 			return nullptr;
 		}
 

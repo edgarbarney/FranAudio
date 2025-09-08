@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "FranAudioAPI.hpp"
 
@@ -21,7 +22,15 @@ namespace FranAudio::Backend
 	class Backend
 	{
 	protected:
-		FranAudio::Decoder::Decoder* currentDecoder = nullptr;
+		/// <summary>
+		/// A smart pointer to manage the current audio decoder instance.
+		/// </summary>
+		/// <remarks>
+		/// There is a small design oversight problem.
+		/// This was originally a raw pointer. So currentDecoder->Reset() was called so because there was no "confusion".
+		/// But now its a smart pointer, try not to call currentDecoder.reset() by mistake. IDE auto-complete may suggest it.
+		/// </remarks>
+		std::unique_ptr<FranAudio::Decoder::Decoder> currentDecoder = nullptr;
 		FranAudio::Decoder::DecoderType currentDecoderType = FranAudio::Decoder::DecoderType::None;
 
 		/// <summary>
@@ -353,6 +362,6 @@ namespace FranAudio::Backend
 		/// </summary>
 		/// <param name="backendType">Type of the backend to create</param>
 		/// <returns>Pointer to the created backend instance</returns>
-		static FRANAUDIO_API Backend* CreateBackend(BackendType backendType);
+		static FRANAUDIO_API std::unique_ptr<Backend> CreateBackend(BackendType backendType);
 	};
 }

@@ -22,8 +22,7 @@ namespace FranAudio
 	FRANAUDIO_API void Shutdown()
 	{
 		gGlobals.currentBackend->Shutdown();
-		delete gGlobals.currentBackend;
-		gGlobals.currentBackend = nullptr;
+		gGlobals.currentBackend.reset();
 	}
 
 	FRANAUDIO_API void RouteLoggingToConsole(FranAudioShared::Logger::ConsoleStreamBuffer* consoleBuffer)
@@ -31,13 +30,19 @@ namespace FranAudio
 		FranAudioShared::Logger::RouteToConsole(consoleBuffer);
 	}
 
+	FRANAUDIO_API bool IsBackendValid()
+	{
+		return gGlobals.currentBackend != nullptr;
+	}
+
 	FRANAUDIO_API void SetBackend(Backend::BackendType type)
 	{
 		if (gGlobals.currentBackend)
 		{
+			// Might be identical to Shutdown() 
+			// but reserved for future changes
 			gGlobals.currentBackend->Shutdown();
-			delete gGlobals.currentBackend;
-			gGlobals.currentBackend = nullptr;
+			gGlobals.currentBackend.reset();
 		}
 
 		gGlobals.currentBackend = Backend::Backend::CreateBackend(type);
@@ -47,6 +52,6 @@ namespace FranAudio
 
 	FRANAUDIO_API Backend::Backend* GetBackend()
 	{
-		return gGlobals.currentBackend;
+		return gGlobals.currentBackend.get();
 	}
 }

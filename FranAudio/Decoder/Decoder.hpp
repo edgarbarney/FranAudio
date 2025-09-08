@@ -81,6 +81,6 @@ namespace FranAudio::Decoder
 		/// </summary>
 		/// <param name="decoderType">Type of the decoder to create</param>
 		/// <returns>New decoder instance</returns>
-		static FRANAUDIO_API Decoder* CreateDecoder(DecoderType decoderType);
+		static FRANAUDIO_API std::unique_ptr<FranAudio::Decoder::Decoder> CreateDecoder(DecoderType decoderType);
 	};
 }
