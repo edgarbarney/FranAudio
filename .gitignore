@@ -8,6 +8,9 @@ Libs/glfw/
 ## Testing Sound Files
 TestFiles/
 
+## Documentation
+Docs/doxygen-awesome-css/
+
 ## Cmake
 CMakeLists.txt.user
 CMakeCache.txt

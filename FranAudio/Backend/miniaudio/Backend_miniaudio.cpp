@@ -119,10 +119,10 @@ namespace FranAudio::Backend
 		SetListenerOrientation(forward, up);
 	}
 
-	FRANAUDIO_API void miniaudio::GetListenerTransform(float position[3], float forward[3], float up[3])
+	FRANAUDIO_API void miniaudio::GetListenerTransform(float outPosition[3], float outForward[3], float outUp[3])
 	{
-		GetListenerPosition(position);
-		GetListenerOrientation(forward, up);
+		GetListenerPosition(outPosition);
+		GetListenerOrientation(outForward, outUp);
 	}
 
 	FRANAUDIO_API void miniaudio::SetListenerPosition(const float position[3])
@@ -130,12 +130,12 @@ namespace FranAudio::Backend
 		ma_engine_listener_set_position(&engine, 0, position[0], position[1], position[2]);
 	}
 
-	FRANAUDIO_API void miniaudio::GetListenerPosition(float position[3])
+	FRANAUDIO_API void miniaudio::GetListenerPosition(float outPosition[3])
 	{
 		ma_vec3f result = ma_engine_listener_get_position(&engine, 0);
-		position[0] = result.x;
-		position[1] = result.y;
-		position[2] = result.z;
+		outPosition[0] = result.x;
+		outPosition[1] = result.y;
+		outPosition[2] = result.z;
 	}
 
 	FRANAUDIO_API void miniaudio::SetListenerOrientation(const float forward[3], const float up[3])
@@ -144,16 +144,16 @@ namespace FranAudio::Backend
 		ma_engine_listener_set_world_up(&engine, 0, up[0], up[1], up[2]);
 	}
 
-	FRANAUDIO_API void miniaudio::GetListenerOrientation(float forward[3], float up[3])
+	FRANAUDIO_API void miniaudio::GetListenerOrientation(float outForward[3], float outUp[3])
 	{
 		ma_vec3f fwd = ma_engine_listener_get_direction(&engine, 0);
 		ma_vec3f u = ma_engine_listener_get_world_up(&engine, 0);
-		forward[0] = fwd.x;
-		forward[1] = fwd.y;
-		forward[2] = fwd.z;
-		up[0] = u.x;
-		up[1] = u.y;
-		up[2] = u.z;
+		outForward[0] = fwd.x;
+		outForward[1] = fwd.y;
+		outForward[2] = fwd.z;
+		outUp[0] = u.x;
+		outUp[1] = u.y;
+		outUp[2] = u.z;
 	}
 
 	FRANAUDIO_API void miniaudio::SetMasterVolume(float volume)

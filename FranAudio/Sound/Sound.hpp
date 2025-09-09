@@ -7,6 +7,9 @@
 
 #include "WaveData/WaveData.hpp"
 
+/// <summary>
+/// Namespace for Sound related classes and functions.
+/// </summary>
 namespace FranAudio::Sound
 {
 	/// <summary>
@@ -128,7 +131,7 @@ namespace FranAudio::Sound
 		/// 
 		/// Sets only the internal paused time of the sound in miliseconds.
 		/// </summary>
-		/// <param name="frame">Time to set the paused time in miliseconds</param>
+		/// <param name="timeInMs">Time to set the paused time in miliseconds</param>
 		FRANAUDIO_API void _Internal_SetPausedTime(size_t timeInMs);
 
 		/// <summary>

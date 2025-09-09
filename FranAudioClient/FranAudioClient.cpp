@@ -127,7 +127,7 @@ namespace FranAudioClient::Wrapper
 																												std::to_string(up[0]), std::to_string(up[1]), std::to_string(up[2]) }));
 		}
 
-		FRANAUDIO_CLIENT_API void GetListenerTransform(float position[3], float forward[3], float up[3])
+		FRANAUDIO_CLIENT_API void GetListenerTransform(float outPosition[3], float outForward[3], float outUp[3])
 		{
 			auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-get_listener_transform", {}));
 			try
@@ -138,15 +138,15 @@ namespace FranAudioClient::Wrapper
 					FranAudioShared::Logger::LogError("Invalid response from server for get_listener_transform");
 					return;
 				}
-				position[0] = std::stof(params[0]);
-				position[1] = std::stof(params[1]);
-				position[2] = std::stof(params[2]);
-				forward[0] = std::stof(params[3]);
-				forward[1] = std::stof(params[4]);
-				forward[2] = std::stof(params[5]);
-				up[0] = std::stof(params[6]);
-				up[1] = std::stof(params[7]);
-				up[2] = std::stof(params[8]);
+				outPosition[0] = std::stof(params[0]);
+				outPosition[1] = std::stof(params[1]);
+				outPosition[2] = std::stof(params[2]);
+				outForward[0] = std::stof(params[3]);
+				outForward[1] = std::stof(params[4]);
+				outForward[2] = std::stof(params[5]);
+				outUp[0] = std::stof(params[6]);
+				outUp[1] = std::stof(params[7]);
+				outUp[2] = std::stof(params[8]);
 			}
 			catch (const std::exception& e)
 			{
@@ -160,7 +160,7 @@ namespace FranAudioClient::Wrapper
 			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_listener_position", { std::to_string(position[0]), std::to_string(position[1]), std::to_string(position[2]) }));
 		}
 
-		FRANAUDIO_CLIENT_API void GetListenerPosition(float position[3])
+		FRANAUDIO_CLIENT_API void GetListenerPosition(float outPosition[3])
 		{
 			auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-get_listener_position", {}));
 			try
@@ -171,9 +171,9 @@ namespace FranAudioClient::Wrapper
 					FranAudioShared::Logger::LogError("Invalid response from server for get_listener_position");
 					return;
 				}
-				position[0] = std::stof(params[0]);
-				position[1] = std::stof(params[1]);
-				position[2] = std::stof(params[2]);
+				outPosition[0] = std::stof(params[0]);
+				outPosition[1] = std::stof(params[1]);
+				outPosition[2] = std::stof(params[2]);
 			}
 			catch (const std::exception& e)
 			{
@@ -188,7 +188,7 @@ namespace FranAudioClient::Wrapper
 																												  std::to_string(up[0]), std::to_string(up[1]), std::to_string(up[2]) }));
 		}
 
-		FRANAUDIO_CLIENT_API void GetListenerOrientation(float forward[3], float up[3])
+		FRANAUDIO_CLIENT_API void GetListenerOrientation(float outForward[3], float outUp[3])
 		{
 			auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-get_listener_orientation", {}));
 			try
@@ -199,12 +199,12 @@ namespace FranAudioClient::Wrapper
 					FranAudioShared::Logger::LogError("Invalid response from server for get_listener_orientation");
 					return;
 				}
-				forward[0] = std::stof(params[0]);
-				forward[1] = std::stof(params[1]);
-				forward[2] = std::stof(params[2]);
-				up[0] = std::stof(params[3]);
-				up[1] = std::stof(params[4]);
-				up[2] = std::stof(params[5]);
+				outForward[0] = std::stof(params[0]);
+				outForward[1] = std::stof(params[1]);
+				outForward[2] = std::stof(params[2]);
+				outUp[0] = std::stof(params[3]);
+				outUp[1] = std::stof(params[4]);
+				outUp[2] = std::stof(params[5]);
 			}
 			catch (const std::exception& e)
 			{

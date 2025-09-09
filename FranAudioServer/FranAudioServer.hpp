@@ -7,6 +7,9 @@
 
 #include "FranAudioShared/Network/Network.hpp"
 
+/// <summary>
+/// Server implementation for FranAudioServer IPC system.
+/// </summary>
 namespace FranAudioServer
 {
 	void Init();

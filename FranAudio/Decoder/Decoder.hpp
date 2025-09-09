@@ -18,14 +18,19 @@ namespace FranAudio::Backend
 { 
 	class Backend;
 }
-	
+
+/// <summary>
+/// Namespace for Decoder Abstract and Implementations.
+/// </summary>
 namespace FranAudio::Decoder
 {
 	/// <summary>
-	/// Interface for decoder implementations.
-	/// 
-	/// A decoder is used to decode audio files into a format that can be played by the backend.
+	/// Abstract for decoder implementations.
 	/// </summary>
+	/// <remarks>
+	/// A decoder is used to decode audio files into a format that can be played by the backend.
+	/// A decoder is always managed by a backend.
+	/// </remarks>
 	class Decoder
 	{
 	public:
@@ -170,16 +175,14 @@ namespace FranAudio::Decoder
 		/// Converts a container of 24-bit signed integer audio samples to a container of floating-point samples.
 		/// Contains precision loss.
 		/// </summary>
-		/// <param name="samples">A container holding 24-bit signed integer audio samples to be converted.</param>
-		/// <returns>A container of floating-point audio samples corresponding to the input samples.</returns>
+		/// <param name="samples">Container to be modified, holding 24-bit signed integer audio samples to be converted.</param>
 		static void S24BufferToFloat(FranAudio::Sound::FloatSampleContainer& samples);
 
 		/// <summary>
 		/// Converts a container of floating-point audio samples to 24-bit signed integer format.
 		/// Contains precision loss.
 		/// </summary>
-		/// <param name="samples">A container holding the input floating-point audio samples.</param>
-		/// <returns>A container with the audio samples converted to 24-bit signed integer format.</returns>
+		/// <param name="samples">Container to be modified, holding the input floating-point audio samples.</param>
 		static void FloatBufferToS24(FranAudio::Sound::FloatSampleContainer& samples);
 	};
 }

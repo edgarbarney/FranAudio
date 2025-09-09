@@ -67,6 +67,27 @@ endif()
 include("CMakeMacros.cmake")
 
 # =================
+# Docs
+# =================
+include(FetchContent)
+FetchContent_Declare(
+    doxygen-awesome-css
+    URL https://github.com/jothepro/doxygen-awesome-css/archive/refs/heads/main.zip
+	SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Docs/doxygen-awesome-css
+	DOWNLOAD_EXTRACT_TIMESTAMP YES
+)
+FetchContent_MakeAvailable(doxygen-awesome-css)
+FetchContent_GetProperties(doxygen-awesome-css SOURCE_DIR AWESOME_CSS_DIR)
+
+# Generate the Doxyfile
+set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Docs/Doxyfile.in)
+set(DOXYFILE_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+set(DOXYGEN_PROJSRC ${CMAKE_CURRENT_SOURCE_DIR})
+set(DOXYGEN_PROJOUT ${CMAKE_CURRENT_BINARY_DIR}/DocsOut)
+configure_file(${DOXYFILE_IN} ${DOXYFILE_OUT} @ONLY)
+
+# =================
 # FranAudio Sources
 # =================
 include("FranAudio/Files.cmake")

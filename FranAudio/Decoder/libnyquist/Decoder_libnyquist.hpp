@@ -8,6 +8,9 @@
 
 namespace FranAudio::Decoder
 {
+	/// <summary>
+	/// Libnyquist Decoder
+	/// </summary>
 	class libnyquist : public Decoder
 	{
 	private:
@@ -70,12 +73,14 @@ namespace FranAudio::Decoder
 		/// Converts the WaveData to libnyquist AudioData.
 		/// </summary>
 		/// <param name="waveData">WaveData to convert into libnyquist AudioData</param>
+		/// <param name="targetAudioData">Target libnyquist AudioData to store the converted data</param>
 		static void ConvertFranDataToNyqData(const FranAudio::Sound::WaveData& waveData, nqr::AudioData& targetAudioData);
 	
 		/// <summary>
 		/// Converts the libnyquist AudioData to WaveData.
 		/// </summary>
 		/// <param name="audioData">libnyquist AudioData to convert into WaveData</param>
+		/// <param name="targetWaveData">Target WaveData to store the converted data</param>
 		static void ConvertNyqDataToFranData(const nqr::AudioData& audioData, FranAudio::Sound::WaveData& targetWaveData);
 
 		static FranAudio::Sound::WaveFormat ConvertWaveFormat(const nqr::PCMFormat& format);

@@ -18,6 +18,9 @@
 
 namespace FranAudioShared
 {
+	/// <summary>
+	/// Network related functionality for FranAudio.
+	/// </summary>
 	namespace Network
 	{
 		// Constants

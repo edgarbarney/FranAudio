@@ -14,10 +14,13 @@
 #include "Sound/WaveData/WaveData.hpp"
 #include "Sound/Sound.hpp"
 
+/// <summary>
+/// Namespace for Backend Abstract and Implementations.
+/// </summary>
 namespace FranAudio::Backend
 {
 	/// <summary>
-	/// Interface for backend implementations.
+	/// Abstract for backend implementations.
 	/// </summary>
 	class Backend
 	{
@@ -91,6 +94,7 @@ namespace FranAudio::Backend
 		/// <para/> Note: The decoderType parameter is a hint, the backend may choose to ignore it and use its own default decoder.
 		/// <para/> Note: Decoder is not initialised by this function, call SetDecoder() to initialise it if you're manually managing backends.
 		/// </summary>
+		/// <param name="decoderType">Type of the decoder to use. Default is DecoderType::None, which means the backend will choose the default decoder.</param>
 		virtual FRANAUDIO_API bool Init(FranAudio::Decoder::DecoderType decoderType = FranAudio::Decoder::DecoderType::None);
 
 		/// <summary>
@@ -216,14 +220,15 @@ namespace FranAudio::Backend
 		/// </summary>
 		/// <param name="position">New position of the listener</param>
 		/// <param name="forward">New forward vector of the listener</param>
+		/// <param name="up">New up vector of the listener</param>
 		virtual void SetListenerTransform(const float position[3], const float forward[3], const float up[3]) = 0;
 
 		/// <summary>
 		/// Get the listener's position and orientation.
 		/// </summary>
-		/// <param name="position">Output position of the listener</param>
-		/// <param name="forward">Output forward vector of the listener</param>
-		/// <param name="up">Output up vector of the listener</param>
+		/// <param name="outPosition">Output position of the listener</param>
+		/// <param name="outForward">Output forward vector of the listener</param>
+		/// <param name="outUp">Output up vector of the listener</param>
 		virtual void GetListenerTransform(float outPosition[3], float outForward[3], float outUp[3]) = 0;
 
 		/// <summary>
@@ -235,7 +240,7 @@ namespace FranAudio::Backend
 		/// <summary>
 		/// Get the listener's position.
 	 	/// </summary>
-		/// <param name="position">Output position of the listener</param>
+		/// <param name="outPosition">Output position of the listener</param>
 		virtual void GetListenerPosition(float outPosition[3]) = 0;
 
 		/// <summary>
@@ -248,8 +253,8 @@ namespace FranAudio::Backend
 		/// <summary>
 		/// Get the listener's orientation.
 		/// </summary>
-		/// <param name="forward">Output forward vector of the listener</param>
-		/// <param name="up">Output up vector of the listener</param>
+		/// <param name="outForward">Output forward vector of the listener</param>
+		/// <param name="outUp">Output up vector of the listener</param>
 		virtual void GetListenerOrientation(float outForward[3], float outUp[3]) = 0;
 
 		/// <summary>
@@ -346,8 +351,8 @@ namespace FranAudio::Backend
 		/// Get the position of a playing sound by its index.
 		/// </summary>
  		/// <param name="soundID">ID of the sound to get the position of</param>
-	 	/// <param name="position">Output position of the sound</param>
-		virtual void GetSoundPosition(size_t soundID, float position[3]) = 0;
+	 	/// <param name="outPosition">Output position of the sound</param>
+		virtual void GetSoundPosition(size_t soundID, float outPosition[3]) = 0;
 
 		/// <summary>
 		/// Get a reference to a playing sound by its index.

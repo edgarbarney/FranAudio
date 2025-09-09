@@ -9,22 +9,28 @@
 
 #include "FranAudioShared/Logger/Logger.hpp"
 
+/// <summary>
+/// FranAudio Library Root Namespace.
+/// </summary>
 namespace FranAudio
 {
 	/// <summary>
-	/// Entity handle type.
-	/// You may change this to your engine's entity handle type if needed when you're rebuilding FranAudio.
+	/// Default backend for FranAudio.
 	/// </summary>
-	using EntityHandle = size_t;
+	inline constexpr Backend::BackendType defaultBackend = Backend::BackendType::miniaudio;
 
-	inline const Backend::BackendType defaultBackend = Backend::BackendType::miniaudio;
-
+	/// <summary>
+	/// Global data for the FranAudio library.
+	/// </summary>
 	class GlobalData
 	{
 	public:
 		inline static std::unique_ptr<Backend::Backend> currentBackend = nullptr;
 	};
 
+	/// <summary>
+	/// Global instance of the FranAudio library data.
+	/// </summary>
 	extern GlobalData gGlobals;
 
 	/// <summary>

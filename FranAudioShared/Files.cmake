@@ -7,6 +7,9 @@
 # Header files
 FILE(GLOB FRANAUDIOSHARED_HEADERFILES
 
+	#Core
+	FranAudioShared/FranAudioShared.hpp
+
 	#Network
 	FranAudioShared/Network/Network.hpp
 

@@ -118,6 +118,9 @@ namespace FranAudioShared
 			//size_t count = 1; // Number of times this entry has been logged
 		};
 
+		/// <summary>
+		/// A basic output console manager. Manages console entries.
+		/// </summary>
 		class FranAudioConsole
 		{
 		private:

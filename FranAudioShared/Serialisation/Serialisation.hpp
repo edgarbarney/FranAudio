@@ -10,6 +10,9 @@
 #include "FranAudioShared/Containers/UnorderedMap.hpp"
 #include "FranAudioShared/Logger/Logger.hpp"
 
+/// <summary>
+/// Namespace for Serialisation utilities.
+/// </summary>
 namespace FranAudioShared::Serialisation
 {
 	// ========================

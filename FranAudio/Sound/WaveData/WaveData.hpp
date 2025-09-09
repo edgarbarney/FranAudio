@@ -37,18 +37,86 @@ namespace FranAudio::Sound
 		/// </summary>
 		FRANAUDIO_API WaveData(const std::string& filename = "", size_t waveDataIndex = 0, WaveFormat format = WaveFormat::Unknown, double length = 0.0, int channels = 0, int sampleRate = 0);
 
+		// =========
+		// Setters
+		// =========
+
+		/// <summary>
+		/// Sets the filename of the audio file including path if any.
+		/// </summary>
+		/// <param name="filename">Input File</param>
 		FRANAUDIO_API void SetFilename(const std::string& filename);
+
+		/// <summary>
+		/// Sets the ID of the wave data.
+		/// </summary>
+		/// <param name="index">Input Index</param>
 		FRANAUDIO_API void SetWaveDataIndex(size_t index);
+
+		/// <summary>
+		/// Sets the audio format of the wave data.
+		/// </summary>
+		/// <param name="format">Format to set to</param>
 		FRANAUDIO_API void SetFormat(WaveFormat format);
+
+		/// <summary>
+		/// Sets the length of the audio in seconds. 
+		/// </summary>
+		/// <param name="length">Length of the audio in seconds</param>
 		FRANAUDIO_API void SetLength(double length);
+
+		/// <summary>
+		/// Sets the number of audio channels.
+		/// </summary>
+		/// <example>1 = Mono, 2 = Stereo, etc.</example>
+		/// <param name="channels">Number of channels to set</param>
 		FRANAUDIO_API void SetChannels(char channels);
+
+		/// <summary>
+		/// Sets the sample rate.
+		/// </summary>
+		/// <param name="sampleRate">Desired sample rate in samples per second (Hz)</param>
 		FRANAUDIO_API void SetSampleRate(int sampleRate);
 
+		// =========
+		// Getters
+		// =========
+
+		/// <summary>
+		/// Get the filename of the audio file including path if any.
+		/// </summary>
+		/// <returns>Filename of the audio file</returns>
 		[[nodiscard]] FRANAUDIO_API const std::string& GetFilename() const;
+
+		/// <summary>
+		/// Get the ID of the wave data.
+		/// </summary>
+		/// <returns>Wave data Index</returns>
 		[[nodiscard]] FRANAUDIO_API size_t GetWaveDataIndex() const;
+
+		/// <summary>
+		/// Get the audio format of the wave data.
+		/// </summary>
+		/// <returns>Wave format</returns>
 		[[nodiscard]] FRANAUDIO_API WaveFormat GetFormat() const;
+
+		/// <summary>
+		/// Get the length of the audio in seconds.
+		/// </summary>
+		/// <returns>Length of the audio in seconds</returns>
 		[[nodiscard]] FRANAUDIO_API double GetLength() const;
+
+		/// <summary>
+		/// Get the number of audio channels.
+		/// </summary>
+		/// <example>1 = Mono, 2 = Stereo, etc.</example>
+		/// <returns>Number of channels</returns>
 		[[nodiscard]] FRANAUDIO_API char GetChannels() const;
+
+		/// <summary>
+		/// Get the sample rate.
+		/// </summary>
+		/// <returns>Sample rate in samples per second (Hz)</returns>
 		[[nodiscard]] FRANAUDIO_API int GetSampleRate() const;
 
 		// =========

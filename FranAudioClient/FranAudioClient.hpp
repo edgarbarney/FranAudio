@@ -9,6 +9,9 @@
 #include "Backend/BackendTypes.hpp"
 #include "Sound/WaveData/WaveFormats.hpp"
 
+/// <summary>
+/// Client API for FranAudioServer IPC system.
+/// </summary>
 namespace FranAudioClient
 {
 	// ===========================
@@ -68,14 +71,20 @@ namespace FranAudioClient
 	/// <param name="consoleBuffer">A pointer to the ConsoleStreamBuffer where client output will be directed.</param>
 	FRANAUDIO_CLIENT_API void RouteClientLoggingToConsole(FranAudioShared::Logger::ConsoleStreamBuffer* consoleBuffer);
 
+	/// <summary>
+	/// FranAudio client wrapper functions.
+	/// </summary>
 	namespace Wrapper
 	{
 		/// <summary>
 		/// Sets the audio backend to use.
 		/// </summary>
-		/// <param name="type">The backend type to set, specified as a value of Backend::BackendType.</param>
+		/// <param name="backendType">The backend type to set, specified as a value of Backend::BackendType.</param>
 		FRANAUDIO_CLIENT_API void SetBackend(FranAudio::Backend::BackendType backendType);
 
+		/// <summary>
+		/// Backend related functions of the wrapper.
+		/// </summary>
 		namespace Backend
 		{
 			/// <summary>
@@ -145,15 +154,16 @@ namespace FranAudioClient
 			/// </summary>
 			/// <param name="position">New position of the listener</param>
 			/// <param name="forward">New forward vector of the listener</param>
+			/// <param name="up">New up vector of the listener</param>
 			FRANAUDIO_CLIENT_API void SetListenerTransform(float position[3], float forward[3], float up[3]);
 
 			/// <summary>
 			/// Get the listener's position and orientation.
 			/// </summary>
-			/// <param name="position">Output position of the listener</param>
-			/// <param name="forward">Output forward vector of the listener</param>
-			/// <param name="up">Output up vector of the listener</param>
-			FRANAUDIO_CLIENT_API void GetListenerTransform(float position[3], float forward[3], float up[3]);
+			/// <param name="outPosition">Output position of the listener</param>
+			/// <param name="outForward">Output forward vector of the listener</param>
+			/// <param name="outUp">Output up vector of the listener</param>
+			FRANAUDIO_CLIENT_API void GetListenerTransform(float outPosition[3], float outForward[3], float outUp[3]);
 
 			/// <summary>
 			/// Set the listener's position.
@@ -164,8 +174,8 @@ namespace FranAudioClient
 			/// <summary>
 			/// Get the listener's position.
 			/// </summary>
-			/// <param name="position">Output position of the listener</param>
- 			FRANAUDIO_CLIENT_API void GetListenerPosition(float position[3]);
+			/// <param name="outPosition">Output position of the listener</param>
+ 			FRANAUDIO_CLIENT_API void GetListenerPosition(float outPosition[3]);
 
 			/// <summary>
 			/// Set the listener's orientation.
@@ -177,9 +187,9 @@ namespace FranAudioClient
 			/// <summary>
 			/// Get the listener's orientation.
 			/// </summary>
-			/// <param name="forward">Output forward vector of the listener</param>
-			/// <param name="up">Output up vector of the listener</param>
-			FRANAUDIO_CLIENT_API void GetListenerOrientation(float forward[3], float up[3]);
+			/// <param name="outForward">Output forward vector of the listener</param>
+			/// <param name="outUp">Output up vector of the listener</param>
+			FRANAUDIO_CLIENT_API void GetListenerOrientation(float outForward[3], float outUp[3]);
 
 			/// <summary>
 			/// Set the master volume.
@@ -224,6 +234,9 @@ namespace FranAudioClient
 			FRANAUDIO_CLIENT_API const std::vector<size_t> GetActiveSoundIDs();
 		}
 
+		/// <summary>
+		/// Sound related functions of the wrapper.
+		/// </summary>
 		namespace Sound
 		{
 			// ========================

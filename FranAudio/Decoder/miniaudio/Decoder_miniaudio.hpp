@@ -8,6 +8,9 @@
 
 namespace FranAudio::Decoder
 {
+	/// <summary>
+	/// miniaudio Decoder.
+	/// </summary>
 	class miniaudio : public Decoder
 	{
 	private:
