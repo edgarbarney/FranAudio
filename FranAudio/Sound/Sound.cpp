@@ -11,7 +11,7 @@
 namespace FranAudio::Sound
 {
 	FRANAUDIO_API Sound::Sound(size_t soundID, size_t waveDataIndex)
-		: soundID(soundID), waveDataIndex(waveDataIndex), isPaused(false), pausedTime(0)
+		: soundID(soundID), waveDataIndex(waveDataIndex)
 	{
 
 	}
@@ -64,29 +64,5 @@ namespace FranAudio::Sound
 	FRANAUDIO_API void Sound::GetPosition(float outPosition[3]) const
 	{
 		FranAudio::GetBackend()->GetSoundPosition(soundID, outPosition);
-	}
-
-	// ========================
-	// INTERNAL USE ONLY
-	// ========================
-
-	FRANAUDIO_API void Sound::_Internal_SetPaused(bool isPaused)
-	{
-		this->isPaused = isPaused;
-	}
-
-	FRANAUDIO_API bool Sound::_Internal_GetPaused() const
-	{
-		return isPaused;
-	}
-
-	FRANAUDIO_API void Sound::_Internal_SetPausedTime(size_t timeInMs)
-	{
-		pausedTime = timeInMs;
-	}
-
-	FRANAUDIO_API size_t Sound::_Internal_GetPausedTime() const
-	{
-		return pausedTime;
 	}
 }

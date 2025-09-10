@@ -225,7 +225,7 @@ namespace FranAudio::Backend
 
 		auto& soundPtr = miniaudioSoundData[soundID];
 
-		if (!activeSounds[soundID]._Internal_GetPaused())
+		if (!miniaudioSoundData[soundID]->isPaused)
 		{
 			ma_sound_stop(&soundPtr->sound);
 		}
@@ -250,24 +250,24 @@ namespace FranAudio::Backend
 		auto* maSoundData = &miniaudioSoundData[soundID]->sound;
 
 		//if (IsSoundPaused(soundID) == isPaused)
-		if(activeSound._Internal_GetPaused() == isPaused)
+		if(miniaudioSoundData[soundID]->isPaused == isPaused)
 		{
 			return;
 		}
 
 		if (isPaused)
 		{
-			activeSound._Internal_SetPausedTime(ma_sound_get_time_in_milliseconds(maSoundData));
+			miniaudioSoundData[soundID]->pausedTime = ma_sound_get_time_in_milliseconds(maSoundData);
 			ma_sound_stop(maSoundData);
 		}
 		else
 		{
 			ma_sound_start(maSoundData);
-			ma_sound_seek_to_second(maSoundData, activeSound._Internal_GetPausedTime());
-			activeSound._Internal_SetPausedTime(0);
+			ma_sound_seek_to_second(maSoundData, miniaudioSoundData[soundID]->pausedTime);
+			miniaudioSoundData[soundID]->pausedTime = 0;
 		}
 
-		activeSounds[soundID]._Internal_SetPaused(isPaused);
+		miniaudioSoundData[soundID]->isPaused = isPaused;
 	}
 
 	FRANAUDIO_API bool miniaudio::IsSoundPaused(size_t soundID)
@@ -278,7 +278,7 @@ namespace FranAudio::Backend
 			return false;
 		}
 
-		return activeSounds[soundID]._Internal_GetPaused();
+		return miniaudioSoundData[soundID]->isPaused;
 	}
 
 	FRANAUDIO_API void miniaudio::SetSoundVolume(size_t soundID, float volume)

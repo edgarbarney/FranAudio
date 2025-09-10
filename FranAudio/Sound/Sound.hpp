@@ -33,16 +33,6 @@ namespace FranAudio::Sound
 		/// </summary>
 		size_t waveDataIndex;
 
-		/// <summary>
-		/// Whether the sound is paused or not.
-		/// </summary>
-		bool isPaused;
-
-		/// <summary>
-		/// Time the sound was paused at in miliseconds.
-		/// </summary>
-		size_t pausedTime;
-
 	public:
 		/// <summary>
 		/// Constructor.
@@ -106,40 +96,5 @@ namespace FranAudio::Sound
 		/// Get the position of the sound.
 		/// </summary>
 		FRANAUDIO_API void GetPosition(float outPosition[3]) const;
-
-		// ========================
-		// INTERNAL USE ONLY
-		// ========================
-
-		/// <summary>
-		/// <para>INTERNAL USE ONLY</para>
-		/// 
-		/// Sets only the internal paused state of the sound.
-		/// </summary>
-		FRANAUDIO_API void _Internal_SetPaused(bool isPaused);
-
-		/// <summary>
-		/// <para>INTERNAL USE ONLY</para>
-		/// 
-		/// Gets only the internal paused state of the sound.
-		/// </summary>
-		/// <returns>True if the sound is paused, false otherwise</returns>
-		FRANAUDIO_API bool _Internal_GetPaused() const;
-
-		/// <summary>
-		/// <para>INTERNAL USE ONLY</para>
-		/// 
-		/// Sets only the internal paused time of the sound in miliseconds.
-		/// </summary>
-		/// <param name="timeInMs">Time to set the paused time in miliseconds</param>
-		FRANAUDIO_API void _Internal_SetPausedTime(size_t timeInMs);
-
-		/// <summary>
-		/// <para>INTERNAL USE ONLY</para>
-		/// 
-		/// Gets only the internal paused time of the sound in miliseconds.
-		/// </summary>
-		/// <returns>Time the sound was paused at in miliseconds</returns>
-		FRANAUDIO_API size_t _Internal_GetPausedTime() const;
 	};
 }

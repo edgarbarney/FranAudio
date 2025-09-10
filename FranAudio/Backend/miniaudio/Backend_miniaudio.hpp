@@ -58,9 +58,29 @@ namespace FranAudio::Backend
 		/// </summary>
 		struct MiniaudioSound
 		{
+			/// <summary>
+			/// Miniaudio audio buffer config.
+			/// </summary>
 			ma_audio_buffer_config audioBufferConfig = {};
+
+			/// <summary>
+			/// Miniaudio audio buffer.
+			/// </summary>
 			ma_audio_buffer audioBuffer = {};
+
+			/// <summary>
+			/// The actual miniaudio sound object.
+			/// </summary>
 			ma_sound sound = {};
+			/// <summary>
+			/// Whether the sound is paused or not.
+			/// </summary>
+			bool isPaused = false;
+
+			/// <summary>
+			/// Time the sound was paused at in miliseconds.
+			/// </summary>
+			size_t pausedTime = 0;
 		};
 
 		/// <summary>
