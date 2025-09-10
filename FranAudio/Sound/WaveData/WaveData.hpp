@@ -16,20 +16,53 @@ namespace FranAudio::Sound
 	class WaveData
 	{
 	private:
-		std::string filename;			///<summary> Filename of the audio file. </summary>
-		size_t waveDataIndex;			///<summary> ID of the wave data. </summary>
+		/// <summary>
+		/// Filename of the audio file.
+		/// </summary>
+		std::string filename;
 
-		WaveFormat format;				///<summary> Audio format. </summary>
-		double length;					///<summary> Length of the audio in seconds. </summary>
-		char channels;					///<summary> Number of channels. </summary>
-		int sampleRate;					///<summary> Sample rate. </summary>
+		/// <summary>
+		/// ID of the wave data.
+		/// </summary>
+		size_t waveDataIndex;
+
+		// =========
+		// Wave Info
+		// =========
+
+		/// <summary>
+		/// Audio format.
+		/// </summary>
+		WaveFormat format;
+
+		/// <summary>
+		/// Length of the audio in seconds.
+		/// </summary>
+		double length;
+
+		/// <summary>
+		/// Number of channels.
+		/// </summary>
+		char channels;
+
+		/// <summary>
+		/// Sample rate.
+		/// </summary>
+		int sampleRate;
 
 		// =========
 		// Frames
 		// =========
 
-		SampleFrameContainer frames;	///<summary> Audio samples. </summary>
-		unsigned char frameSize;		///<summary> Bits per frame * channels. </summary>
+		/// <summary>
+		/// Audio samples.
+		/// </summary>
+		SampleFrameContainer frames;
+
+		/// <summary>
+		/// Bits per frame * channels.
+		/// </summary>
+		unsigned char frameSize;
 
 	public:
 		/// <summary>
