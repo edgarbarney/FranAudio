@@ -4,6 +4,7 @@
 
 #include "Backend.hpp"
 #include "miniaudio/Backend_miniaudio.hpp"
+#include "OpenALSoft/Backend_OpenALSoft.hpp"
 
 #include "FranAudioShared/Logger/Logger.hpp"
 

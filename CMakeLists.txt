@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.23)
 
 project("FranAudio"
 	VERSION 0.1.0
-	DESCRIPTION "FranAudio - Audio Library, Mainly for Games and Game Engines"
+	DESCRIPTION "Audio Library, Mainly for Games and Game Engines"
 	LANGUAGES CXX C
 )
 
@@ -22,6 +22,7 @@ option(FRANAUDIO_DISABLE_LOGGING "Disable all logging functionality" OFF)
 option(FRANAUDIO_SERVERCLIENT_DEBUG "Enable extended debug messages for server and client" OFF)
 option(FRANAUDIO_USE_VORBIS "Enable Vorbis Support (requires libogg and libvorbis)" ON)
 option(FRANAUDIO_USE_OPUS "Enable Opus Support (requires Vorbis Support, libopus and libopusfile)" ON)
+option(FRANAUDIO_USE_OPENAL "Enable OpenAL Backend Support" ON)
 option(FRANAUDIO_USE_STL_CONTAINERS "Use STL Containers instead of custom containers" OFF)
 
 if (FRANAUDIO_USE_SERVER)
@@ -110,7 +111,7 @@ endif()
 # =================
 include(FetchContent)
 
-include_directories ("Libs")
+include_directories("Libs")
 set(FRANAUDIO_LIBRARIES_PARENT_DIR "Libs")
 
 if (FRANAUDIO_USE_VORBIS)
@@ -168,6 +169,21 @@ if (FRANAUDIO_USE_OPUS)
 	set (OpusFile_DIR "Libs/opusfile")
 endif()
 
+# OpenAL
+if (FRANAUDIO_USE_OPENAL)
+	# openal-soft
+	FetchContent_Declare(
+		openal-soft
+		GIT_REPOSITORY https://github.com/kcat/openal-soft.git
+		GIT_TAG        1.24.3
+		SOURCE_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/Libs/openal-soft
+	)
+	FetchContent_MakeAvailable(openal-soft)
+
+	set(ALSOFT_INSTALL_EXAMPLES	OFF CACHE BOOL "" FORCE)
+	set(ALSOFT_INSTALL_UTILS	OFF CACHE BOOL "" FORCE)
+endif()
+
 # Miniaudio
 add_subdirectory("Libs/miniaudio")
 
@@ -208,6 +224,7 @@ target_link_libraries(FranAudio
 	PRIVATE miniaudio libnyquist
 	PRIVATE $<$<BOOL:${FRANAUDIO_USE_VORBIS}>:miniaudio_libvorbis>
 	PRIVATE $<$<BOOL:${FRANAUDIO_USE_OPUS}>:miniaudio_libopus>
+	PRIVATE $<$<BOOL:${FRANAUDIO_USE_OPENAL}>:OpenAL::OpenAL>
 )
 
 # Export headers
