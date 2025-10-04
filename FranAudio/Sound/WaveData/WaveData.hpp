@@ -64,11 +64,20 @@ namespace FranAudio::Sound
 		/// </summary>
 		unsigned char frameSize;
 
+		// =========
+		// Flags
+		// =========
+
+		/// <summary>
+		/// If true, wave data will be kept in memory when the cache is cleared.
+		/// </summary>
+		const bool isPersistent;
+
 	public:
 		/// <summary>
 		/// Default constructor.
 		/// </summary>
-		FRANAUDIO_API WaveData(const std::string& filename = "", size_t waveDataIndex = 0, WaveFormat format = WaveFormat::Unknown, double length = 0.0, int channels = 0, int sampleRate = 0);
+		FRANAUDIO_API WaveData(const std::string& filename = "", size_t waveDataIndex = 0, WaveFormat format = WaveFormat::Unknown, double length = 0.0, int channels = 0, int sampleRate = 0, bool isPersistent = false);
 
 		// =========
 		// Setters
@@ -152,6 +161,13 @@ namespace FranAudio::Sound
 		/// <returns>Sample rate in samples per second (Hz)</returns>
 		[[nodiscard]] FRANAUDIO_API int GetSampleRate() const;
 
+		/// <summary>
+		/// Get if wave data is persistent.
+		/// If true, wave data will be kept in memory when the cache is cleared.
+		/// </summary>
+		/// <returns>If wave data is persistent</returns>
+		[[nodiscard]] FRANAUDIO_API bool IsPersistent() const;
+
 		// =========
 		// Frame Stuff
 		// =========
@@ -190,5 +206,28 @@ namespace FranAudio::Sound
 		/// Get frames.
 		/// </summary>
 		[[nodiscard]] const FRANAUDIO_API SampleFrameContainer& GetFrames() const;
+
+		// =========
+		// Utilities
+		// =========
+
+		/// <summary>
+		/// Mixes multi-channel audio to mono.
+		/// </summary>
+		/// <remarks>If the audio is already mono, this function does nothing.</remarks>
+		FRANAUDIO_API void MixToMono();
+
+		/// <summary>
+		/// Mixes mono audio to stereo.
+		/// </summary>
+		/// <remarks>
+		/// <para>
+		/// If the audio is already stereo, this function does nothing.
+		/// </para>
+		/// <para>
+		/// If the audio has more than 2 channels, this function will first mix it to mono, then to stereo.
+		/// </para>
+		/// </remarks>
+		FRANAUDIO_API void MixToStereo();
 	};
 }

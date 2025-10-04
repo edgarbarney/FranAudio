@@ -158,7 +158,7 @@ namespace FranAudio::Backend
 		/// <param name="outPosition">Output position of the listener</param>
 		/// <param name="outForward">Output forward vector of the listener</param>
 		/// <param name="outUp">Output up vector of the listener</param>
- 		virtual FRANAUDIO_API void GetListenerTransform(float outPosition[3], float outForward[3], float outUp[3]) override;
+		virtual FRANAUDIO_API void GetListenerTransform(float outPosition[3], float outForward[3], float outUp[3]) override;
 
 		/// <summary>
 		/// Set the listener's position.
@@ -195,9 +195,9 @@ namespace FranAudio::Backend
 
 		/// <summary>
 		/// Get the master volume.
- 		/// Can also be the listener's hearing volume.
- 		/// </summary>
- 		virtual FRANAUDIO_API float GetMasterVolume() override; // Not const because some audio backends might require non-const pointer.
+		/// Can also be the listener's hearing volume.
+		/// </summary>
+		virtual FRANAUDIO_API float GetMasterVolume() override; // Not const because some audio backends might require non-const pointer.
 
 		// ========================
 		// Audio File Management
@@ -216,6 +216,14 @@ namespace FranAudio::Backend
 		/// <param name="filename">Path to the audio file</param>
 		/// <returns>Wave Data Cache Index</returns>
 		virtual FRANAUDIO_API size_t LoadAudioFile(const std::string& filename) override;
+
+		/// <summary>
+		/// Decode an audio file and load it into the memory.
+		/// </summary>
+		/// <param name="filename">Path to the audio file</param>
+		/// <param name="decodeSettings">Decode settings to use for this file. If not specified, current decode settings are used.</param>
+		/// <returns>Wave Data Cache Index</returns>
+		virtual FRANAUDIO_API size_t LoadAudioFile(const std::string& filename, const FranAudio::Decoder::DecodeSettings& decodeSettings) override;
 
 		/// <summary>
 		/// Play an audio file after checking if it's loaded.
@@ -257,7 +265,7 @@ namespace FranAudio::Backend
 
 		/// <summary>
 		/// Set the volume of a playing sound by its index.
- 		/// </summary>
+		/// </summary>
 		/// <param name="soundID">ID of the sound to set the volume of</param>
 		/// <param name="volume">Volume to set the sound to (0.0 - 1.0)</param>
 		virtual FRANAUDIO_API void SetSoundVolume(size_t soundID, float volume) override;

@@ -61,26 +61,18 @@ namespace FranAudio::Backend
 		FranAudioShared::Containers::UnorderedMap<size_t, FranAudio::Sound::Sound> activeSounds;
 
 		// ========================
-		// Forced Decode Settings
+		// Decode Settings
 		// ========================
 
 		/// <summary>
-		/// Forced format for decoding audio files.
-		/// WaveFormat::Unknown means no forced format.
+		/// Default decode settings.
 		/// </summary>
-		FranAudio::Sound::WaveFormat forcedFormat = FranAudio::Sound::WaveFormat::Unknown;
+		FranAudio::Decoder::DecodeSettings defaultDecodeSettings = {};
 
 		/// <summary>
-		/// Forced number of channels for decoding audio files.
-		/// 0 means no forced channels.
+		/// Settings for decoding audio wave data.
 		/// </summary>
-		char forcedChannels = 0;
-
-		/// <summary>
-		/// Forced sample rate for decoding audio files.
-		/// 0 means no forced sample rate.
-		/// </summary>
-		int forcedSampleRate = 0;
+		FranAudio::Decoder::DecodeSettings currentDecodeSettings = {};
 
 	public:
 		Backend() = default;
@@ -176,40 +168,22 @@ namespace FranAudio::Backend
 		FRANAUDIO_API void DestroyDecoder();
 
 		/// <summary>
-		/// Sets forced decode format for decoding.
+		/// Get the default decode settings.
 		/// </summary>
-		/// <param name="format">Forced format to be used in decoding</param>
-		FRANAUDIO_API void SetForcedDecodeFormat(FranAudio::Sound::WaveFormat format);
+		/// <returns>Default decode settings</returns>
+		virtual const FRANAUDIO_API FranAudio::Decoder::DecodeSettings& GetDefaultDecodeSettings() const noexcept;
 
 		/// <summary>
-		/// Gets forced decode format for decoding.
+		/// Set the current decode settings.
 		/// </summary>
-		/// <returns>The forced decode format</returns>
-		FRANAUDIO_API FranAudio::Sound::WaveFormat GetForcedDecodeFormat() const;
+		/// <param name="settings">New decode settings</param>
+		virtual FRANAUDIO_API void SetDecodeSettings(const FranAudio::Decoder::DecodeSettings& settings) noexcept;
 
 		/// <summary>
-		/// Sets the number of channels to be used in decoding.
+		/// Get the current decode settings.
 		/// </summary>
-		/// <param name="channels">Forced number of channels in decoding</param>
-		FRANAUDIO_API void SetForcedDecodeChannels(char channels);
-
-		/// <summary>
-		/// Gets forced number of channels for decoding.
-		/// </summary>
-		/// <returns>The forced number of channels</returns>
-		FRANAUDIO_API char GetForcedDecodeChannels() const;
-
-		/// <summary>
-		/// Sets forced sample rate for decoding.
-		/// </summary>
-		/// <param name="sampleRate">Forced sample rate to be used for decoding</param>
-		FRANAUDIO_API void SetForcedDecodeSampleRate(int sampleRate);
-
-		/// <summary>
-		/// Gets forced sample rate for decoding.
-		/// </summary>
-		/// <returns>The forced sample rate</returns>
-		FRANAUDIO_API int GetForcedDecodeSampleRate() const;
+		/// <returns>Current decode settings</returns>
+		constexpr FRANAUDIO_API const FranAudio::Decoder::DecodeSettings& GetDecodeSettings() const noexcept;
 
 		// ========================
 		// Listener (3D Audio)
@@ -239,7 +213,7 @@ namespace FranAudio::Backend
 
 		/// <summary>
 		/// Get the listener's position.
-	 	/// </summary>
+		/// </summary>
 		/// <param name="outPosition">Output position of the listener</param>
 		virtual void GetListenerPosition(float outPosition[3]) = 0;
 
@@ -261,12 +235,12 @@ namespace FranAudio::Backend
 		/// Set the master volume.
 		/// Can also be the listener's hearing volume.
 		/// </summary>
-	 	/// <param name="volume">Volume to set the master volume to (0.0 - 1.0)</param>
+		/// <param name="volume">Volume to set the master volume to (0.0 - 1.0)</param>
 		virtual void SetMasterVolume(float volume) = 0;
 
 		/// <summary>
 		/// Get the master volume.
- 		/// Can also be the listener's hearing volume.	
+		/// Can also be the listener's hearing volume.	
 		/// </summary>
 		virtual float GetMasterVolume() = 0; // Not const because some audio backends might require non-const pointer.
 
@@ -287,6 +261,14 @@ namespace FranAudio::Backend
 		/// <param name="filename">Path to the audio file</param>
 		/// <returns>Wave Data Cache Index</returns>
 		virtual FRANAUDIO_API size_t LoadAudioFile(const std::string& filename);
+
+		/// <summary>
+		/// Decode an audio file and load it into the memory.
+		/// </summary>
+		/// <param name="filename">Path to the audio file</param>
+		/// <param name="decodeSettings">Decode settings to use for this file. If not specified, current decode settings are used.</param>
+		/// <returns>Wave Data Cache Index</returns>
+		virtual FRANAUDIO_API size_t LoadAudioFile(const std::string& filename, const FranAudio::Decoder::DecodeSettings& decodeSettings);
 
 		/// <summary>
 		/// Play an audio file after checking if it's loaded.
@@ -335,7 +317,7 @@ namespace FranAudio::Backend
 
 		/// <summary>
 		/// Get the volume of a playing sound by its index.
-	 	/// </summary>
+		/// </summary>
 		/// <param name="soundID">ID of the sound to get the volume of</param>
 		/// <returns>Volume of the sound (0.0 - 1.0)</returns>
 		virtual float GetSoundVolume(size_t soundID) = 0;
@@ -343,15 +325,15 @@ namespace FranAudio::Backend
 		/// <summary>
 		/// Set the position of a playing sound by its index.
 		/// </summary>
- 		/// <param name="soundID">ID of the sound to set the position of</param>
- 		/// <param name="position">Position to set the sound to</param>
+		/// <param name="soundID">ID of the sound to set the position of</param>
+		/// <param name="position">Position to set the sound to</param>
 		virtual void SetSoundPosition(size_t soundID, const float position[3]) = 0;
 
 		/// <summary>
 		/// Get the position of a playing sound by its index.
 		/// </summary>
- 		/// <param name="soundID">ID of the sound to get the position of</param>
-	 	/// <param name="outPosition">Output position of the sound</param>
+		/// <param name="soundID">ID of the sound to get the position of</param>
+		/// <param name="outPosition">Output position of the sound</param>
 		virtual void GetSoundPosition(size_t soundID, float outPosition[3]) = 0;
 
 		/// <summary>
@@ -363,8 +345,8 @@ namespace FranAudio::Backend
 		
 		/// <summary>
 		/// Get the map of currently active sounds.
- 		/// </summary>
- 		/// <returns>Map of currently active sounds</returns>
+		/// </summary>
+		/// <returns>Map of currently active sounds</returns>
 		virtual const FRANAUDIO_API FranAudioShared::Containers::UnorderedMap<size_t, Sound::Sound>& GetActiveSounds() const;
 
 		/// <summary>

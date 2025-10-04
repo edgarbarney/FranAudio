@@ -23,6 +23,8 @@
 #include <format>
 #include <vector>
 
+#include "windows.h"
+
 #ifndef FRANAUDIO_USE_SERVER
 #include "FranAudio.hpp"
 #else
@@ -40,8 +42,6 @@
 #include "backends/imgui_impl_opengl3.h"
 #include "backends/imgui_impl_glfw.h"
 #include "styles/imgui_style_candy.hpp"
-
-#include "windows.h"
 
 #include "FranAudioTest.hpp"
 
@@ -279,7 +279,9 @@ int main()
 		}
 #else
 #endif
-		const char* formatDisplay = (size_t)FranAudio::GetBackend()->GetForcedDecodeFormat() == 0 ? "Auto" : FranAudio::Sound::WaveFormatNames[(size_t)FranAudio::GetBackend()->GetForcedDecodeFormat()];
+
+		FranAudio::Decoder::DecodeSettings decodeSettings = FranAudio::GetBackend()->GetDecodeSettings();
+		const char* formatDisplay = (size_t)decodeSettings.GetForcedFormat() == 0 ? "Auto" : FranAudio::Sound::WaveFormatNames[(size_t)decodeSettings.GetForcedFormat()];
 		ImGui::Separator();
 		ImGui::Text("Forced Decoder Settings: (0 means disabled)");
 		ImGui::Text("Format:");
@@ -287,10 +289,11 @@ int main()
 		{
 			for (size_t formatId = 0; formatId < std::size(FranAudio::Sound::WaveFormatNames); formatId++)
 			{
-				bool isSelected = (formatId == (size_t)FranAudio::GetBackend()->GetForcedDecodeFormat());
+				bool isSelected = (formatId == (size_t)decodeSettings.GetForcedFormat());
 				if (ImGui::Selectable(FranAudio::Sound::WaveFormatNames[formatId], isSelected))
 				{
-					FranAudio::GetBackend()->SetForcedDecodeFormat((FranAudio::Sound::WaveFormat)formatId);
+					decodeSettings.SetForcedFormat((FranAudio::Sound::WaveFormat)formatId);
+					FranAudio::GetBackend()->SetDecodeSettings(decodeSettings);
 				}
 				if (isSelected)
 				{
@@ -300,16 +303,18 @@ int main()
 
 			ImGui::EndCombo();
 		}
-		const char* channelDisplay = (size_t)FranAudio::GetBackend()->GetForcedDecodeChannels() == 0 ? "Auto" : std::to_string(FranAudio::GetBackend()->GetForcedDecodeChannels()).c_str();
+	
+		const char* channelDisplay = (size_t)decodeSettings.GetForcedChannels() == 0 ? "Auto" : std::to_string(decodeSettings.GetForcedChannels()).c_str();
 		ImGui::Text("Channels:");
 		if (ImGui::BeginCombo("##forcechannels", channelDisplay))
 		{
 			for (size_t channels = 0; channels <= 2; channels++)
 			{
-				bool isSelected = (channels == (size_t)FranAudio::GetBackend()->GetForcedDecodeChannels());
+				bool isSelected = (channels == (size_t)decodeSettings.GetForcedChannels());
 				if (ImGui::Selectable(std::to_string(channels).c_str(), isSelected))
 				{
-					FranAudio::GetBackend()->SetForcedDecodeChannels((uint8_t)channels);
+					decodeSettings.SetForcedChannels((uint8_t)channels);
+					FranAudio::GetBackend()->SetDecodeSettings(decodeSettings);
 				}
 				if (isSelected)
 				{
@@ -318,16 +323,18 @@ int main()
 			}
 			ImGui::EndCombo();
 		}
-		const char* sampleRateDisplay = (size_t)FranAudio::GetBackend()->GetForcedDecodeSampleRate() == 0 ? "Auto" : std::to_string(FranAudio::GetBackend()->GetForcedDecodeSampleRate()).c_str();
+
+		const char* sampleRateDisplay = (size_t)decodeSettings.GetForcedSampleRate() == 0 ? "Auto" : std::to_string(decodeSettings.GetForcedSampleRate()).c_str();
 		ImGui::Text("Sample Rate:");
 		if (ImGui::BeginCombo("##forcesamplerate", "Sample Rate"))
 		{
 			for (int samplerate : FranAudio::Sound::StandardSampleRates)
 			{
-				bool isSelected = (samplerate == FranAudio::GetBackend()->GetForcedDecodeSampleRate());
+				bool isSelected = (samplerate == decodeSettings.GetForcedSampleRate());
 				if (ImGui::Selectable(std::to_string(samplerate).c_str(), isSelected))
 				{
-					FranAudio::GetBackend()->SetForcedDecodeSampleRate(samplerate);
+					decodeSettings.SetForcedSampleRate(samplerate);
+					FranAudio::GetBackend()->SetDecodeSettings(decodeSettings);
 				}
 				if (isSelected)
 				{
@@ -389,7 +396,7 @@ int main()
 			ImGui::SliderFloat3("Listener Forward Vector", listenerForward, -1.0f, 1.0f, "%.1f");
 			ImGui::SliderFloat3("Listener Up Vector", listenerUp, -1.0f, 1.0f, "%.1f");
 			ImGui::Separator();
-			if (ImGui::SliderFloat("Master (Listener) Volume", &listenerVolume, 0.0f, 2.0f, "%.2f"))
+			if (ImGui::SliderFloat("Master (Listener) Volume", &listenerVolume, 0.0f, 10.0f, "%.2f"))
 			{
 				SetListenerVolume(listenerVolume);
 			}
@@ -425,6 +432,7 @@ int main()
 
 		auto soundIDs = GetActiveSoundIDs();
 		auto activeSounds = FranAudio::GetBackend()->GetActiveSounds();
+		//auto waveDataCache = FranAudio::
 
 		// Display currently playing sounds
 		for (size_t soundId : soundIDs)
@@ -441,10 +449,11 @@ int main()
 				SetSoundPosition(soundId, soundPosition);
 
 				ImGui::Text("Sound ID: %zu", soundId);
+				//ImGui::Text("Sound Channel Count: %u", waveDataCache[activeSounds[soundId].GetWaveDataIndex()]);
 
 				ImGui::Text("Sound Volume: ");
 
-				if (ImGui::SliderFloat("##soundvolume", &soundVolume, 0.0f, 2.0f, "%.2f"))
+				if (ImGui::SliderFloat("##soundvolume", &soundVolume, 0.0f, 10.0f, "%.2f"))
 				{
 					SetSoundVolume(soundId, soundVolume);
 				}
@@ -504,7 +513,7 @@ int main()
 	glfwTerminate();
 }
 
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
 	return main();
 }

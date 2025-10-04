@@ -33,6 +33,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+// ====================
+// FranAudio Modifications
+// ====================
+
+#ifdef FRANAUDIO_USE_STL_CONTAINERS
+
+#ifndef _UNORDERED_MAP_
+#include <unordered_map>
+#endif
+
+/// <summary>
+/// Namespace containing containers and container aliases for FranAudio.
+/// </summary>
+namespace FranAudioShared::Containers
+{
+	/// <summary>
+	/// An unordered map implementation using std::unordered_map.
+	/// </summary>
+	/// <typeparam name="Key">The type of the keys in the map.</typeparam>
+	/// <typeparam name="T">The type of the values in the map.</typeparam>
+	/// <typeparam name="Hash">The hash function to use for the keys.</typeparam>
+	/// <typeparam name="KeyEqual">The equality function to use for the keys.</typeparam>
+	/// <typeparam name="Allocator">The allocator to use for the map.</typeparam>
+	template <typename Key, typename T, typename Hash = std::hash<Key>, typename KeyEqual = std::equal_to<Key>, typename Allocator = std::allocator<std::pair<const Key, T>>>
+	using UnorderedMap = std::unordered_map<Key, T, Hash, KeyEqual, Allocator>;
+}
+
+#else
+
+// ====================
+// FranAudio Modifications End
+// ====================
+
 #ifndef ANKERL_UNORDERED_DENSE_H
 #define ANKERL_UNORDERED_DENSE_H
 
@@ -2145,3 +2178,4 @@ namespace FranAudioShared::Containers
 
 #endif
 #endif
+#endif // FRANAUDIO_USE_STL_CONTAINERS

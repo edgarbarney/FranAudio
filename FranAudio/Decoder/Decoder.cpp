@@ -6,6 +6,10 @@
 
 namespace FranAudio::Decoder
 {
+	// ========================
+	// Decoder
+	// ========================
+
 	constexpr FRANAUDIO_API DecoderType Decoder::GetDecoderType() const noexcept
 	{ 
 		 return DecoderType::None;

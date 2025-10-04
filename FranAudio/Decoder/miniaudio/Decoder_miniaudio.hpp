@@ -69,7 +69,7 @@ namespace FranAudio::Decoder
 		/// <param name="filename">Path to an existing audio file</param>
 		/// <param name="targetWaveData">Target WaveData to store the decoded audio</param>
 		/// <param name="caller">Caller backend</param>
-		virtual bool FRANAUDIO_API DecodeAudioFile(const std::string& filename, FranAudio::Sound::WaveData& targetWaveData, FranAudio::Backend::Backend& caller) override;
+		virtual bool FRANAUDIO_API DecodeAudioFile(const std::string& filename, FranAudio::Sound::WaveData& targetWaveData, FranAudio::Backend::Backend& caller, const DecodeSettings& settings = {}) override;
 
 		/// <summary>
 		/// Gets the supported audio formats in lower case.

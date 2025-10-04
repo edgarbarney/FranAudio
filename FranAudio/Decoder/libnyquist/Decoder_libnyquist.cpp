@@ -26,7 +26,7 @@ namespace FranAudio::Decoder
 		return DecoderType::libnyquist;
 	}
 
-	FRANAUDIO_API bool libnyquist::DecodeAudioFile(const std::string& filename, FranAudio::Sound::WaveData& targetWaveData, FranAudio::Backend::Backend& caller)
+	FRANAUDIO_API bool libnyquist::DecodeAudioFile(const std::string& filename, FranAudio::Sound::WaveData& targetWaveData, FranAudio::Backend::Backend& caller, const DecodeSettings& settings)
 	{
 		nqr::AudioData audioData;
 		soundLoader.Load(&audioData, filename);
@@ -118,7 +118,7 @@ namespace FranAudio::Decoder
 		}
 	}
 
-    FranAudio::Sound::WaveFormat libnyquist::ConvertWaveFormat(const nqr::PCMFormat& format)
+	FranAudio::Sound::WaveFormat libnyquist::ConvertWaveFormat(const nqr::PCMFormat& format)
 	{
 		switch (format)
 		{

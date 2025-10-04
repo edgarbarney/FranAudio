@@ -18,6 +18,7 @@ namespace FranAudio::Backend
 	FRANAUDIO_API bool Backend::Init(FranAudio::Decoder::DecoderType decoderType)
 	{
 		bool decoderFail = false;
+		SetDecodeSettings(GetDefaultDecodeSettings());
 
 		if (decoderType == FranAudio::Decoder::DecoderType::None)
 		{
@@ -140,34 +141,19 @@ namespace FranAudio::Backend
 		}
 	}
 
-	FRANAUDIO_API void Backend::SetForcedDecodeFormat(FranAudio::Sound::WaveFormat format)
+	const FRANAUDIO_API FranAudio::Decoder::DecodeSettings& Backend::GetDefaultDecodeSettings() const noexcept
 	{
-		forcedFormat = format;
+		return defaultDecodeSettings;
 	}
 
-	FRANAUDIO_API FranAudio::Sound::WaveFormat Backend::GetForcedDecodeFormat() const
+	FRANAUDIO_API void Backend::SetDecodeSettings(const FranAudio::Decoder::DecodeSettings& settings) noexcept
 	{
-		return forcedFormat;
+		currentDecodeSettings = settings;
 	}
 
-	FRANAUDIO_API void Backend::SetForcedDecodeChannels(char channels)
+	constexpr FRANAUDIO_API const FranAudio::Decoder::DecodeSettings& Backend::GetDecodeSettings() const noexcept
 	{
-		forcedChannels = channels;
-	}
-
-	FRANAUDIO_API char Backend::GetForcedDecodeChannels() const
-	{
-		return forcedChannels;
-	}
-
-	FRANAUDIO_API void Backend::SetForcedDecodeSampleRate(int sampleRate)
-	{
-		forcedSampleRate = sampleRate;
-	}
-
-	FRANAUDIO_API int Backend::GetForcedDecodeSampleRate() const
-	{
-		return forcedSampleRate;
+		return currentDecodeSettings;
 	}
 
 	// ========================
@@ -175,6 +161,11 @@ namespace FranAudio::Backend
 	// ========================
 
 	FRANAUDIO_API size_t Backend::LoadAudioFile(const std::string& filename)
+	{
+		return LoadAudioFile(filename, currentDecodeSettings);
+	}
+
+	FRANAUDIO_API size_t Backend::LoadAudioFile(const std::string& filename, const FranAudio::Decoder::DecodeSettings& decodeSettings)
 	{
 		std::filesystem::path filePath(filename);
 
@@ -197,7 +188,7 @@ namespace FranAudio::Backend
 		}
 
 		FranAudio::Sound::WaveData waveData;
-		bool result = currentDecoder->DecodeAudioFile(filename, waveData, *this);
+		bool result = currentDecoder->DecodeAudioFile(filename, waveData, *this, decodeSettings);
 
 		if (!result)
 		{

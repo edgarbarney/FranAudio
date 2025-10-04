@@ -22,6 +22,7 @@ option(FRANAUDIO_DISABLE_LOGGING "Disable all logging functionality" OFF)
 option(FRANAUDIO_SERVERCLIENT_DEBUG "Enable extended debug messages for server and client" OFF)
 option(FRANAUDIO_USE_VORBIS "Enable Vorbis Support (requires libogg and libvorbis)" ON)
 option(FRANAUDIO_USE_OPUS "Enable Opus Support (requires Vorbis Support, libopus and libopusfile)" ON)
+option(FRANAUDIO_USE_STL_CONTAINERS "Use STL Containers instead of custom containers" OFF)
 
 if (FRANAUDIO_USE_SERVER)
 	add_compile_definitions (FRANAUDIO_USE_SERVER)
@@ -33,6 +34,10 @@ endif()
 
 if (FRANAUDIO_DISABLE_LOGGING)
 	add_compile_definitions (FRANAUDIO_DISABLE_LOGGING)
+endif()
+
+if (FRANAUDIO_USE_STL_CONTAINERS)
+	add_compile_definitions (FRANAUDIO_USE_STL_CONTAINERS)
 endif()
 
 # =================

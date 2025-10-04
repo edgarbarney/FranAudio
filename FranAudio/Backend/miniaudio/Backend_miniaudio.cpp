@@ -201,6 +201,11 @@ namespace FranAudio::Backend
 		return Backend::LoadAudioFile(filename);
 	}
 
+	FRANAUDIO_API size_t miniaudio::LoadAudioFile(const std::string& filename, const FranAudio::Decoder::DecodeSettings& decodeSettings)
+	{
+		return Backend::LoadAudioFile(filename, decodeSettings);
+	}
+
 	FRANAUDIO_API size_t miniaudio::PlayAudioFile(const std::string& filename)
 	{
 		return Backend::PlayAudioFile(filename);

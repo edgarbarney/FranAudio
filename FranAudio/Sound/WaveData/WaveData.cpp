@@ -8,8 +8,8 @@
 
 namespace FranAudio::Sound
 {
-	FRANAUDIO_API WaveData::WaveData(const std::string& filename, size_t waveDataIndex, WaveFormat format, double length, int channels, int sampleRate)
-		: filename(filename), waveDataIndex(waveDataIndex), format(format), length(length), channels(channels), sampleRate(sampleRate), frameSize(0)
+	FRANAUDIO_API WaveData::WaveData(const std::string& filename, size_t waveDataIndex, WaveFormat format, double length, int channels, int sampleRate, bool isPersistent)
+		: filename(filename), waveDataIndex(waveDataIndex), format(format), length(length), channels(channels), sampleRate(sampleRate), frameSize(0), isPersistent(isPersistent)
 	{
 		//sizeInFrames = frames.size() / channels;
 		//frameSize = sizeof(float) * channels;
@@ -76,6 +76,11 @@ namespace FranAudio::Sound
 		return sampleRate;
 	}
 
+	FRANAUDIO_API bool WaveData::IsPersistent() const
+	{
+		return isPersistent;
+	}
+
 	const FRANAUDIO_API size_t WaveData::SizeInFrames() const
 	{
 		//return frames.size() / channels;
@@ -109,5 +114,84 @@ namespace FranAudio::Sound
 	const FRANAUDIO_API SampleFrameContainer& WaveData::GetFrames() const
 	{
 		return frames;
+	}
+
+	FRANAUDIO_API void WaveData::MixToMono()
+	{
+		if (channels == 1)
+			return;
+
+
+		if (channels < 1)
+		{
+			FranAudioShared::Logger::LogError(std::format("WaveData::MixToMono: Invalid number of channels: {}", static_cast<int>(channels)));
+			return;
+		}
+
+		std::visit([this](auto& vec)
+		{
+			using T = std::decay_t<decltype(vec)>;
+			using SampleType = typename T::value_type;
+
+			const size_t numChannels = static_cast<size_t>(channels);
+			const size_t totalFrames = vec.size() / numChannels;
+
+			std::vector<SampleType> monoFrames(totalFrames);
+
+			for (size_t i = 0; i < totalFrames; ++i)
+			{
+				double sum = 0.0;
+				for (size_t ch = 0; ch < numChannels; ++ch)
+				{
+					sum += static_cast<double>(vec[i * numChannels + ch]);
+				}
+				monoFrames[i] = static_cast<SampleType>(sum / static_cast<double>(numChannels));
+			}
+
+			vec = std::move(monoFrames);
+
+			frameSize /= numChannels;
+			channels = 1;
+		}, frames);
+	}
+
+	FRANAUDIO_API void WaveData::MixToStereo()
+	{
+		if (channels == 2)
+			return;
+
+		if (channels < 1)
+		{
+			FranAudioShared::Logger::LogError(std::format("WaveData::MixToStereo: Invalid number of channels: {}", static_cast<int>(channels)));
+			return;
+		}
+
+		std::visit([this](auto& vec)
+		{
+			using T = std::decay_t<decltype(vec)>;
+			using SampleType = typename T::value_type;
+			
+			const size_t numChannels = static_cast<size_t>(channels);
+			const size_t totalFrames = vec.size() / numChannels;
+
+			std::vector<SampleType> stereoFrames(totalFrames * 2);
+
+			for (size_t i = 0; i < totalFrames; ++i)
+			{
+				double sum = 0.0;
+				for (size_t ch = 0; ch < numChannels; ++ch)
+				{
+					sum += static_cast<double>(vec[i * numChannels + ch]);
+				}
+				SampleType monoSample = static_cast<SampleType>(sum / static_cast<double>(numChannels));
+				stereoFrames[i * 2] = monoSample;       // Left channel
+				stereoFrames[i * 2 + 1] = monoSample;   // Right channel
+			}
+
+			vec = std::move(stereoFrames);
+
+			frameSize = (frameSize / numChannels) * 2;
+			channels = 2;
+		}, frames);
 	}
 }

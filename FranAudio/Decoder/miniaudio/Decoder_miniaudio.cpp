@@ -92,7 +92,7 @@ namespace FranAudio::Decoder
 		return DecoderType::miniaudio;
 	}
 
-	FRANAUDIO_API bool miniaudio::DecodeAudioFile(const std::string& filename, FranAudio::Sound::WaveData& targetWaveData, FranAudio::Backend::Backend& caller)
+	FRANAUDIO_API bool miniaudio::DecodeAudioFile(const std::string& filename, FranAudio::Sound::WaveData& targetWaveData, FranAudio::Backend::Backend& caller, const DecodeSettings& settings)
 	{
 		ma_decoder decoder;
 		ma_decoder_config* temp = nullptr;
@@ -109,18 +109,9 @@ namespace FranAudio::Decoder
 		}
 
 		// Apply forced decode settings from the backend, if any
-		if (FranAudio::gGlobals.currentBackend->GetForcedDecodeFormat() != FranAudio::Sound::WaveFormat::Unknown)
-		{
-			temp->format = FranAudio::Backend::miniaudio::ConvertFormat(FranAudio::gGlobals.currentBackend->GetForcedDecodeFormat());
-		}
-		if (FranAudio::gGlobals.currentBackend->GetForcedDecodeChannels() != 0)
-		{
-			temp->channels = FranAudio::gGlobals.currentBackend->GetForcedDecodeChannels();
-		}
-		if (FranAudio::gGlobals.currentBackend->GetForcedDecodeSampleRate() != 0)
-		{
-			temp->sampleRate = FranAudio::gGlobals.currentBackend->GetForcedDecodeSampleRate();
-		}
+		temp->format = FranAudio::Backend::miniaudio::ConvertFormat(settings.GetForcedFormat());
+		temp->sampleRate = settings.GetForcedSampleRate();
+		temp->channels = settings.GetForcedChannels();
 
 		if (ma_decoder_init_file(filename.c_str(), temp, &decoder) != MA_SUCCESS)
 		{
@@ -159,12 +150,12 @@ namespace FranAudio::Decoder
 			ma_result decodeResult = MA_ERROR;
 
 			std::visit([&decodeResult, &framesRead, &totalFrameCount, &channels, &decoder](auto&& formattedWaveData)
-				{
-					// Let's preallocate the buffer if we can get the total frame count.
-					formattedWaveData.resize(static_cast<size_t>(totalFrameCount) * channels);
-					decodeResult = ma_decoder_read_pcm_frames(&decoder, formattedWaveData.data(), totalFrameCount, &framesRead);
+			{
+				// Let's preallocate the buffer if we can get the total frame count.
+				formattedWaveData.resize(static_cast<size_t>(totalFrameCount) * channels);
+				decodeResult = ma_decoder_read_pcm_frames(&decoder, formattedWaveData.data(), totalFrameCount, &framesRead);
 
-				}, targetWaveData.GetFramesRef());
+			}, targetWaveData.GetFramesRef());
 
 
 			if (decodeResult != MA_SUCCESS || framesRead == 0)
@@ -192,16 +183,16 @@ namespace FranAudio::Decoder
 				totalFrames += framesRead;
 
 				std::visit([&buffer, &framesRead, &channels](auto& formattedWaveData)
-					{
-						using SampleType = typename std::decay_t<decltype(formattedWaveData)>::value_type;
-						size_t samples = framesRead * channels;
-						formattedWaveData.reserve(formattedWaveData.size() + samples);
+				{
+					using SampleType = typename std::decay_t<decltype(formattedWaveData)>::value_type;
+					size_t samples = framesRead * channels;
+					formattedWaveData.reserve(formattedWaveData.size() + samples);
 
-						for (size_t i = 0; i < samples; ++i)
-						{
-							formattedWaveData.push_back(FranAudio::Sound::ConvertSample<SampleType>(buffer[i]));
-						}
-					}, targetWaveData.GetFramesRef());
+					for (size_t i = 0; i < samples; ++i)
+					{
+						formattedWaveData.push_back(FranAudio::Sound::ConvertSample<SampleType>(buffer[i]));
+					}
+				}, targetWaveData.GetFramesRef());
 			}
 
 			if (totalFrames == 0)
