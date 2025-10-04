@@ -1,4 +1,4 @@
-# FranticDreamer 2022-2025
+﻿# FranticDreamer 2022-2025
 # CMakeLists file for CMake Configuration
 
 # At least 3.20 Needed for C++23
@@ -302,7 +302,7 @@ if (FRANAUDIO_USE_TEST)
 endif()
 
 # =================
-# Install & Export (for consumers)
+# Install & Export (for users)
 # =================
 include(GNUInstallDirs)
 
