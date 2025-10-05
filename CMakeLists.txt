@@ -23,7 +23,7 @@ option(FRANAUDIO_SERVERCLIENT_DEBUG "Enable extended debug messages for server a
 option(FRANAUDIO_USE_VORBIS "Enable Vorbis Support (requires libogg and libvorbis)" ON)
 option(FRANAUDIO_USE_OPUS "Enable Opus Support (requires Vorbis Support, libopus and libopusfile)" ON)
 option(FRANAUDIO_USE_OPENAL "Enable OpenAL Backend Support" ON)
-option(FRANAUDIO_USE_STL_CONTAINERS "Use STL Containers instead of custom containers" OFF)
+option(FRANAUDIO_USE_STL_CONTAINERS "Use STL Containers instead of custom containers" ON)
 
 if (FRANAUDIO_USE_SERVER)
 	add_compile_definitions (FRANAUDIO_USE_SERVER)

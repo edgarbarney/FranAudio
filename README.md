@@ -7,7 +7,7 @@ A basic audio library made mainly for games and game engines that utilises C++23
 
 # Features  
 - Modular Backend Support with `FranAudio::Backend::Backend` Interface  
-- Included **Miniaudio** and **OpenAL-Soft** Backends  
+- **Miniaudio** and **OpenAL-Soft** Backends  
 - Optional High-Level Local Server-Client Communication for Inter-Process Usage (Mainly for Game Modding)  
 - **WAV**, **MP3**, **FLAC** support, along with *optional* **Vorbis** and **Opus** extensions.
 - Optional extensive logging for both developers and end users.
@@ -49,25 +49,28 @@ Basic usage of the library is as follows:
 ```cpp
 #include "FranAudio/FranAudio.h"
 
-
+// TODO
 ```
 
-# Requirements and Building  
-For now, only Windows is supported. In the near future, Linux support will be added.
+You can also see the `FranAudioTest/FranAudioTest.cpp`
 
-### Windows  
-#### Requirements  
-- CMake 3.20 or newer
+# Requirements and Building  
+## Requirements  
+- CMake 3.23 or newer
 - A Compiler that supports C++23
 
-#### Build and Install Steps for Visual Studio 2022 (MSVC)  
+## Building on Linux  
+For now, only Windows is supported. In the near future, Linux support will be added.  
+
+## Building on Windows  
+#### Build and Install Steps for Visual Studio (MSVC)  
 - Get the code
     - (Recommended) Use git to clone the repository (for example, using `git clone https://github.com/edgarbarney/FranAudio`)
     - Download the code using the `<> Code` button and `Download ZIP` option.
-- Open the directory using Visual Studio 2022
+- Open the directory using Visual Studio
     - You can use `File > Open > Folder`
     - You can use the `Open a local folder` button on the Welcome Screen
-    - You can right-click on the folder, click on the `Open with Visual Studio 2022` option, if you have context menus activated for VS2022
+    - You can right-click on the folder, click on the `Open with Visual Studio` option, if you have context menus activated for Visual Studio
 - Choose your desired profile and build the project.
     - You can use the `F7` build shortcut.
     - You can use `Build > Build All`
@@ -84,30 +87,29 @@ your libraries will be in `FranAudio/out/install/{build_profile}/lib`
 
 
 # Testing  
-After you've [built](#requirements-and-building) the project, you can test if it works with the test application.
+After you've [built](#requirements-and-building) the project, you can test if it works with the test application. Instead of unit tests, you should use the application manually, since interactivity and 3D audio is the main feature.
 
 - Get some test files.
     - They should be similar to [these](https://github.com/edgarbarney/FranAudio_TestFiles "miniaudio").
     - Or you can just [download](https://github.com/edgarbarney/FranAudio_TestFiles/releases/download/v1.0.0/FranAudio_TestFiles.7z "Download Test Files") them.
-- Put them into the same folder as the binaries.
-    - e.g. ``FranAudio/out/build/{build_profile}/bin`
-
-- Simply run the `FranAudio_Server` and wait for it to tell you it's waiting for messages.  
 
 - Run `FranAudio_Test` and use the UI to test out the library.  
 
 # Libraries  
 
-### Included  
-[ankerl::unordered_dense](https://github.com/martinus/unordered_dense "ankerl::unordered_dense") - As STL Unordered Map Replacement   
+## Vendored  
 [miniaudio](https://miniaud.io/ "miniaudio") - As Backend and Decoder  
 [libnyquist](https://github.com/ddiakopoulos/libnyquist "libnyquist") - As Decoder  
 [ImGui](https://github.com/ocornut/imgui "Dear ImGui") - As Test Application GUI  
 [imgui-filebrowser](https://github.com/AirGuanZ/imgui-filebrowser "imgui-filebrowser") - Extension for ImGui for file browsing  
 [GLFW](https://www.glfw.org "GLFW") - For Test Application GUI  
 [GLAD](https://github.com/Dav1dde/glad "GLAD") - For Test Application GUI  
+#### Optional  
+[ankerl::unordered_dense](https://github.com/martinus/unordered_dense "ankerl::unordered_dense") - As STL Unordered Map Replacement   
+[vector.hpp from chobo-shl](https://github.com/Chobolabs/chobo-shl "Chobolabs chobo-shl") - As STL Vector Replacement  
 
-### Optional (Will be fetched by CMake unless disabled)    
+## Fetched (All Optional - Will be Fetched by CMake Unless Disabled)    
+[OpenALSoft](https://github.com/kcat/openal-soft "OpenALSoft") - As Backend  
 [libogg](https://xiph.org/downloads/ "Xiph libogg") - Vorbis library depends on this.  
 [libvorbis](https://xiph.org/downloads/ "Xiph libvorbis") - Used for OGG/Vorbis support.  
 [libopus](https://opus-codec.org/ "Opus Codec") - Opusfile library depends on this.  
