@@ -142,7 +142,10 @@ if (FRANAUDIO_USE_VORBIS)
 endif()
 
 if (FRANAUDIO_USE_OPUS)
-	set(OP_DISABLE_HTTP ON CACHE BOOL "Disable HTTP/HTTPS support" FORCE)
+	set(OP_DISABLE_HTTP		ON CACHE BOOL "" FORCE)
+	set(OP_DISABLE_DOCS		ON CACHE BOOL "" FORCE)
+	set(OP_DISABLE_EXAMPLES	ON CACHE BOOL "" FORCE)
+	set(OP_DISABLE_TESTS	ON CACHE BOOL "" FORCE)
 
 	# Opus
 	FetchContent_Declare(
@@ -180,6 +183,9 @@ if (FRANAUDIO_USE_OPENAL)
 	)
 	FetchContent_MakeAvailable(openal-soft)
 
+	set(ALSOFT_EXAMPLES			OFF CACHE BOOL "" FORCE)
+	set(ALSOFT_UTILS			OFF CACHE BOOL "" FORCE)
+	set(ALSOFT_TESTS			OFF CACHE BOOL "" FORCE)
 	set(ALSOFT_INSTALL_EXAMPLES	OFF CACHE BOOL "" FORCE)
 	set(ALSOFT_INSTALL_UTILS	OFF CACHE BOOL "" FORCE)
 endif()
@@ -291,14 +297,16 @@ if (FRANAUDIO_USE_TEST)
 	)
 
 	target_link_libraries(FranAudioTest
-		PRIVATE FranAudio
 		PRIVATE ${OPENGL_LIBRARIES}
 		PRIVATE glfw
 	)
 
 	if (FRANAUDIO_USE_SERVER)
 		target_link_libraries(FranAudioTest PRIVATE FranAudioClient)
+	else()
+		target_link_libraries(FranAudioTest PRIVATE FranAudio)
 	endif()
+	
 endif()
 
 # =================
