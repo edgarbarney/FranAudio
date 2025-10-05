@@ -5,7 +5,10 @@
 #include <unordered_map>
 #include <functional>
 
-#include "FranAudioShared/Network/Network.hpp"
+namespace FranAudioShared::Network
+{
+	struct NetworkFunction;
+}
 
 /// <summary>
 /// Server implementation for FranAudioServer IPC system.

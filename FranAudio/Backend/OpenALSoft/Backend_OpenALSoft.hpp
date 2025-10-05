@@ -17,9 +17,9 @@ namespace FranAudio::Backend
 	class OpenALSoft : public Backend
 	{
 	private:
-		ALCcontext* mainContext;
+		ALCcontext* mainContext = nullptr;
 
-		ALCdevice* openALDevice;
+		ALCdevice* openALDevice = nullptr;
 
 		// These are assigned after Init() is called
 

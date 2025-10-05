@@ -11,6 +11,7 @@ namespace FranAudio
 
 	FRANAUDIO_API void Init()
 	{
+		gGlobals.currentBackend = nullptr; // Initialise to null
 		SetBackend(defaultBackend);
 	}
 

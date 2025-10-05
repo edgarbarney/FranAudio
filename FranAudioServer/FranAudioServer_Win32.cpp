@@ -8,9 +8,7 @@
 #include "FranAudio.hpp"
 #include "FranAudioServer.hpp"
 
-#include <WinSock2.h>
-#include <ws2tcpip.h>
-
+#include "FranAudioShared/Network/Network.hpp"
 #include "FranAudioShared/Logger/Logger.hpp"
 
 #pragma comment(lib, "ws2_32.lib")

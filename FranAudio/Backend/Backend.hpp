@@ -278,6 +278,12 @@ namespace FranAudio::Backend
 		/// <returns>Active Sounds List Index</returns>
 		virtual FRANAUDIO_API size_t PlayAudioFile(const std::string& filename);
 
+		/// <summary>
+		/// Retrieves the list of currently loaded wave data.
+		/// </summary>
+		/// <returns>Wave data cache</returns>
+		virtual const FRANAUDIO_API FranAudioShared::Containers::Vector<FranAudio::Sound::WaveData>& GetWaveDataCache();
+
 		// ========================
 		// Sound Management
 		// ========================

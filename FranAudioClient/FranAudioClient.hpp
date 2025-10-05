@@ -2,12 +2,17 @@
 #pragma once
 
 #include "FranAudioClientAPI.hpp"
-#include "FranAudioShared/Network/Network.hpp"
 #include "FranAudioShared/Logger/Logger.hpp"
 
+#include "Decoder/DecodeSettings.hpp"
 #include "Decoder/DecoderTypes.hpp"
 #include "Backend/BackendTypes.hpp"
 #include "Sound/WaveData/WaveFormats.hpp"
+
+namespace FranAudioShared::Network
+{
+	struct NetworkFunction;
+}
 
 /// <summary>
 /// Client API for FranAudioServer IPC system.
@@ -93,6 +98,12 @@ namespace FranAudioClient
 			/// <returns>Type of this Backend instance</returns>
 			FRANAUDIO_CLIENT_API FranAudio::Backend::BackendType GetBackendType();
 
+			/// <summary>
+			/// Retrieves the name of the audio backend.
+			/// </summary>
+			/// <returns>Name of the backend.</returns>
+			FRANAUDIO_CLIENT_API std::string GetBackendName();
+
 			// ========================
 			// Decoder Management
 			// ========================
@@ -110,40 +121,28 @@ namespace FranAudioClient
 			FRANAUDIO_CLIENT_API FranAudio::Decoder::DecoderType GetDecoderType();
 
 			/// <summary>
-			/// Sets forced decode format for decoding.
+			/// Get the name of the current decoder.
 			/// </summary>
-			/// <param name="format">Forced format to be used in decoding</param>
-			FRANAUDIO_CLIENT_API void SetForcedDecodeFormat(FranAudio::Sound::WaveFormat format);
+			/// <returns>Name of the current decoder used by this backend</returns>
+			FRANAUDIO_CLIENT_API std::string GetDecoderName();
 
 			/// <summary>
-			/// Gets forced decode format for decoding.
+			/// Get the default decode settings.
 			/// </summary>
-			/// <returns>The forced decode format</returns>
-			FRANAUDIO_CLIENT_API FranAudio::Sound::WaveFormat GetForcedDecodeFormat();
+			/// <returns>Default decode settings</returns>
+			FRANAUDIO_CLIENT_API const FranAudio::Decoder::DecodeSettings GetDefaultDecodeSettings();
 
 			/// <summary>
-			/// Sets the number of channels to be used in decoding.
+			/// Set the current decode settings.
 			/// </summary>
-			/// <param name="channels">Forced number of channels in decoding</param>
-			FRANAUDIO_CLIENT_API void SetForcedDecodeChannels(char channels);
+			/// <param name="settings">New decode settings</param>
+			FRANAUDIO_CLIENT_API void SetDecodeSettings(const FranAudio::Decoder::DecodeSettings& settings);
 
 			/// <summary>
-			/// Gets forced number of channels for decoding.
+			/// Get the current decode settings.
 			/// </summary>
-			/// <returns>The forced number of channels</returns>
-			FRANAUDIO_CLIENT_API char GetForcedDecodeChannels();
-
-			/// <summary>
-			/// Sets forced sample rate for decoding.
-			/// </summary>
-			/// <param name="sampleRate">Forced sample rate to be used for decoding</param>
-			FRANAUDIO_CLIENT_API void SetForcedDecodeSampleRate(int sampleRate);
-
-			/// <summary>
-			/// Gets forced sample rate for decoding.
-			/// </summary>
-			/// <returns>The forced sample rate</returns>
-			FRANAUDIO_CLIENT_API int GetForcedDecodeSampleRate();
+			/// <returns>Current decode settings</returns>
+			FRANAUDIO_CLIENT_API const FranAudio::Decoder::DecodeSettings GetDecodeSettings();
 
 			// ========================
 			// Listener (3D Audio)
@@ -214,6 +213,14 @@ namespace FranAudioClient
 			/// <param name="filename">Path to the audio file</param>
 			/// <returns>Wave Data Cache Index</returns>
 			FRANAUDIO_CLIENT_API size_t LoadAudioFile(const std::string& filename);
+
+			/// <summary>
+			/// Decode an audio file and load it into the memory.
+			/// </summary>
+			/// <param name="filename">Path to the audio file</param>
+			/// <param name="decodeSettings">Decode settings to use for this file. If not specified, current decode settings are used.</param>
+			/// <returns>Wave Data Cache Index</returns>
+			FRANAUDIO_CLIENT_API size_t LoadAudioFile(const std::string& filename, const FranAudio::Decoder::DecodeSettings& decodeSettings);
 
 			/// <summary>
 			/// Play an audio file after checking if it's loaded.

@@ -219,6 +219,11 @@ namespace FranAudio::Backend
 		return PlayAudioWave(waveData);
 	}
 
+	const FRANAUDIO_API FranAudioShared::Containers::Vector<FranAudio::Sound::WaveData>& Backend::GetWaveDataCache()
+    {
+		return waveDataCache;
+    }
+
 	// ========================
 	// Sound Management
 	// ========================

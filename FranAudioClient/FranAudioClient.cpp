@@ -1,5 +1,6 @@
 // FranticDreamer 2022-2025
 
+#include "FranAudioShared/Network/Network.hpp"
 #include "FranAudioShared/Serialisation/Serialisation.hpp"
 #include "FranAudioShared/Logger/Logger.hpp"
 
@@ -16,7 +17,7 @@ namespace FranAudioClient::Wrapper
 
 	FRANAUDIO_CLIENT_API void SetBackend(FranAudio::Backend::BackendType backendType)
 	{
-
+		FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("server-set_backend", { std::to_string(static_cast<int>(backendType)) }));
 	}
 	
 	namespace Backend
@@ -34,6 +35,11 @@ namespace FranAudioClient::Wrapper
 				return FranAudio::Backend::BackendType::None;
 			}
 			
+		}
+
+		FRANAUDIO_CLIENT_API std::string FranAudioClient::Wrapper::Backend::GetBackendName()
+		{
+			return FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-get_backend_name", {}));
 		}
 
 		// ========================
@@ -59,60 +65,43 @@ namespace FranAudioClient::Wrapper
 			}
 		}
 
-		FRANAUDIO_CLIENT_API void SetForcedDecodeFormat(FranAudio::Sound::WaveFormat format)
+		FRANAUDIO_CLIENT_API std::string GetDecoderName()
 		{
-			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_forced_decode_format", { std::to_string(static_cast<int>(format)) }));
+			return FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-get_decoder_name", {}));
 		}
 
-		FRANAUDIO_CLIENT_API FranAudio::Sound::WaveFormat GetForcedDecodeFormat()
+		FRANAUDIO_CLIENT_API const FranAudio::Decoder::DecodeSettings GetDefaultDecodeSettings()
 		{
-			auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-get_forced_decode_format", {}));
+			auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-get_default_decode_settings", {}));
 			try
 			{
-				return static_cast<FranAudio::Sound::WaveFormat>(std::stoi(response));
+				return FranAudioShared::Serialisation::BinarySerialiser::DeserialiseFromString<FranAudio::Decoder::DecodeSettings>(response);
 			}
 			catch (const std::exception& e)
 			{
-				FranAudioShared::Logger::LogError("Failed to get forced decode format from server!");
-				return FranAudio::Sound::WaveFormat::Unknown;
+				FranAudioShared::Logger::LogError("Failed to get default decode settings from server!");
+				static FranAudio::Decoder::DecodeSettings defaultSettings;
+				return defaultSettings;
 			}
 		}
 
-		FRANAUDIO_CLIENT_API void SetForcedDecodeChannels(char channels)
+		FRANAUDIO_CLIENT_API void SetDecodeSettings(const FranAudio::Decoder::DecodeSettings& settings)
 		{
-			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_forced_decode_channels", { std::to_string(static_cast<int>(channels)) }));
+			auto serializedSettings = FranAudioShared::Serialisation::BinarySerialiser::SerialiseToString(settings);
+			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_decode_settings", { serializedSettings }));
 		}
 
-		FRANAUDIO_CLIENT_API char GetForcedDecodeChannels()
+		FRANAUDIO_CLIENT_API const FranAudio::Decoder::DecodeSettings GetDecodeSettings()
 		{
-			auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-get_forced_decode_channels", {}));
+			auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-get_decode_settings", {}));
 			try
 			{
-				return static_cast<char>(std::stoi(response));
+				return FranAudioShared::Serialisation::BinarySerialiser::DeserialiseFromString<FranAudio::Decoder::DecodeSettings>(response);
 			}
 			catch (const std::exception& e)
 			{
-				FranAudioShared::Logger::LogError("Failed to get forced decode channels from server!");
-				return 0;
-			}
-		}
-
-		FRANAUDIO_CLIENT_API void SetForcedDecodeSampleRate(int sampleRate)
-		{
-			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_forced_decode_sample_rate", { std::to_string(sampleRate) }));
-		}
-
-		FRANAUDIO_CLIENT_API int GetForcedDecodeSampleRate()
-		{
-			auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-get_forced_decode_sample_rate", {}));
-			try
-			{
-				return std::stoi(response);
-			}
-			catch (const std::exception& e)
-			{
-				FranAudioShared::Logger::LogError("Failed to get forced decode sample rate from server!");
-				return 0;
+				FranAudioShared::Logger::LogError("Failed to get decode settings from server!");
+				return {};
 			}
 		}
 
@@ -122,9 +111,17 @@ namespace FranAudioClient::Wrapper
 	
 		FRANAUDIO_CLIENT_API void SetListenerTransform(float position[3], float forward[3], float up[3])
 		{
-			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_listener_transform", {	std::to_string(position[0]), std::to_string(position[1]), std::to_string(position[2]),
-																												std::to_string(forward[0]), std::to_string(forward[1]), std::to_string(forward[2]),
-																												std::to_string(up[0]), std::to_string(up[1]), std::to_string(up[2]) }));
+			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_listener_transform", 
+			{	std::to_string(position[0]), 
+				std::to_string(position[1]), 
+				std::to_string(position[2]),
+				std::to_string(forward[0]), 
+				std::to_string(forward[1]), 
+				std::to_string(forward[2]),
+				std::to_string(up[0]), 
+				std::to_string(up[1]), 
+				std::to_string(up[2])
+			}));
 		}
 
 		FRANAUDIO_CLIENT_API void GetListenerTransform(float outPosition[3], float outForward[3], float outUp[3])
@@ -157,7 +154,12 @@ namespace FranAudioClient::Wrapper
 
 		FRANAUDIO_CLIENT_API void SetListenerPosition(const float position[3])
 		{
-			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_listener_position", { std::to_string(position[0]), std::to_string(position[1]), std::to_string(position[2]) }));
+			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_listener_position", 
+			{
+					std::to_string(position[0]), 
+					std::to_string(position[1]), 
+					std::to_string(position[2])
+			}));
 		}
 
 		FRANAUDIO_CLIENT_API void GetListenerPosition(float outPosition[3])
@@ -184,8 +186,15 @@ namespace FranAudioClient::Wrapper
 
 		FRANAUDIO_CLIENT_API void SetListenerOrientation(const float forward[3], const float up[3])
 		{
-			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_listener_orientation", { std::to_string(forward[0]), std::to_string(forward[1]), std::to_string(forward[2]),
-																												  std::to_string(up[0]), std::to_string(up[1]), std::to_string(up[2]) }));
+			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_listener_orientation", 
+			{ 
+				std::to_string(forward[0]), 
+				std::to_string(forward[1]), 
+				std::to_string(forward[2]),
+				std::to_string(up[0]), 
+				std::to_string(up[1]), 
+				std::to_string(up[2]) 
+			}));
 		}
 
 		FRANAUDIO_CLIENT_API void GetListenerOrientation(float outForward[3], float outUp[3])
@@ -246,7 +255,22 @@ namespace FranAudioClient::Wrapper
 			}
 			catch (const std::exception& e)
 			{
-				FranAudioShared::Logger::LogError("Failed to load audio file: " + filename);
+				FranAudioShared::Logger::LogError(std::format("Failed to load audio file: {}", filename));
+				return SIZE_MAX;
+			}
+		}
+
+		FRANAUDIO_CLIENT_API size_t LoadAudioFile(const std::string& filename, const FranAudio::Decoder::DecodeSettings& decodeSettings)
+		{
+			std::string buffer = FranAudioShared::Serialisation::BinarySerialiser::SerialiseToString<FranAudio::Decoder::DecodeSettings>(decodeSettings);
+			auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-load_audio_file_with_settings",{ filename, buffer }));
+			try
+			{
+				return std::stoull(response);
+			}
+			catch (const std::exception& e)
+			{
+				FranAudioShared::Logger::LogError(std::format("Failed to load audio file with settings: {}", filename));
 				return SIZE_MAX;
 			}
 		}
@@ -260,7 +284,7 @@ namespace FranAudioClient::Wrapper
 			}
 			catch (const std::exception& e)
 			{
-				FranAudioShared::Logger::LogError("Failed to play audio file stream: " + filename);
+				FranAudioShared::Logger::LogError(std::format("Failed to play audio file stream: ", filename));
 				return SIZE_MAX;
 			}
 		}
@@ -317,7 +341,7 @@ namespace FranAudioClient::Wrapper
 			}
 			catch (const std::exception& e)
 			{
-				FranAudioShared::Logger::LogError("Failed to get volume for sound index: " + std::to_string(soundIndex));
+				FranAudioShared::Logger::LogError(std::format("Failed to get volume for sound index: {}", std::to_string(soundIndex)));
 				return 0.0f;
 			}
 		}
@@ -335,7 +359,7 @@ namespace FranAudioClient::Wrapper
 				auto params = FranAudioShared::Network::NetworkFunction::ParseFunction(response).params;
 				if (params.size() < 3)
 				{
-					FranAudioShared::Logger::LogError("Invalid response from server for get_position of sound index: " + std::to_string(soundIndex));
+					FranAudioShared::Logger::LogError(std::format("Invalid response from server for get_position of sound index: {}", std::to_string(soundIndex)));
 					return;
 				}
 				position[0] = std::stof(params[0]);
@@ -344,7 +368,7 @@ namespace FranAudioClient::Wrapper
 			}
 			catch (const std::exception& e)
 			{
-				FranAudioShared::Logger::LogError("Failed to get position for sound index: " + std::to_string(soundIndex));
+				FranAudioShared::Logger::LogError(std::format("Failed to get position for sound index: {}", std::to_string(soundIndex)));
 				return;
 			}
 		}

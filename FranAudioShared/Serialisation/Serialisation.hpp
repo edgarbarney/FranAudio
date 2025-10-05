@@ -24,15 +24,16 @@ namespace FranAudioShared::Serialisation
 	/// </summary>
 	struct Serialisable
 	{
-		virtual void Serialise(FranAudioShared::Containers::Vector<char>& out) const = 0;
-		virtual void Deserialise(const char* data, size_t& offset, size_t size) = 0;
-		virtual ~Serialisable() = default;
+		virtual constexpr void Serialise(FranAudioShared::Containers::Vector<char>& out) const = 0;
+		virtual constexpr void Deserialise(const char* data, size_t& offset, size_t size) = 0;
 	};
 
 	/// <summary>
 	/// A simple binary serialiser and deserialiser for unordered maps and vectors.
 	///
 	/// Mainly used for network communication in FranAudioClient and FranAudioServer.
+	/// NOT intended for long-term storage, as endianness and structure padding is not handled.
+	/// NOT for saving to files, as versioning is not handled.
 	/// </summary>
 	namespace BinarySerialiser
 	{
@@ -129,7 +130,7 @@ namespace FranAudioShared::Serialisation
 		{
 			if constexpr (std::is_base_of_v<Serialisable, T>) 
 			{
-				value.serialise(out);
+				value.Serialise(out);
 			}
 			else if constexpr (std::is_trivially_copyable_v<T>)
 			{
@@ -160,7 +161,7 @@ namespace FranAudioShared::Serialisation
 			if constexpr (std::is_base_of_v<Serialisable, T>)
 			{
 				T temp{};
-				temp.deserialise(data, offset, size);
+				temp.Deserialise(data, offset, size);
 				return temp;
 			}
 			else if constexpr (std::is_trivially_copyable_v<T>)
@@ -176,6 +177,39 @@ namespace FranAudioShared::Serialisation
 				FranAudioShared::Logger::LogError("BinarySerialiser: Unsupported type for Deserialise");
 				return {};
 			}
+		}
+
+		// =====================
+		// QoL wrappers
+		// =====================
+
+		/// <summary>
+		/// Serializes a value of type T into a binary-safe string.
+		/// </summary>
+		/// <typeparam name="T">The type of the value to serialize.</typeparam>
+		/// <param name="value">The value to serialize.</param>
+		/// <returns>A binary-safe string containing the serialized representation of the value.</returns>
+		template <typename T>
+		inline std::string SerialiseToString(const T& value)
+		{
+			FranAudioShared::Containers::Vector<char> buffer;
+			Serialise(value, buffer);
+			return std::string(buffer.begin(), buffer.end());
+		}
+
+		/// <summary>
+		/// Deserializes a value of type T from a binary-safe string.
+		/// </summary>
+		/// <typeparam name="T">The type of the value to deserialize.</typeparam>
+		/// <param name="str">A binary-safe string containing the serialized representation of the value.</param>
+		/// <returns>The deserialized value of type T.</returns>
+		template <typename T>
+		inline T DeserialiseFromString(const std::string& str)
+		{
+			size_t offset = 0;
+			const char* data = str.data();
+			size_t size = str.size();
+			return Deserialise<T>(data, offset, size);
 		}
 
 		// =====================

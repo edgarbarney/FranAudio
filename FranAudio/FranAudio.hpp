@@ -25,7 +25,7 @@ namespace FranAudio
 	class GlobalData
 	{
 	public:
-		inline static std::unique_ptr<Backend::Backend> currentBackend = nullptr;
+		std::unique_ptr<Backend::Backend> currentBackend;
 	};
 
 	/// <summary>
