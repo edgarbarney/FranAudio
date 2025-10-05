@@ -302,7 +302,7 @@ int main()
 		ImGui::Text("Backend:");
 		if (ImGui::BeginCombo("##backend", FranAudioClient::Wrapper::Backend::GetBackendName().c_str()))
 		{
-			for (size_t backendId = 0; backendId < std::size(FranAudio::Backend::BackendTypeNames); backendId++)
+			for (size_t backendId = 1; backendId < std::size(FranAudio::Backend::BackendTypeNames); backendId++)
 			{
 				const bool isSelected = ((FranAudio::Backend::BackendType)backendId == FranAudioClient::Wrapper::Backend::GetBackendType());
 				if (ImGui::Selectable(FranAudio::Backend::BackendTypeNames[backendId], isSelected))
@@ -319,7 +319,7 @@ int main()
 		ImGui::Text("Decoder:");
 		if (ImGui::BeginCombo("##decoder", FranAudioClient::Wrapper::Backend::GetDecoderName().c_str()))
 		{
-			for (size_t decoderId = 0; decoderId < std::size(FranAudio::Decoder::DecoderTypeNames); decoderId++)
+			for (size_t decoderId = 1; decoderId < std::size(FranAudio::Decoder::DecoderTypeNames); decoderId++)
 			{
 				bool isSelected = ((FranAudio::Decoder::DecoderType)decoderId == FranAudioClient::Wrapper::Backend::GetDecoderType());
 				if (ImGui::Selectable(FranAudio::Decoder::DecoderTypeNames[decoderId], isSelected))
@@ -358,15 +358,16 @@ int main()
 
 			ImGui::EndCombo();
 		}
-	
-		const char* channelDisplay = (size_t)decodeSettings.GetForcedChannels() == 0 ? "Auto" : std::to_string(decodeSettings.GetForcedChannels()).c_str();
+
+		static const char* channelDisplay[] = { "Auto", "Mono", "Stereo" };
+
 		ImGui::Text("Channels:");
-		if (ImGui::BeginCombo("##forcechannels", channelDisplay))
+		if (ImGui::BeginCombo("##forcechannels", channelDisplay[decodeSettings.GetForcedChannels()]))
 		{
 			for (size_t channels = 0; channels <= 2; channels++)
 			{
 				bool isSelected = (channels == (size_t)decodeSettings.GetForcedChannels());
-				if (ImGui::Selectable(std::to_string(channels).c_str(), isSelected))
+				if (ImGui::Selectable(channelDisplay[channels], isSelected))
 				{
 					decodeSettings.SetForcedChannels((uint8_t)channels);
 					SetDecodeSettings(decodeSettings);
@@ -379,10 +380,21 @@ int main()
 			ImGui::EndCombo();
 		}
 
-		const char* sampleRateDisplay = (size_t)decodeSettings.GetForcedSampleRate() == 0 ? "Auto" : std::to_string(decodeSettings.GetForcedSampleRate()).c_str();
+		std::string sampleRateDisplay = (size_t)decodeSettings.GetForcedSampleRate() == 0 ? "Auto" : std::to_string(decodeSettings.GetForcedSampleRate());
 		ImGui::Text("Sample Rate:");
-		if (ImGui::BeginCombo("##forcesamplerate", "Sample Rate"))
+		if (ImGui::BeginCombo("##forcesamplerate", sampleRateDisplay.c_str()))
 		{
+			bool isSelected_auto = (decodeSettings.GetForcedSampleRate() == 0);
+			if (ImGui::Selectable("Auto", isSelected_auto))
+			{
+				decodeSettings.SetForcedSampleRate(0);
+				SetDecodeSettings(decodeSettings);
+			}
+			if (isSelected_auto)
+			{
+				ImGui::SetItemDefaultFocus();
+			}
+
 			for (int samplerate : FranAudio::Sound::StandardSampleRates)
 			{
 				bool isSelected = (samplerate == decodeSettings.GetForcedSampleRate());
