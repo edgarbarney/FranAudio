@@ -1,12 +1,12 @@
 // FranticDreamer 2022-2025
 #pragma once
 
-#include <vector>
 #include <string>
 #include <cstring>
 #include <type_traits>
 #include <concepts>
 
+#include "FranAudioShared/Containers/Vector.hpp"
 #include "FranAudioShared/Containers/UnorderedMap.hpp"
 #include "FranAudioShared/Logger/Logger.hpp"
 
@@ -24,7 +24,7 @@ namespace FranAudioShared::Serialisation
 	/// </summary>
 	struct Serialisable
 	{
-		virtual void Serialise(std::vector<char>& out) const = 0;
+		virtual void Serialise(FranAudioShared::Containers::Vector<char>& out) const = 0;
 		virtual void Deserialise(const char* data, size_t& offset, size_t size) = 0;
 		virtual ~Serialisable() = default;
 	};
@@ -48,7 +48,7 @@ namespace FranAudioShared::Serialisation
 		/// <param name="out">The vector to which the serialized bytes will be appended.</param>
 		template <typename T>
 		requires std::is_trivially_copyable_v<T>
-		inline void SerialisePrimitive(const T& value, std::vector<char>& out)
+		inline void SerialisePrimitive(const T& value, FranAudioShared::Containers::Vector<char>& out)
 		{
 			const char* temp = reinterpret_cast<const char*>(&value);
 			out.insert(out.end(), temp, temp + sizeof(T));
@@ -85,7 +85,7 @@ namespace FranAudioShared::Serialisation
 		// Mainly for container serialisation
 		// ========================
 
-		inline void SerialiseString(const std::string& s, std::vector<char>& out)
+		inline void SerialiseString(const std::string& s, FranAudioShared::Containers::Vector<char>& out)
 		{
 			uint64_t len = s.size();
 			SerialisePrimitive(len, out);
@@ -125,7 +125,7 @@ namespace FranAudioShared::Serialisation
 		/// <param name="value">The value to serialize.</param>
 		/// <param name="out">A vector of bytes where the serialized data will be stored.</param>
 		template <typename T>
-		inline void Serialise(const T& value, std::vector<char>& out)
+		inline void Serialise(const T& value, FranAudioShared::Containers::Vector<char>& out)
 		{
 			if constexpr (std::is_base_of_v<Serialisable, T>) 
 			{
@@ -189,9 +189,9 @@ namespace FranAudioShared::Serialisation
 		/// <param name="source">The vector of elements to serialize.</param>
 		/// <returns>A binary-safe string containing the serialized representation of the vector and its elements.</returns>
 		template <typename T>
-		inline std::string SerialiseVector(const std::vector<T>& source)
+		inline std::string SerialiseVector(const FranAudioShared::Containers::Vector<T>& source)
 		{
-			std::vector<char> raw;
+			FranAudioShared::Containers::Vector<char> raw;
 			uint64_t size = source.size();
 			SerialisePrimitive(size, raw);
 
@@ -208,9 +208,9 @@ namespace FranAudioShared::Serialisation
 		/// </summary>
 		/// <typeparam name="T">The type of elements to deserialize into the vector.</typeparam>
 		/// <param name="buffer">A string containing the binary data to deserialize.</param>
-		/// <returns>A std::vector<T> containing the deserialized elements from the buffer.</returns>
+		/// <returns>A list containing the deserialized elements from the buffer.</returns>
 		template <typename T>
-		std::vector<T> DeserialiseVector(const std::string& buffer)
+		FranAudioShared::Containers::Vector<T> DeserialiseVector(const std::string& buffer)
 		{
 			size_t offset = 0;
 			size_t size = buffer.size();
@@ -218,7 +218,7 @@ namespace FranAudioShared::Serialisation
 
 			uint64_t count = DeserialisePrimitive<uint64_t>(data, offset, size);
 
-			std::vector<T> vector;
+			FranAudioShared::Containers::Vector<T> vector;
 			vector.reserve(count);
 			for (uint64_t i = 0; i < count; i++)
 			{
@@ -242,7 +242,7 @@ namespace FranAudioShared::Serialisation
 		template <typename K, typename V>
 		std::string SerialiseUnorderedMap(const FranAudioShared::Containers::UnorderedMap<K, V>& source)
 		{
-			std::vector<char> rawData;
+			FranAudioShared::Containers::Vector<char> rawData;
 			uint64_t size = source.size();
 			SerialisePrimitive(size, rawData);
 

@@ -136,7 +136,7 @@ namespace FranAudio::Sound
 			const size_t numChannels = static_cast<size_t>(channels);
 			const size_t totalFrames = vec.size() / numChannels;
 
-			std::vector<SampleType> monoFrames(totalFrames);
+			FranAudioShared::Containers::Vector<SampleType> monoFrames(totalFrames);
 
 			for (size_t i = 0; i < totalFrames; ++i)
 			{
@@ -174,7 +174,7 @@ namespace FranAudio::Sound
 			const size_t numChannels = static_cast<size_t>(channels);
 			const size_t totalFrames = vec.size() / numChannels;
 
-			std::vector<SampleType> stereoFrames(totalFrames * 2);
+			FranAudioShared::Containers::Vector<SampleType> stereoFrames(totalFrames * 2);
 
 			for (size_t i = 0; i < totalFrames; ++i)
 			{

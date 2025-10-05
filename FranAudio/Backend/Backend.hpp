@@ -2,7 +2,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 #include <memory>
 
 #include "FranAudioAPI.hpp"
@@ -10,6 +9,7 @@
 #include "Backend/BackendTypes.hpp"
 
 #include "FranAudioShared/Containers/UnorderedMap.hpp"
+#include "FranAudioShared/Containers/Vector.hpp"
 #include "Decoder/Decoder.hpp"
 #include "Sound/WaveData/WaveData.hpp"
 #include "Sound/Sound.hpp"
@@ -46,7 +46,7 @@ namespace FranAudio::Backend
 		/// Cache for decoded audio data.
 		/// This is used to cache the decoded audio data to avoid decoding every time the audio is played.
 		/// </summary>
-		std::vector<FranAudio::Sound::WaveData> waveDataCache;
+		FranAudioShared::Containers::Vector<FranAudio::Sound::WaveData> waveDataCache;
 
 		/// <summary>
 		/// Map for finding decoded audio data in cache by filename.
@@ -129,7 +129,7 @@ namespace FranAudio::Backend
 		/// Get the supported decoders.
 		/// </summary>
 		/// <returns>List of supported decoders</returns>
-		virtual const std::vector<FranAudio::Decoder::DecoderType>& GetSupportedDecoders() const = 0;
+		virtual const FranAudioShared::Containers::Vector<FranAudio::Decoder::DecoderType>& GetSupportedDecoders() const = 0;
 
 		/// <summary>
 		/// Get the decoder type.
@@ -353,7 +353,7 @@ namespace FranAudio::Backend
 		/// Retrieves a list of active sound IDs.
 		/// </summary>
 		/// <returns>A vector containing the IDs of currently active sounds.</returns>
-		virtual const FRANAUDIO_API std::vector<size_t> GetActiveSoundIDs() const;
+		virtual const FRANAUDIO_API FranAudioShared::Containers::Vector<size_t> GetActiveSoundIDs() const;
 
 		// ========================
 		// Backend

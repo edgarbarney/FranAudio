@@ -98,9 +98,9 @@ namespace FranAudio::Backend
 	// Decoder Management
 	// ========================
 
-	const FRANAUDIO_API std::vector<FranAudio::Decoder::DecoderType>& miniaudio::GetSupportedDecoders() const
+	const FRANAUDIO_API FranAudioShared::Containers::Vector<FranAudio::Decoder::DecoderType>& miniaudio::GetSupportedDecoders() const
 	{
-		static const std::vector<FranAudio::Decoder::DecoderType> supportedDecoders = 
+		static const FranAudioShared::Containers::Vector<FranAudio::Decoder::DecoderType> supportedDecoders =
 		{
 			FranAudio::Decoder::DecoderType::miniaudio,
 			FranAudio::Decoder::DecoderType::libnyquist,

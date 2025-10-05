@@ -182,7 +182,7 @@ namespace FranAudioShared::Logger
 		entries.push_back({ entry });
 	}
 
-	const std::vector<ConsoleEntry>& FranAudioConsole::GetEntries() const
+	const FranAudioShared::Containers::Vector<ConsoleEntry>& FranAudioConsole::GetEntries() const
 	{
 		return entries;
 	}

@@ -49,7 +49,7 @@
 namespace FranAudioShared::Containers
 {
 	/// <summary>
-	/// An unordered map implementation using std::unordered_map.
+	/// An alias to std::unordered_map.
 	/// </summary>
 	/// <typeparam name="Key">The type of the keys in the map.</typeparam>
 	/// <typeparam name="T">The type of the values in the map.</typeparam>
@@ -2150,11 +2150,8 @@ namespace FranAudioShared::Containers
 	//using UnorderedMap = ankerl::unordered_dense::map<K, V>;
 
 	/// <summary>
-	/// Defines an unordered associative container that maps keys to values, similar to std::unordered_map, with customizable hashing, key comparison, allocation, and bucket behavior.
+	/// An alias to ankerl::unordered_dense::map.
 	/// </summary>
-	/// <remarks>
-	/// This is just an alias to ankerl::unordered_dense::map.
-	/// </remarks>
 	/// <typeparam name="Key">The type of the keys in the map.</typeparam>
 	/// <typeparam name="T">The type of the mapped values.</typeparam>
 	/// <typeparam name="Hash">The type used to hash keys. Defaults to ankerl::unordered_dense::v4_5_0::hash<Key>.</typeparam>

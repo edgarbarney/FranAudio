@@ -3,7 +3,6 @@
 
 #include <string>
 #include <string_view>
-#include <vector>
 #include <span>
 #include <array>
 #include <memory>
@@ -203,7 +202,6 @@ namespace FranAudio::Decoder
 		/// </summary>
 		/// <returns>List of supported audio formats in lower case.</returns>
 		virtual const std::span<const std::string_view> GetSupportedAudioFormats() const = 0;
-		//virtual const std::vector<std::string>& GetSupportedAudioFormats() const = 0;
 
 		/// <summary>
 		/// Create a new decoder instance.

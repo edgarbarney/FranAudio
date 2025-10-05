@@ -21,7 +21,6 @@
 #include <iostream>
 #include <string>
 #include <format>
-#include <vector>
 
 #include "windows.h"
 
@@ -32,6 +31,7 @@
 #endif
 
 #include "FranAudioShared/Logger/Logger.hpp"
+#include "FranAudioShared/Containers/Vector.hpp"
 #include "FranAudioShared/Containers/UnorderedMap.hpp"
 
 #define GLAD_GL_IMPLEMENTATION
@@ -146,7 +146,7 @@ float GetSoundVolume(size_t soundId)
 #endif
 }
 
-std::vector<size_t> GetActiveSoundIDs()
+FranAudioShared::Containers::Vector<size_t> GetActiveSoundIDs()
 {
 #ifndef FRANAUDIO_USE_SERVER
 	return FranAudio::GetBackend()->GetActiveSoundIDs();
@@ -432,7 +432,6 @@ int main()
 
 		auto soundIDs = GetActiveSoundIDs();
 		auto activeSounds = FranAudio::GetBackend()->GetActiveSounds();
-		//auto waveDataCache = FranAudio::
 
 		// Display currently playing sounds
 		for (size_t soundId : soundIDs)
@@ -449,7 +448,6 @@ int main()
 				SetSoundPosition(soundId, soundPosition);
 
 				ImGui::Text("Sound ID: %zu", soundId);
-				//ImGui::Text("Sound Channel Count: %u", waveDataCache[activeSounds[soundId].GetWaveDataIndex()]);
 
 				ImGui::Text("Sound Volume: ");
 

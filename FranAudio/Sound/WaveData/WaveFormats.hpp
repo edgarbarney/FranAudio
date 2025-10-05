@@ -1,9 +1,10 @@
 // FranticDreamer 2022-2025
 #pragma once
 
-#include <vector>
 #include <variant>
 #include <algorithm>
+
+#include "FranAudioShared/Containers/Vector.hpp"
 
 namespace FranAudio::Sound
 {
@@ -11,9 +12,9 @@ namespace FranAudio::Sound
 	using S16Sample = int16_t;
 	using FloatSample = float;
 
-	using U8SampleContainer = std::vector<U8Sample>;
-	using S16SampleContainer = std::vector<S16Sample>;
-	using FloatSampleContainer = std::vector<FloatSample>;
+	using U8SampleContainer = FranAudioShared::Containers::Vector<U8Sample>;
+	using S16SampleContainer = FranAudioShared::Containers::Vector<S16Sample>;
+	using FloatSampleContainer = FranAudioShared::Containers::Vector<FloatSample>;
 
 	using SampleFrameContainer = std::variant<U8SampleContainer, S16SampleContainer, FloatSampleContainer>;
 

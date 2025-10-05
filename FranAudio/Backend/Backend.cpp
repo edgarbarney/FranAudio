@@ -243,10 +243,10 @@ namespace FranAudio::Backend
 		return activeSounds;
 	}
 
-	const FRANAUDIO_API std::vector<size_t> Backend::GetActiveSoundIDs() const
+	const FRANAUDIO_API FranAudioShared::Containers::Vector<size_t> Backend::GetActiveSoundIDs() const
 	{
 		// No need to reallocate every time
-		static std::vector<size_t> soundIDs;
+		static FranAudioShared::Containers::Vector<size_t> soundIDs;
 
 		soundIDs.clear();
 		soundIDs.reserve(activeSounds.size());

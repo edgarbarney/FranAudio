@@ -231,7 +231,7 @@ namespace FranAudioClient
 			/// Retrieves a list of active sound IDs.
 			/// </summary>
 			/// <returns>A vector containing the IDs of currently active sounds.</returns>
-			FRANAUDIO_CLIENT_API const std::vector<size_t> GetActiveSoundIDs();
+			FRANAUDIO_CLIENT_API const FranAudioShared::Containers::Vector<size_t> GetActiveSoundIDs();
 		}
 
 		/// <summary>

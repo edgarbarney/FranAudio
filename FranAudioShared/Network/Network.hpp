@@ -5,7 +5,6 @@
 #include <iostream>
 #include <string>
 #include <string_view>
-#include <vector>
 #include <ranges>
 #include <optional>
 
@@ -13,6 +12,8 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #endif
+
+#include "FranAudioShared/Containers/Vector.hpp"
 
 #include "FranAudioShared/Logger/Logger.hpp"
 
@@ -41,7 +42,7 @@ namespace FranAudioShared
 		struct NetworkFunction
 		{
 			std::string functionName;
-			std::vector<std::string> params;
+			FranAudioShared::Containers::Vector<std::string> params;
 
 			/// <summary>
 			/// Default constructor.
@@ -54,7 +55,7 @@ namespace FranAudioShared
 			/// <summary>
 			/// Default constructor.
 			/// </summary>
-			NetworkFunction(std::string functionName, std::vector<std::string> params)
+			NetworkFunction(std::string functionName, FranAudioShared::Containers::Vector<std::string> params)
 				: functionName(std::move(functionName)), params(std::move(params)) 
 			{
 

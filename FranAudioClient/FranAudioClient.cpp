@@ -269,7 +269,7 @@ namespace FranAudioClient::Wrapper
 		// Macro Sound Management
 		// ========================
 
-		FRANAUDIO_CLIENT_API const std::vector<size_t> GetActiveSoundIDs()
+		FRANAUDIO_CLIENT_API const FranAudioShared::Containers::Vector<size_t> GetActiveSoundIDs()
 		{
 			std::string response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-get_active_sound_ids", {}));
 			return FranAudioShared::Serialisation::BinarySerialiser::DeserialiseVector<size_t>(response);

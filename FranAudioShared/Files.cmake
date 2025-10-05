@@ -18,6 +18,7 @@ FILE(GLOB FRANAUDIOSHARED_HEADERFILES
 
 	#Containers
 	FranAudioShared/Containers/UnorderedMap.hpp
+	FranAudioShared/Containers/Vector.hpp
 	)
 
 # Source files

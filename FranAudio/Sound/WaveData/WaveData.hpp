@@ -1,10 +1,11 @@
 // FranticDreamer 2022-2025
 #pragma once
 
-#include <vector>
 #include <string>
 
 #include "FranAudioAPI.hpp"
+
+#include "FranAudioShared/Containers/Vector.hpp"
 
 #include "WaveFormats.hpp"
 

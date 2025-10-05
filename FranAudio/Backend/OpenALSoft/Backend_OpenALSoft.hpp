@@ -94,7 +94,7 @@ namespace FranAudio::Backend
 		/// Get the supported decoders.
 		/// </summary>
 		/// <returns>List of supported decoders</returns>
-		virtual const FRANAUDIO_API std::vector<FranAudio::Decoder::DecoderType>& GetSupportedDecoders() const override;
+		virtual const FRANAUDIO_API FranAudioShared::Containers::Vector<FranAudio::Decoder::DecoderType>& GetSupportedDecoders() const override;
 
 		// ========================
 		// Listener (3D Audio)
