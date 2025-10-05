@@ -194,7 +194,7 @@ namespace FranAudioShared::Serialisation
 		{
 			FranAudioShared::Containers::Vector<char> buffer;
 			Serialise(value, buffer);
-			return std::string(buffer.begin(), buffer.end());
+			return std::string(buffer.data(), buffer.size());
 		}
 
 		/// <summary>
@@ -207,9 +207,7 @@ namespace FranAudioShared::Serialisation
 		inline T DeserialiseFromString(const std::string& str)
 		{
 			size_t offset = 0;
-			const char* data = str.data();
-			size_t size = str.size();
-			return Deserialise<T>(data, offset, size);
+			return Deserialise<T>(str.data(), offset, str.size());
 		}
 
 		// =====================
@@ -234,7 +232,7 @@ namespace FranAudioShared::Serialisation
 				Serialise(v, raw);
 			}
 
-			return std::string(raw.begin(), raw.end());
+			return std::string(raw.data(), raw.size());
 		}
 
 		/// <summary>
@@ -286,7 +284,7 @@ namespace FranAudioShared::Serialisation
 				Serialise(v, rawData);
 			}
 
-			return std::string(rawData.begin(), rawData.end());
+			return std::string(rawData.data(), rawData.size());
 		}
 
 		/// <summary>

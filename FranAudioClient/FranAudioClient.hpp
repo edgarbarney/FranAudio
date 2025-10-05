@@ -52,7 +52,7 @@ namespace FranAudioClient
 	/// 
 	/// <param name="message">Message to Send</param>
 	/// <returns>Response from the server, empty if no response is received</returns>
-	FRANAUDIO_CLIENT_API std::string Send(const char* message);
+	FRANAUDIO_CLIENT_API std::string Send(std::string message);
 
 	/// <summary>
 	/// Send a message to the server, and wait for a response.

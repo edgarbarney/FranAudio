@@ -104,16 +104,14 @@ namespace FranAudioClient
 		return true;
 	}
 
-	FRANAUDIO_CLIENT_API std::string Send(const char* message)
+	FRANAUDIO_CLIENT_API std::string Send(std::string message)
 	{
-		const std::string data(message, message + std::strlen(message));
-
-		if (!FranAudioShared::Network::Win32Helpers::SendFrame(tcpSocket, data))
+		if (!FranAudioShared::Network::Win32Helpers::SendFrame(tcpSocket, message))
 		{
 			if (Reconnect())
 			{
 				FranAudioShared::Logger::LogMessage("Reconnected to server, retrying...");
-				FranAudioShared::Network::Win32Helpers::SendFrame(tcpSocket, data);
+				FranAudioShared::Network::Win32Helpers::SendFrame(tcpSocket, message);
 			}
 			else
 			{
@@ -144,7 +142,7 @@ namespace FranAudioClient
 		FranAudioShared::Logger::LogMessage(std::format("Sending network function: {}", message.ToString()));
 #endif
 
-		return Send(message.ToString().c_str());
+		return Send(message.ToString());
 	}
 }
 

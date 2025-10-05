@@ -18,7 +18,7 @@ namespace FranAudioServer
 	void Init();
 	void Shutdown();
 
-	std::string Receive(const char* buffer);
+	std::string Receive(const std::string& buffer);
 
 	/// <summary>
 	/// Map of function names to their corresponding handler functions.

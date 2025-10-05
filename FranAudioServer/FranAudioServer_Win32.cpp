@@ -99,7 +99,7 @@ int main()
 			}
 
 			std::string request = *requestOpt;
-			std::string response = FranAudioServer::Receive(request.c_str());
+			std::string response = FranAudioServer::Receive(request);
 
 			if (response.empty())
 			{

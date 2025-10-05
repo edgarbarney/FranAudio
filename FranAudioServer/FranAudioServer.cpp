@@ -24,15 +24,15 @@ namespace FranAudioServer
 		FranAudioShared::Logger::LogMessage("FranAudioServer::Init() Done");
 	}
 
-	std::string FranAudioServer::Receive(const char* buffer)
+	std::string FranAudioServer::Receive(const std::string& buffer)
 	{
-		if (buffer == nullptr)
-		{
-			FranAudioShared::Logger::LogError("Invalid buffer!");
-			return {};
-		}
+		//if (buffer == nullptr)
+		//{
+		//	FranAudioShared::Logger::LogError("Invalid buffer!");
+		//	return {};
+		//}
 
-		if (strlen(buffer) == 0)
+		if (buffer.size() == 0)
 		{
 			FranAudioShared::Logger::LogError("Empty buffer!");
 			return {};
