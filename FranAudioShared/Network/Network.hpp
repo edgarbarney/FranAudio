@@ -64,7 +64,7 @@ namespace FranAudioShared
 			/// <summary>
 			/// Parse constructor.
 			/// </summary>
-			NetworkFunction(std::string_view input)
+			NetworkFunction(const std::string& input)
 			{
 				auto parsedFunction = ParseFunction(input);
 				functionName = std::move(parsedFunction.functionName);
@@ -74,15 +74,15 @@ namespace FranAudioShared
 			/// <summary>
 			/// Parse a string input to create a NetworkFunction object.
 			/// 
-			/// - Imput format should be like this:
+			/// - Input format should be like this:
 			/// "$[functionName]|[param1]|[param2]|...|[paramN]"
 			/// </summary>
 			/// 
 			/// <param name="input">Input string, generally the received network message</param>
 			/// <returns>Parsed NetworkFunction object</returns>
-			static NetworkFunction ParseFunction(std::string_view input)
+			static NetworkFunction ParseFunction(const std::string& input)
 			{
-				if (input.size() < 3 || input.front() != '$')
+				if (input.size() < 2 || input.front() != '$')
 				{
 #if !(defined FRANAUDIO_CLIENT_DISABLE_LOGGING || defined FRANAUDIO_SERVER_DISABLE_LOGGING)
 					std::println("NetworkFunction ParseInput: Invalid input format for network function");
@@ -90,20 +90,23 @@ namespace FranAudioShared
 					return {};
 				}
 
-				input.remove_prefix(1);
+				auto body = std::string_view(input).substr(1);
 
 				// Split on '|' and convert each part to std::string_view
-				auto partsView = std::views::transform
-				(
-					std::views::split(input, '|'),
-					[](auto&& subrange)
-					{
-						return std::string_view(&*subrange.begin(), static_cast<size_t>(std::ranges::distance(subrange)));
-					}
-				);
+				auto partsView = body | std::views::split('|') | std::views::transform([](auto&& subrange)
+				{
+					return std::string(subrange.begin(), subrange.end()); // safe construction
+				});
 
-				auto it = partsView.begin();
-				if (it == partsView.end())
+				std::vector<std::string> parts(std::ranges::begin(partsView), std::ranges::end(partsView));
+
+				// Empty parm fix
+				while (!parts.empty() && parts.back().empty())
+				{
+					parts.pop_back();
+				}
+
+				if (parts.empty() || parts[0].empty())
 				{
 #if !(defined FRANAUDIO_CLIENT_DISABLE_LOGGING || defined FRANAUDIO_SERVER_DISABLE_LOGGING)
 					std::println("NetworkFunction ParseInput: Missing function name for network function");
@@ -112,14 +115,8 @@ namespace FranAudioShared
 				}
 
 				NetworkFunction result;
-				result.functionName = *it; // First element = function name
-				++it;
-
-				// Remaining elements are parameters
-				for (; it != partsView.end(); ++it)
-				{
-					result.params.emplace_back(*it);
-				}
+				result.functionName = std::move(parts[0]); // first = function name
+				result.params.assign(parts.begin() + 1, parts.end());
 
 				return result;
 			}
