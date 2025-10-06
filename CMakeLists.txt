@@ -174,6 +174,12 @@ endif()
 
 # OpenAL
 if (FRANAUDIO_USE_OPENAL)
+	set(ALSOFT_EXAMPLES			OFF CACHE BOOL "" FORCE)
+	set(ALSOFT_UTILS			OFF CACHE BOOL "" FORCE)
+	set(ALSOFT_TESTS			OFF CACHE BOOL "" FORCE)
+	set(ALSOFT_INSTALL_EXAMPLES	OFF CACHE BOOL "" FORCE)
+	set(ALSOFT_INSTALL_UTILS	OFF CACHE BOOL "" FORCE)
+
 	# openal-soft
 	FetchContent_Declare(
 		openal-soft
@@ -182,12 +188,6 @@ if (FRANAUDIO_USE_OPENAL)
 		SOURCE_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/Libs/openal-soft
 	)
 	FetchContent_MakeAvailable(openal-soft)
-
-	set(ALSOFT_EXAMPLES			OFF CACHE BOOL "" FORCE)
-	set(ALSOFT_UTILS			OFF CACHE BOOL "" FORCE)
-	set(ALSOFT_TESTS			OFF CACHE BOOL "" FORCE)
-	set(ALSOFT_INSTALL_EXAMPLES	OFF CACHE BOOL "" FORCE)
-	set(ALSOFT_INSTALL_UTILS	OFF CACHE BOOL "" FORCE)
 endif()
 
 # Miniaudio
@@ -197,6 +197,10 @@ add_subdirectory("Libs/miniaudio")
 add_subdirectory("Libs/libnyquist")
 
 if (FRANAUDIO_USE_TEST)
+	set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+	set(GLFW_BUILD_TESTS    OFF CACHE BOOL "" FORCE)
+	set(GLFW_BUILD_DOCS     OFF CACHE BOOL "" FORCE)
+
 	# GLWF
 	FetchContent_Declare(
 		glfw
@@ -205,10 +209,6 @@ if (FRANAUDIO_USE_TEST)
 		SOURCE_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/Libs/glfw
 	)
 	FetchContent_MakeAvailable(glfw)
-
-	set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-	set(GLFW_BUILD_TESTS    OFF CACHE BOOL "" FORCE)
-	set(GLFW_BUILD_DOCS     OFF CACHE BOOL "" FORCE)
 endif()
 
 # =================
