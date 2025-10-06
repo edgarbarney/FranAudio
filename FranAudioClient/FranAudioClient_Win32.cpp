@@ -79,10 +79,16 @@ namespace FranAudioClient
 	FRANAUDIO_CLIENT_API void Shutdown()
 	{
 		if (isSocketValid)
+		{
 			closesocket(tcpSocket);
+			isSocketValid = false;
+		}
 
 		if (isWSAInitialised)
+		{
 			WSACleanup();
+			isWSAInitialised = false;
+		}
 	}
 
 	FRANAUDIO_CLIENT_API bool Reconnect()
@@ -106,6 +112,11 @@ namespace FranAudioClient
 
 	FRANAUDIO_CLIENT_API std::string Send(std::string message)
 	{
+		if (!isSocketValid)
+		{
+			return {};
+		}
+
 		if (!FranAudioShared::Network::Win32Helpers::SendFrame(tcpSocket, message))
 		{
 			if (Reconnect())
@@ -116,6 +127,7 @@ namespace FranAudioClient
 			else
 			{
 				FranAudioShared::Logger::LogError("Failed to send message and reconnect to server.");
+				Shutdown();
 				return {};
 			}
 		}

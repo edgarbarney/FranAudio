@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <string>
+#include <csignal>
 
 #include "FranAudio.hpp"
 #include "FranAudioServer.hpp"
@@ -27,8 +28,43 @@ static const wchar_t* StringToWideString(const char* asciiStr)
 	return wideStr;
 }
 
+BOOL WINAPI ConsoleEventsHandler(DWORD dwCtrlType)
+{
+	switch (dwCtrlType)
+	{
+	case CTRL_C_EVENT:
+	case CTRL_CLOSE_EVENT:
+	case CTRL_LOGOFF_EVENT:
+	case CTRL_SHUTDOWN_EVENT:
+		FranAudioServer::Shutdown();
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
+void ClosedBySignal(int signal)
+{
+	FranAudioServer::Shutdown();
+}
+
 int main()
 {
+	if (!SetConsoleCtrlHandler(ConsoleEventsHandler, TRUE))
+	{
+		FranAudioShared::Logger::LogError("Could not set control handler");
+		FranAudioServer::Shutdown();
+		return 1;
+	}
+
+	std::signal(SIGINT, ClosedBySignal);
+	std::signal(SIGILL, ClosedBySignal);
+	std::signal(SIGFPE, ClosedBySignal);
+	std::signal(SIGSEGV, ClosedBySignal);
+	std::signal(SIGTERM, ClosedBySignal);
+	std::signal(SIGBREAK, ClosedBySignal);
+	std::signal(SIGABRT, ClosedBySignal);
+
 	char buffer[FranAudioShared::Network::messageBufferSize];
 
 	// Initialise Winsock
@@ -93,9 +129,14 @@ int main()
 			auto requestOpt = FranAudioShared::Network::Win32Helpers::RecvFrame(clientSocket);
 			if (!requestOpt)
 			{
+				/*
 				FranAudioShared::Logger::LogMessage("Client disconnected. Retrying...");
 				closesocket(clientSocket);
 				break; // Let's go back to accept loop.
+				*/
+				shutDown = true;
+				closesocket(clientSocket);
+				break;
 			}
 
 			std::string request = *requestOpt;
