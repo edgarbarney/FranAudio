@@ -21,7 +21,8 @@
 #include <iostream>
 #include <string>
 #include <format>
-#include <vector>
+
+#include "windows.h"
 
 #ifndef FRANAUDIO_USE_SERVER
 #include "FranAudio.hpp"
@@ -30,6 +31,7 @@
 #endif
 
 #include "FranAudioShared/Logger/Logger.hpp"
+#include "FranAudioShared/Containers/Vector.hpp"
 #include "FranAudioShared/Containers/UnorderedMap.hpp"
 
 #define GLAD_GL_IMPLEMENTATION
@@ -41,11 +43,9 @@
 #include "backends/imgui_impl_glfw.h"
 #include "styles/imgui_style_candy.hpp"
 
-#include "windows.h"
-
 #include "FranAudioTest.hpp"
 
-size_t PlayTestFile(const std::string& filename)
+static size_t PlayTestFile(const std::string& filename)
 {
 	FranAudioShared::Logger::LogMessage(std::format("Playing test file: {}", filename));
 
@@ -67,7 +67,7 @@ size_t PlayTestFile(const std::string& filename)
 #endif
 }
 
-void StopTestSound(size_t soundId)
+static void StopTestSound(size_t soundId)
 {
 #ifndef FRANAUDIO_USE_SERVER
 	FranAudio::GetBackend()->StopPlayingSound(soundId);
@@ -78,7 +78,26 @@ void StopTestSound(size_t soundId)
 	FranAudioShared::Logger::LogMessage(std::format("Stopped sound ID: {}", soundId));
 }
 
-void SetListenerTransform(float position[3], float forward[3], float up[3])
+static void PauseTestSound(size_t soundId, bool pause)
+{
+#ifndef FRANAUDIO_USE_SERVER
+	FranAudio::GetBackend()->SetSoundPaused(soundId, pause);
+#else
+	FranAudioClient::Wrapper::Sound::SetPaused(soundId, pause);
+#endif
+}
+
+static bool IsTestSoundPaused(size_t soundId)
+{
+#ifndef FRANAUDIO_USE_SERVER
+	//return FranAudio::GetBackend()->GetSound(soundId).IsPaused();
+	return FranAudio::GetBackend()->IsSoundPaused(soundId);
+#else
+	return FranAudioClient::Wrapper::Sound::IsPaused(soundId);
+#endif
+}
+
+static void SetListenerTransform(float position[3], float forward[3], float up[3])
 {
 #ifndef FRANAUDIO_USE_SERVER
 	FranAudio::GetBackend()->SetListenerTransform(position, forward, up);
@@ -87,7 +106,7 @@ void SetListenerTransform(float position[3], float forward[3], float up[3])
 #endif
 }
 
-void SetListenerVolume(float volume)
+static void SetListenerVolume(float volume)
 {
 #ifndef FRANAUDIO_USE_SERVER
 	FranAudio::GetBackend()->SetMasterVolume(volume);
@@ -96,7 +115,7 @@ void SetListenerVolume(float volume)
 #endif
 }
 
-void SetSoundPosition(size_t soundId, float position[3])
+static void SetSoundPosition(size_t soundId, float position[3])
 {
 #ifndef FRANAUDIO_USE_SERVER
 	//FranAudio::GetBackend()->GetSound(soundId).SetPosition(position);
@@ -106,7 +125,7 @@ void SetSoundPosition(size_t soundId, float position[3])
 #endif
 }
 
-void SetSoundVolume(size_t soundId, float volume)
+static void SetSoundVolume(size_t soundId, float volume)
 {
 #ifndef FRANAUDIO_USE_SERVER
 	//FranAudio::GetBackend()->GetSound(soundId).SetVolume(volume);
@@ -117,7 +136,7 @@ void SetSoundVolume(size_t soundId, float volume)
 	FranAudioShared::Logger::LogMessage(std::format("Set volume of sound ID {} to {}", soundId, volume));
 }
 
-float GetSoundVolume(size_t soundId)
+static float GetSoundVolume(size_t soundId)
 {
 #ifndef FRANAUDIO_USE_SERVER
 	//return FranAudio::GetBackend()->GetSound(soundId).GetVolume();
@@ -127,7 +146,7 @@ float GetSoundVolume(size_t soundId)
 #endif
 }
 
-std::vector<size_t> GetActiveSoundIDs()
+static FranAudioShared::Containers::Vector<size_t> GetActiveSoundIDs()
 {
 #ifndef FRANAUDIO_USE_SERVER
 	return FranAudio::GetBackend()->GetActiveSoundIDs();
@@ -136,6 +155,26 @@ std::vector<size_t> GetActiveSoundIDs()
 #endif
 
 	FranAudioShared::Logger::LogMessage("Retrieved active sound ids.");
+}
+
+static void SetDecodeSettings(const FranAudio::Decoder::DecodeSettings& settings)
+{
+#ifndef FRANAUDIO_USE_SERVER
+	FranAudio::GetBackend()->SetDecodeSettings(settings);
+#else
+	FranAudioClient::Wrapper::Backend::SetDecodeSettings(settings);
+#endif
+	FranAudioShared::Logger::LogMessage("Set new decode settings.");
+}
+
+static FranAudio::Decoder::DecodeSettings GetDecodeSettings()
+{
+#ifndef FRANAUDIO_USE_SERVER
+	return FranAudio::GetBackend()->GetDecodeSettings();
+#else
+	return FranAudioClient::Wrapper::Backend::GetDecodeSettings();
+#endif
+	FranAudioShared::Logger::LogMessage("Retrieved decode settings.");
 }
 
 
@@ -165,7 +204,7 @@ int main()
 		return -1;
 	}
 
-	GLFWwindow* window = glfwCreateWindow(1280, 720, "ImGui Example", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(1280, 720, "FranAudio Test App", nullptr, nullptr);
 	if (!window)
 	{
 		glfwTerminate();
@@ -185,6 +224,9 @@ int main()
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+	io.LogFilename = nullptr;
+	io.IniFilename = nullptr;
 
 	ImGui::FileBrowser fileBrowser;
 
@@ -211,15 +253,16 @@ int main()
 		ImGui::NewFrame();
 
 		// Controls
-		
-		// Let's create a simple ImGui window with some controls
+
+		// ID to prevent conflicts
+		size_t orderedID = 0;
 
 		ImGui::Begin("FranAudio Test Controls", nullptr, ImGuiWindowFlags_NoResize);
 		ImGui::Text("This is a simple test window for FranAudio.");
 		ImGui::Text("You can test audio files by clicking the buttons below.");
 #ifndef FRANAUDIO_USE_SERVER
 		ImGui::Text("Backend:");
-		if (ImGui::BeginCombo("##backend", FranAudio::Backend::BackendTypeNames[(size_t)FranAudio::GetBackend()->GetBackendType()]))
+		if (ImGui::BeginCombo("##backend", FranAudio::GetBackend()->GetBackendName()))
 		{
 			for (size_t backendId = 0; backendId < std::size(FranAudio::Backend::BackendTypeNames); backendId++)
 			{
@@ -238,7 +281,7 @@ int main()
 		}
 
 		ImGui::Text("Decoder:");
-		if (ImGui::BeginCombo("##decoder", FranAudio::Decoder::DecoderTypeNames[(size_t)FranAudio::GetBackend()->GetDecoderType()]))
+		if (ImGui::BeginCombo("##decoder", FranAudio::GetBackend()->GetDecoderName()))
 		{
 			for (size_t decoderId = 0; decoderId < std::size(FranAudio::Decoder::DecoderTypeNames); decoderId++)
 			{
@@ -255,8 +298,118 @@ int main()
 			ImGui::EndCombo();
 		}
 #else
+		ImGui::Text("Client-Server Mode Enabled");
+		ImGui::Text("Backend:");
+		if (ImGui::BeginCombo("##backend", FranAudioClient::Wrapper::Backend::GetBackendName().c_str()))
+		{
+			for (size_t backendId = 1; backendId < std::size(FranAudio::Backend::BackendTypeNames); backendId++)
+			{
+				const bool isSelected = ((FranAudio::Backend::BackendType)backendId == FranAudioClient::Wrapper::Backend::GetBackendType());
+				if (ImGui::Selectable(FranAudio::Backend::BackendTypeNames[backendId], isSelected))
+				{
+					FranAudioClient::Wrapper::SetBackend((FranAudio::Backend::BackendType)backendId);
+				}
+				if (isSelected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::Text("Decoder:");
+		if (ImGui::BeginCombo("##decoder", FranAudioClient::Wrapper::Backend::GetDecoderName().c_str()))
+		{
+			for (size_t decoderId = 1; decoderId < std::size(FranAudio::Decoder::DecoderTypeNames); decoderId++)
+			{
+				bool isSelected = ((FranAudio::Decoder::DecoderType)decoderId == FranAudioClient::Wrapper::Backend::GetDecoderType());
+				if (ImGui::Selectable(FranAudio::Decoder::DecoderTypeNames[decoderId], isSelected))
+				{
+					FranAudioClient::Wrapper::Backend::SetDecoder((FranAudio::Decoder::DecoderType)decoderId);
+				}
+				if (isSelected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
 #endif
-		auto eben = FranAudio::GetBackend();
+
+		FranAudio::Decoder::DecodeSettings decodeSettings = GetDecodeSettings();
+		const char* formatDisplay = (size_t)decodeSettings.GetForcedFormat() == 0 ? "Auto" : FranAudio::Sound::WaveFormatNames[(size_t)decodeSettings.GetForcedFormat()];
+		ImGui::Separator();
+		ImGui::Text("Forced Decoder Settings: (0 means disabled)");
+		ImGui::Text("Format:");
+		if (ImGui::BeginCombo("##forceformat", formatDisplay))
+		{
+			for (size_t formatId = 0; formatId < std::size(FranAudio::Sound::WaveFormatNames); formatId++)
+			{
+				bool isSelected = (formatId == (size_t)decodeSettings.GetForcedFormat());
+				if (ImGui::Selectable(FranAudio::Sound::WaveFormatNames[formatId], isSelected))
+				{
+					decodeSettings.SetForcedFormat((FranAudio::Sound::WaveFormat)formatId);
+					SetDecodeSettings(decodeSettings);
+				}
+				if (isSelected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+
+			ImGui::EndCombo();
+		}
+
+		static const char* channelDisplay[] = { "Auto", "Mono", "Stereo" };
+
+		ImGui::Text("Channels:");
+		if (ImGui::BeginCombo("##forcechannels", channelDisplay[decodeSettings.GetForcedChannels()]))
+		{
+			for (size_t channels = 0; channels <= 2; channels++)
+			{
+				bool isSelected = (channels == (size_t)decodeSettings.GetForcedChannels());
+				if (ImGui::Selectable(channelDisplay[channels], isSelected))
+				{
+					decodeSettings.SetForcedChannels((uint8_t)channels);
+					SetDecodeSettings(decodeSettings);
+				}
+				if (isSelected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+
+		std::string sampleRateDisplay = (size_t)decodeSettings.GetForcedSampleRate() == 0 ? "Auto" : std::to_string(decodeSettings.GetForcedSampleRate());
+		ImGui::Text("Sample Rate:");
+		if (ImGui::BeginCombo("##forcesamplerate", sampleRateDisplay.c_str()))
+		{
+			bool isSelected_auto = (decodeSettings.GetForcedSampleRate() == 0);
+			if (ImGui::Selectable("Auto", isSelected_auto))
+			{
+				decodeSettings.SetForcedSampleRate(0);
+				SetDecodeSettings(decodeSettings);
+			}
+			if (isSelected_auto)
+			{
+				ImGui::SetItemDefaultFocus();
+			}
+
+			for (int samplerate : FranAudio::Sound::StandardSampleRates)
+			{
+				bool isSelected = (samplerate == decodeSettings.GetForcedSampleRate());
+				if (ImGui::Selectable(std::to_string(samplerate).c_str(), isSelected))
+				{
+					decodeSettings.SetForcedSampleRate(samplerate);
+					SetDecodeSettings(decodeSettings);
+				}
+				if (isSelected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
 
 		if (ImGui::Button("Browse file to play"))
 		{
@@ -310,7 +463,7 @@ int main()
 			ImGui::SliderFloat3("Listener Forward Vector", listenerForward, -1.0f, 1.0f, "%.1f");
 			ImGui::SliderFloat3("Listener Up Vector", listenerUp, -1.0f, 1.0f, "%.1f");
 			ImGui::Separator();
-			if (ImGui::SliderFloat("Master (Listener) Volume", &listenerVolume, 0.0f, 2.0f, "%.2f"))
+			if (ImGui::SliderFloat("Master (Listener) Volume", &listenerVolume, 0.0f, 10.0f, "%.2f"))
 			{
 				SetListenerVolume(listenerVolume);
 			}
@@ -330,7 +483,7 @@ int main()
 			{
 					for (size_t i = 0; i < franConsole.GetEntries().size(); i++)
 					{
-						ImGui::PushID(i);
+						ImGui::PushID(orderedID++);
 						if (ImGui::Selectable(franConsole.GetEntries()[i].text.c_str()))
 						{
 							franConsole.Remove(i);
@@ -344,8 +497,10 @@ int main()
 			ImGui::Separator();
 		ImGui::End();
 
+		auto soundIDs = GetActiveSoundIDs();
+
 		// Display currently playing sounds
-		for (size_t soundId : GetActiveSoundIDs())
+		for (size_t soundId : soundIDs)
 		{
 			ImVec2 soundPos;
 			float soundPosition[3] = { 0.0f, 0.0f, 0.0f };
@@ -360,14 +515,31 @@ int main()
 
 				ImGui::Text("Sound ID: %zu", soundId);
 
+				ImGui::Text("Sound Volume: ");
+
+				if (ImGui::SliderFloat("##soundvolume", &soundVolume, 0.0f, 10.0f, "%.2f"))
+				{
+					SetSoundVolume(soundId, soundVolume);
+				}
+
+				if (IsTestSoundPaused(soundId))
+				{
+					if (ImGui::Button(std::format("Resume Sound ID: {}", soundId).c_str()))
+					{
+						PauseTestSound(soundId, false);
+					}
+				}
+				else
+				{
+					if (ImGui::Button(std::format("Pause Sound ID: {}", soundId).c_str()))
+					{
+						PauseTestSound(soundId, true);
+					}
+				}
+
 				if (ImGui::Button(std::format("Stop Sound ID: {}", soundId).c_str()))
 				{
 					StopTestSound(soundId);
-				}
-
-				if (ImGui::SliderFloat("Sound Volume", &soundVolume, 0.0f, 2.0f, "%.2f"))
-				{
-					SetSoundVolume(soundId, soundVolume);
 				}
 			ImGui::End();
 		}
@@ -405,7 +577,7 @@ int main()
 	glfwTerminate();
 }
 
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
 	return main();
 }

@@ -8,6 +8,9 @@
 
 namespace FranAudio::Decoder
 {
+	/// <summary>
+	/// Libnyquist Decoder
+	/// </summary>
 	class libnyquist : public Decoder
 	{
 	private:
@@ -21,25 +24,25 @@ namespace FranAudio::Decoder
 		/// Initialise the Decoder.
 		/// This is used to initialise the Decoder and set it up for use.
 		/// </summary>
-		virtual bool Init() override;
+		virtual FRANAUDIO_API bool Init() override;
 
 		/// <summary>
 		/// Reset the decoder. 
 		/// This is used to reset the decoder to its initial state.
 		/// </summary>
-		virtual void Reset() override;
+		virtual FRANAUDIO_API void Reset() override;
 
 		/// <summary>
 		/// Shutdown the decoder.
 		/// This is used to shutdown the decoder and clean up any resources.
 		/// </summary>
-		virtual void Shutdown() override;
+		virtual FRANAUDIO_API void Shutdown() override;
 
 		/// <summary>
 		/// Get the decoder type.
 		/// </summary>
 		/// <returns>Type of this decoder instance</returns>
-		virtual DecoderType GetDecoderType() override;
+		virtual constexpr FRANAUDIO_API DecoderType GetDecoderType() const noexcept override;
 
 		/// <summary>
 		/// Decode an audio file.
@@ -54,26 +57,32 @@ namespace FranAudio::Decoder
 		/// <param name="filename">Path to an existing audio file</param>
 		/// <param name="targetWaveData">Target WaveData to store the decoded audio</param>
 		/// <param name="caller">Caller backend</param>
-		virtual bool DecodeAudioFile(const std::string& filename, FranAudio::Sound::WaveData& targetWaveData, FranAudio::Backend::Backend& caller) override;
+		virtual FRANAUDIO_API bool DecodeAudioFile(const std::string& filename, FranAudio::Sound::WaveData& targetWaveData, FranAudio::Backend::Backend& caller, const DecodeSettings& settings = {}) override;
 
 		/// <summary>
 		/// Gets the supported audio formats in lower case.
 		/// </summary>
 		/// <returns>List of supported audio formats in lower case.</returns>
-		virtual const std::span<const std::string_view> GetSupportedAudioFormats() const override;
+		virtual const FRANAUDIO_API std::span<const std::string_view> GetSupportedAudioFormats() const override;
+
+		// ========================
+		// Libnyquist Specific
+		// ========================
 
 		/// <summary>
 		/// Converts the WaveData to libnyquist AudioData.
 		/// </summary>
 		/// <param name="waveData">WaveData to convert into libnyquist AudioData</param>
+		/// <param name="targetAudioData">Target libnyquist AudioData to store the converted data</param>
 		static void ConvertFranDataToNyqData(const FranAudio::Sound::WaveData& waveData, nqr::AudioData& targetAudioData);
 	
 		/// <summary>
 		/// Converts the libnyquist AudioData to WaveData.
 		/// </summary>
 		/// <param name="audioData">libnyquist AudioData to convert into WaveData</param>
+		/// <param name="targetWaveData">Target WaveData to store the converted data</param>
 		static void ConvertNyqDataToFranData(const nqr::AudioData& audioData, FranAudio::Sound::WaveData& targetWaveData);
-	
+
 		static FranAudio::Sound::WaveFormat ConvertWaveFormat(const nqr::PCMFormat& format);
 
 		static nqr::PCMFormat ConvertWaveFormat(const FranAudio::Sound::WaveFormat& format);

@@ -1,12 +1,9 @@
 // FranticDreamer 2022-2025
 #pragma once
 
-//#ifdef FRANAUDIO_USE_VORBIS
-#include "miniaudio/extras/decoders/libvorbis/miniaudio_libvorbis.h"
-//#endif
-//#ifdef FRANAUDIO_USE_OPUS
-#include "miniaudio/extras/decoders/libopus/miniaudio_libopus.h"
-//#endif
+#include "AL/al.h"
+#include "AL/alc.h"
+#include "AL/alext.h"
 
 #include "Backend/Backend.hpp"
 #include "Sound/Sound.hpp"
@@ -14,86 +11,45 @@
 
 namespace FranAudio::Backend
 {
-	inline ma_decoding_backend_vtable* miniaudio_backendVTables[] =
-	{
-	#ifdef FRANAUDIO_USE_VORBIS
-		ma_decoding_backend_libvorbis,
-	#endif
-	#ifdef FRANAUDIO_USE_OPUS
-		ma_decoding_backend_libopus,
-	#endif
-	// If neither vorbis or opus are defined, this will be nullptr.
-	#if !defined(FRANAUDIO_USE_VORBIS) && !defined(FRANAUDIO_USE_OPUS)
-		nullptr,
-	#endif
-	};
-
 	/// <summary>
-	/// Miniaudio Backend
+	/// OpenAL Soft Backend
 	/// </summary>
-	class miniaudio : public Backend
+	class OpenALSoft : public Backend
 	{
 	private:
-		ma_engine engine = {};
-		ma_engine_config engineConfig = {};
-		ma_device device = {};
-		ma_device_config deviceConfig = {};
-		ma_decoder_config defaultDecoderConfig = {};
+		ALCcontext* mainContext = nullptr;
 
-		// ==========
-		// VORBIS
-		// ==========
+		ALCdevice* openALDevice = nullptr;
 
-		ma_libvorbis libvorbis = {};
-		
-		// ==========
-		// OPUS
-		// ==========
+		// These are assigned after Init() is called
 
-		//ma_libopus libopus = {};
+		inline static bool al_isFloatSupported;
+		inline static bool al_isDoubleSupported;
+		inline static bool alc_isHRTFSupported;
 
+		// Cache for listener position and orientation to avoid unnecessary OpenAL calls
+
+		float positionCache[3] = {};
+		float orientationCache[6] = {}; // Forward vector (3), Up vector (3)
 
 		/// <summary>
-		/// Sound data in a format that can be played by the miniaudio backend.
+		/// Sound data in a format that can be played by the OpenALSoft backend.
 		/// </summary>
-		struct MiniaudioSound
+		struct OpenALSound
 		{
-			/// <summary>
-			/// Miniaudio audio buffer config.
-			/// </summary>
-			ma_audio_buffer_config audioBufferConfig = {};
-
-			/// <summary>
-			/// Miniaudio audio buffer.
-			/// </summary>
-			ma_audio_buffer audioBuffer = {};
-
-			/// <summary>
-			/// The actual miniaudio sound object.
-			/// </summary>
-			ma_sound sound = {};
-			/// <summary>
-			/// Whether the sound is paused or not.
-			/// </summary>
-			bool isPaused = false;
-
-			/// <summary>
-			/// Time the sound was paused at in miliseconds.
-			/// </summary>
-			size_t pausedTime = 0;
+			ALuint sourceHandle;
+			ALint sourceState;
+			ALuint sourceBuffer;
 		};
 
 		/// <summary>
-		/// A map of active sounds' corresponding data in a format that miniaudio can play.
+		/// A map of active sounds' corresponding data in a format that OpenALSoft can play.
 		/// 
-		/// This is used for making miniaudio interaction easier.
+		/// This is used for making OpenALSoft interaction easier.
 		/// </summary>
-		FranAudioShared::Containers::UnorderedMap<size_t, std::unique_ptr<MiniaudioSound>> miniaudioSoundData;
+		FranAudioShared::Containers::UnorderedMap<size_t, std::unique_ptr<OpenALSound>> openalSoundData;
 
 	public:
-		//miniaudio();
-		//~miniaudio();
-
 		/// <summary>
 		/// Initialise the backend.
 		/// This is used to initialise the backend and set it up for use.
@@ -197,7 +153,7 @@ namespace FranAudio::Backend
 		/// Get the master volume.
 		/// Can also be the listener's hearing volume.
 		/// </summary>
-		virtual FRANAUDIO_API float GetMasterVolume() override; // Not const because some audio backends might require non-const pointer.
+		virtual FRANAUDIO_API float GetMasterVolume() override;
 
 		// ========================
 		// Audio File Management
@@ -255,7 +211,7 @@ namespace FranAudio::Backend
 		/// <param name="soundID">ID of the sound to modify</param>
 		/// <param name="isPaused">True to pause the sound, false to resume playback</param>
 		virtual FRANAUDIO_API void SetSoundPaused(size_t soundID, bool isPaused) override;
-		
+
 		/// <summary>
 		/// Check if a sound is paused or not by its index.
 		/// </summary>
@@ -292,27 +248,14 @@ namespace FranAudio::Backend
 		virtual FRANAUDIO_API void GetSoundPosition(size_t soundID, float outPosition[3]) override;
 
 		// ========================
-		// Miniaudio Specific
+		// OpenALSoft Specific
 		// ========================
 
-		/// <summary>
-		/// Get the default decoder configuration.
-		/// </summary>
-		/// <returns>Default decoder configuration</returns>
-		ma_decoder_config* GetDefaultDecoderConfig();
+		void ALErrorCheck();
+		void ALCErrorCheck(ALCdevice* device);
 
-		/// <summary>
-		/// Convert a miniaudio format to a FranAudio format.
-		/// </summary>
-		/// <param name="format">miniaudio format</param>
-		/// <returns>FranAudio format</returns>
-		static Sound::WaveFormat ConvertFormat(ma_format format);
+		static void ConvertWaveFormat(ALenum format, FranAudio::Sound::WaveFormat& outFormat, char& outChannel);
 
-		/// <summary>
-		/// Convert a FranAudio format to a miniaudio format.
-		/// </summary>
-		/// <param name="format">FranAudio format</param>
-		/// <returns>miniaudio format</returns>
-		static ma_format ConvertFormat(Sound::WaveFormat format);
+		static ALenum ConvertWaveFormat(FranAudio::Sound::WaveFormat format, char channels);
 	};
 }

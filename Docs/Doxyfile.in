@@ -1,0 +1,58 @@
+# FranAudio Doxygen Doxyfile
+
+# Project configuration
+
+PROJECT_LOGO           = "@DOXYGEN_PROJSRC@/Docs/FranAudio_logo.svg"
+PROJECT_ICON           = "@DOXYGEN_PROJSRC@/Docs/FranAudio_logo.svg"
+PROJECT_NAME           = @PROJECT_NAME@
+PROJECT_NUMBER         = v@PROJECT_VERSION@
+PROJECT_BRIEF          = "@PROJECT_DESCRIPTION@"
+OUTPUT_DIRECTORY       = "@DOXYGEN_PROJOUT@"
+INPUT                  = "@DOXYGEN_PROJSRC@"
+
+# Extraction settings
+
+EXTRACT_ALL            = YES
+
+# Input settings
+
+RECURSIVE              = YES
+
+# Source browsing
+
+SOURCE_BROWSER         = YES
+STRIP_CODE_COMMENTS    = YES
+
+# HTML output
+
+GENERATE_LATEX         = NO
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+
+# Symbol
+
+EXCLUDE_SYMBOLS        = FranAudio::Sound::WaveFormatType_s<*
+
+# File 
+
+MARKDOWN_SUPPORT       = YES
+USE_MDFILE_AS_MAINPAGE = "@DOXYGEN_PROJSRC@/README.md"
+EXCLUDE_PATTERNS       = */Libs/* */TestFiles/* */Docs/* */out/* */.git/* */.vs/* 
+FILE_PATTERNS          = *.c *.cc *.cxx *.cxxm *.cpp *.cppm *.ccm *.c++ *.c++m *.java *.ii *.ixx *.ipp *.i++ *.inl *.idl *.ddl *.odl *.h *.hh *.hxx *.hpp *.h++ *.ixx *.l *.cs *.d *.php *.php4 *.php5 *.phtml *.inc *.m *.markdown *.md *.mm *.dox *.py *.pyw *.f90 *.f95 *.f03 *.f08 *.f18 *.f *.for *.vhd *.vhdl *.ucf *.qsf *.ice
+
+# ##################################
+# Doxygen Awesome Sidebar Only
+# ##################################
+
+GENERATE_TREEVIEW      = YES
+DISABLE_INDEX          = NO
+FULL_SIDEBAR           = NO
+HTML_EXTRA_FILES       = "@AWESOME_CSS_DIR@/doxygen-awesome-darkmode-toggle.js" "@AWESOME_CSS_DIR@/doxygen-awesome-paragraph-link.js" "@AWESOME_CSS_DIR@/doxygen-awesome-interactive-toc.js" "@AWESOME_CSS_DIR@/doxygen-awesome-fragment-copy-button.js"
+HTML_EXTRA_STYLESHEET  = "@AWESOME_CSS_DIR@/doxygen-awesome.css" "@AWESOME_CSS_DIR@/doxygen-awesome-sidebar-only.css" "@AWESOME_CSS_DIR@/doxygen-awesome-sidebar-only-darkmode-toggle.css" "@DOXYGEN_PROJSRC@/Docs/header.css"
+HTML_COLORSTYLE        = LIGHT
+HTML_HEADER            = "@DOXYGEN_PROJSRC@/Docs/header.html"
+HTML_COPY_CLIPBOARD    = NO
+
+# ##################################
+# Doxygen Awesome Sidebar Only End
+# ##################################

@@ -4,13 +4,12 @@
 
 #include <iostream>
 #include <string>
+#include <csignal>
 
 #include "FranAudio.hpp"
 #include "FranAudioServer.hpp"
 
-#include <WinSock2.h>
-#include <ws2tcpip.h>
-
+#include "FranAudioShared/Network/Network.hpp"
 #include "FranAudioShared/Logger/Logger.hpp"
 
 #pragma comment(lib, "ws2_32.lib")
@@ -29,8 +28,43 @@ static const wchar_t* StringToWideString(const char* asciiStr)
 	return wideStr;
 }
 
+BOOL WINAPI ConsoleEventsHandler(DWORD dwCtrlType)
+{
+	switch (dwCtrlType)
+	{
+	case CTRL_C_EVENT:
+	case CTRL_CLOSE_EVENT:
+	case CTRL_LOGOFF_EVENT:
+	case CTRL_SHUTDOWN_EVENT:
+		FranAudioServer::Shutdown();
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
+void ClosedBySignal(int signal)
+{
+	FranAudioServer::Shutdown();
+}
+
 int main()
 {
+	if (!SetConsoleCtrlHandler(ConsoleEventsHandler, TRUE))
+	{
+		FranAudioShared::Logger::LogError("Could not set control handler");
+		FranAudioServer::Shutdown();
+		return 1;
+	}
+
+	std::signal(SIGINT, ClosedBySignal);
+	std::signal(SIGILL, ClosedBySignal);
+	std::signal(SIGFPE, ClosedBySignal);
+	std::signal(SIGSEGV, ClosedBySignal);
+	std::signal(SIGTERM, ClosedBySignal);
+	std::signal(SIGBREAK, ClosedBySignal);
+	std::signal(SIGABRT, ClosedBySignal);
+
 	char buffer[FranAudioShared::Network::messageBufferSize];
 
 	// Initialise Winsock
@@ -77,35 +111,52 @@ int main()
 
 	FranAudioShared::Logger::LogMessage(std::format("TCP server listening on port {}...", FranAudioShared::Network::listenPort));
 
-	// Accept client connection
-	clientSocket = accept(listenSocket, nullptr, nullptr);
-	if (clientSocket == INVALID_SOCKET)
-	{
-		FranAudioShared::Logger::LogError("Accept failed!");
-		FranAudioServer::Shutdown();
-		return 1;
-	}
-
 	bool shutDown = false;
 	while (!shutDown)
 	{
-		std::string request = FranAudioShared::Network::Win32Helpers::RecvFrame(clientSocket);
-
-		std::string response = FranAudioServer::Receive(request.c_str());
-
-		if (response.empty()) 
+		clientSocket = accept(listenSocket, nullptr, nullptr);
+		if (clientSocket == INVALID_SOCKET)
 		{
-			// Keep-alive behavior (optional): send an empty frame
-			FranAudioShared::Network::Win32Helpers::SendFrame(clientSocket, std::string());
-			continue;
+			FranAudioShared::Logger::LogError("Accept failed! Retrying...");
+			break;
 		}
 
-		if (response == "stop") 
-		{ 
-			shutDown = true; 
-		}
+		FranAudioShared::Logger::LogMessage("Client connected.");
 
-		FranAudioShared::Network::Win32Helpers::SendFrame(clientSocket, response);
+		// Per-client loop
+		while (!shutDown)
+		{
+			auto requestOpt = FranAudioShared::Network::Win32Helpers::RecvFrame(clientSocket);
+			if (!requestOpt)
+			{
+				/*
+				FranAudioShared::Logger::LogMessage("Client disconnected. Retrying...");
+				closesocket(clientSocket);
+				break; // Let's go back to accept loop.
+				*/
+				shutDown = true;
+				closesocket(clientSocket);
+				break;
+			}
+
+			std::string request = *requestOpt;
+			std::string response = FranAudioServer::Receive(request);
+
+			if (response.empty())
+			{
+				FranAudioShared::Network::Win32Helpers::SendFrame(clientSocket, std::string());
+				continue;
+			}
+
+			if (response == "$server-stop")
+			{
+				shutDown = true;
+				closesocket(clientSocket);
+				break;
+			}
+
+			FranAudioShared::Network::Win32Helpers::SendFrame(clientSocket, response);
+		}
 	}
 
 	FranAudioServer::Shutdown();

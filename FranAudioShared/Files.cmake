@@ -7,6 +7,9 @@
 # Header files
 FILE(GLOB FRANAUDIOSHARED_HEADERFILES
 
+	#Core
+	FranAudioShared/FranAudioShared.hpp
+
 	#Network
 	FranAudioShared/Network/Network.hpp
 
@@ -15,6 +18,7 @@ FILE(GLOB FRANAUDIOSHARED_HEADERFILES
 
 	#Containers
 	FranAudioShared/Containers/UnorderedMap.hpp
+	FranAudioShared/Containers/Vector.hpp
 	)
 
 # Source files

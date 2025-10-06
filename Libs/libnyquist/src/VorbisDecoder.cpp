@@ -23,6 +23,8 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#ifdef FRANAUDIO_USE_VORBIS
+
 #include "Decoders.h"
 #include "vorbis/include/vorbis/vorbisfile.h"
 
@@ -260,3 +262,5 @@ std::vector<std::string> VorbisDecoder::GetSupportedFileExtensions()
 {
     return {"ogg"};
 }
+
+#endif

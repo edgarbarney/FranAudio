@@ -8,48 +8,61 @@
 
 #include "FranAudioShared/Logger/Logger.hpp"
 
-FranAudio::Sound::Sound::Sound(size_t soundID, size_t waveDataIndex)
-	: soundID(soundID), waveDataIndex(waveDataIndex)
+namespace FranAudio::Sound
 {
+	FRANAUDIO_API Sound::Sound(size_t soundID, size_t waveDataIndex)
+		: soundID(soundID), waveDataIndex(waveDataIndex)
+	{
 
-}
+	}
 
-bool FranAudio::Sound::Sound::IsValid() const
-{
-	return FranAudio::GetBackend()->IsSoundValid(soundID);
-}
+	FRANAUDIO_API bool Sound::IsValid() const
+	{
+		return FranAudio::GetBackend()->IsSoundValid(soundID);
+	}
 
-size_t FranAudio::Sound::Sound::GetSoundID() const
-{
-    return soundID;
-}
+	FRANAUDIO_API size_t Sound::GetSoundID() const
+	{
+		return soundID;
+	}
 
-size_t FranAudio::Sound::Sound::GetWaveDataIndex() const
-{
-	return waveDataIndex;
-}
+	FRANAUDIO_API size_t Sound::GetWaveDataIndex() const
+	{
+		return waveDataIndex;
+	}
 
-void FranAudio::Sound::Sound::Stop() const
-{
-	FranAudio::GetBackend()->StopPlayingSound(soundID);
-}
+	FRANAUDIO_API void Sound::Stop() const
+	{
+		FranAudio::GetBackend()->StopPlayingSound(soundID);
+	}
 
-void FranAudio::Sound::Sound::SetVolume(float volume) const
-{
-	FranAudio::GetBackend()->SetSoundVolume(soundID, volume);
-}
+	FRANAUDIO_API void Sound::SetPaused(bool isPaused) const
+	{
+		FranAudio::GetBackend()->SetSoundPaused(soundID, isPaused);
+	}
 
-float FranAudio::Sound::Sound::GetVolume() const
-{
-	return FranAudio::GetBackend()->GetSoundVolume(soundID);
-}
+	FRANAUDIO_API bool Sound::IsPaused() const
+	{
+		return FranAudio::GetBackend()->IsSoundPaused(soundID);
+	}
 
-void FranAudio::Sound::Sound::SetPosition(const float position[3]) const
-{
-	FranAudio::GetBackend()->SetSoundPosition(soundID, position);
-}
+	FRANAUDIO_API void Sound::SetVolume(float volume) const
+	{
+		FranAudio::GetBackend()->SetSoundVolume(soundID, volume);
+	}
 
-void FranAudio::Sound::Sound::GetPosition(float outPosition[3]) const
-{
-	FranAudio::GetBackend()->GetSoundPosition(soundID, outPosition);
+	FRANAUDIO_API float Sound::GetVolume() const
+	{
+		return FranAudio::GetBackend()->GetSoundVolume(soundID);
+	}
+
+	FRANAUDIO_API void Sound::SetPosition(const float position[3]) const
+	{
+		FranAudio::GetBackend()->SetSoundPosition(soundID, position);
+	}
+
+	FRANAUDIO_API void Sound::GetPosition(float outPosition[3]) const
+	{
+		FranAudio::GetBackend()->GetSoundPosition(soundID, outPosition);
+	}
 }

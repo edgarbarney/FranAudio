@@ -5,14 +5,20 @@
 #include <unordered_map>
 #include <functional>
 
-#include "FranAudioShared/Network/Network.hpp"
+namespace FranAudioShared::Network
+{
+	struct NetworkFunction;
+}
 
+/// <summary>
+/// Server implementation for FranAudioServer IPC system.
+/// </summary>
 namespace FranAudioServer
 {
 	void Init();
 	void Shutdown();
 
-	std::string Receive(const char* buffer);
+	std::string Receive(const std::string& buffer);
 
 	/// <summary>
 	/// Map of function names to their corresponding handler functions.

@@ -21,14 +21,17 @@ FILE(GLOB FRANAUDIO_HEADERFILES
 
 	#WaveData
 	FranAudio/Sound/WaveData/WaveData.hpp
+	FranAudio/Sound/WaveData/WaveFormats.hpp
 
 	#Backend
 	FranAudio/Backend/Backend.hpp
+	FranAudio/Backend/BackendTypes.hpp
 	FranAudio/Backend/miniaudio/Backend_miniaudio.hpp
-	#FranAudio/Backend/OpenALSoft/OpenALSoft.hpp
+	FranAudio/Backend/OpenALSoft/Backend_OpenALSoft.hpp
 
 	#Decoder
 	FranAudio/Decoder/Decoder.hpp
+	FranAudio/Decoder/DecoderTypes.hpp
 	FranAudio/Decoder/miniaudio/Decoder_miniaudio.hpp
 	FranAudio/Decoder/libnyquist/Decoder_libnyquist.hpp
 	
@@ -55,7 +58,7 @@ FILE(GLOB FRANAUDIO_SOURCEFILES
 	#Backend
 	FranAudio/Backend/Backend.cpp
 	FranAudio/Backend/miniaudio/Backend_miniaudio.cpp
-	#FranAudio/Backend/OpenALSoft/OpenALSoft.cpp
+	FranAudio/Backend/OpenALSoft/Backend_OpenALSoft.cpp
 
 	#Decoder
 	FranAudio/Decoder/Decoder.cpp

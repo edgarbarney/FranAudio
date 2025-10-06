@@ -24,14 +24,4 @@ namespace FranAudio::Backend
 		"MiniAudio",
 		"OpenALSoft",
 	};
-
-	/// <summary>
-	/// An array of string views representing the names of available backend types.
-	/// </summary>
-	inline std::string_view BackendTypeViews[] =
-	{
-		"None",
-		"MiniAudio",
-		"OpenALSoft",
-	};
 }

@@ -4,9 +4,13 @@ Libs/vorbis/
 Libs/opus/
 Libs/opusfile/
 Libs/glfw/
+Libs/openal-soft/
 
 ## Testing Sound Files
 TestFiles/
+
+## Documentation
+Docs/doxygen-awesome-css/
 
 ## Cmake
 CMakeLists.txt.user

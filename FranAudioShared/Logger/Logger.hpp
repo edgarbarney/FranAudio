@@ -1,10 +1,11 @@
 // FranticDreamer 2022-2025
 #pragma once
 
-#include <vector>
 #include <string>
 #include <iostream>
 #include <streambuf>
+
+#include "FranAudioShared/Containers/Vector.hpp"
 
 namespace FranAudioShared
 {
@@ -118,10 +119,13 @@ namespace FranAudioShared
 			//size_t count = 1; // Number of times this entry has been logged
 		};
 
+		/// <summary>
+		/// A basic output console manager. Manages console entries.
+		/// </summary>
 		class FranAudioConsole
 		{
 		private:
-			std::vector<ConsoleEntry> entries;
+			FranAudioShared::Containers::Vector<ConsoleEntry> entries;
 
 		public:
 			FranAudioConsole();
@@ -136,8 +140,8 @@ namespace FranAudioShared
 			/// <summary>
 			/// Retrieves a constant reference to the collection of console entries.
 			/// </summary>
-			/// <returns>A constant reference to a std::vector containing ConsoleEntry objects.</returns>
-			const std::vector<ConsoleEntry>& GetEntries() const;
+			/// <returns>A constant reference to a list containing ConsoleEntry objects.</returns>
+			const FranAudioShared::Containers::Vector<ConsoleEntry>& GetEntries() const;
 
 			/// <summary>
 			/// Clears the entries.

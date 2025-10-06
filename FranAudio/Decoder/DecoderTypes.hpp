@@ -24,14 +24,4 @@ namespace FranAudio::Decoder
 		"miniaudio",
 		"libnyquist",
 	};
-
-	/// <summary>
-	/// An array of string views representing the names of available decoder types.
-	/// </summary>
-	inline std::string_view DecoderTypeViews[] =
-	{
-		"None",
-		"miniaudio",
-		"libnyquist",
-	};
 }

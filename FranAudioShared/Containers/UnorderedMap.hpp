@@ -33,6 +33,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+// ====================
+// FranAudio Modifications
+// ====================
+
+#ifdef FRANAUDIO_USE_STL_CONTAINERS
+
+#ifndef _UNORDERED_MAP_
+#include <unordered_map>
+#endif
+
+/// <summary>
+/// Namespace containing containers and container aliases for FranAudio.
+/// </summary>
+namespace FranAudioShared::Containers
+{
+	/// <summary>
+	/// An alias to std::unordered_map.
+	/// </summary>
+	/// <typeparam name="Key">The type of the keys in the map.</typeparam>
+	/// <typeparam name="T">The type of the values in the map.</typeparam>
+	/// <typeparam name="Hash">The hash function to use for the keys.</typeparam>
+	/// <typeparam name="KeyEqual">The equality function to use for the keys.</typeparam>
+	/// <typeparam name="Allocator">The allocator to use for the map.</typeparam>
+	template <typename Key, typename T, typename Hash = std::hash<Key>, typename KeyEqual = std::equal_to<Key>, typename Allocator = std::allocator<std::pair<const Key, T>>>
+	using UnorderedMap = std::unordered_map<Key, T, Hash, KeyEqual, Allocator>;
+}
+
+#else
+
+// ====================
+// FranAudio Modifications End
+// ====================
+
 #ifndef ANKERL_UNORDERED_DENSE_H
 #define ANKERL_UNORDERED_DENSE_H
 
@@ -2108,12 +2141,24 @@ auto erase_if(
 // FranAudio Modifications
 // ====================
 
+/// <summary>
+/// Namespace containing containers and container aliases for FranAudio.
+/// </summary>
 namespace FranAudioShared::Containers
 {
 	//template<typename K, typename V>
 	//using UnorderedMap = ankerl::unordered_dense::map<K, V>;
-	//
 
+	/// <summary>
+	/// An alias to ankerl::unordered_dense::map.
+	/// </summary>
+	/// <typeparam name="Key">The type of the keys in the map.</typeparam>
+	/// <typeparam name="T">The type of the mapped values.</typeparam>
+	/// <typeparam name="Hash">The type used to hash keys. Defaults to ankerl::unordered_dense::v4_5_0::hash<Key>.</typeparam>
+	/// <typeparam name="KeyEqual">The type used to compare keys for equality. Defaults to std::equal_to<Key>.</typeparam>
+	/// <typeparam name="AllocatorOrContainer">The allocator or container type used for storage. Defaults to std::allocator<std::pair<Key, T>>.</typeparam>
+	/// <typeparam name="Bucket">The bucket type used for internal storage. Defaults to ankerl::unordered_dense::bucket_type::standard.</typeparam>
+	/// <typeparam name="BucketContainer">The container type used for buckets. Defaults to ankerl::unordered_dense::detail::default_container_t.</typeparam>
 	template <class Key,
 		class T,
 		class Hash = ankerl::unordered_dense::v4_5_0::hash<Key>,
@@ -2130,3 +2175,4 @@ namespace FranAudioShared::Containers
 
 #endif
 #endif
+#endif // FRANAUDIO_USE_STL_CONTAINERS
