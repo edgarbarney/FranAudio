@@ -186,10 +186,16 @@ void NyquistIO::BuildDecoderTable()
     AddDecoderToTable(std::make_shared<WavDecoder>());
     AddDecoderToTable(std::make_shared<WavPackDecoder>());
     AddDecoderToTable(std::make_shared<FlacDecoder>());
-    AddDecoderToTable(std::make_shared<VorbisDecoder>());
-    AddDecoderToTable(std::make_shared<OpusDecoder>());
     AddDecoderToTable(std::make_shared<MusepackDecoder>());
     AddDecoderToTable(std::make_shared<Mp3Decoder>());
+
+#ifdef FRANAUDIO_USE_VORBIS
+	AddDecoderToTable(std::make_shared<VorbisDecoder>());
+#endif
+
+#ifdef FRANAUDIO_USE_OPUS
+	AddDecoderToTable(std::make_shared<OpusDecoder>());
+#endif
 }
 
 NyquistFileBuffer nqr::ReadFile(const std::string & pathToFile)

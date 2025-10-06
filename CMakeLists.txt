@@ -124,9 +124,9 @@ if (FRANAUDIO_USE_VORBIS)
 	)
 	FetchContent_MakeAvailable(ogg)
 
-	set (OGG_INCLUDE_DIR "Libs/ogg/include")
-	set (OGG_LIBRARY "Libs/ogg")
-	set (Ogg_DIR "Libs/ogg")
+	set(OGG_INCLUDE_DIR "Libs/ogg/include")
+	set(OGG_LIBRARY "Libs/ogg")
+	set(Ogg_DIR "Libs/ogg")
 
 	# Vorbis
 	FetchContent_Declare(
@@ -137,8 +137,8 @@ if (FRANAUDIO_USE_VORBIS)
 	)
 	FetchContent_MakeAvailable(vorbis)
 	
-	set (VORBIS_LIBRARY "Libs/ogg")
-	set (Vorbis_DIR "Libs/ogg")
+	set(VORBIS_LIBRARY "Libs/ogg")
+	set(Vorbis_DIR "Libs/ogg")
 endif()
 
 if (FRANAUDIO_USE_OPUS)
@@ -156,8 +156,8 @@ if (FRANAUDIO_USE_OPUS)
 	)
 	FetchContent_MakeAvailable(opus)
 
-	set (OPUS_LIBRARY "Libs/opus")
-	set (Opus_DIR "Libs/opus")
+	set(OPUS_LIBRARY "Libs/opus")
+	set(Opus_DIR "Libs/opus")
 
 	# Opusfile
 	FetchContent_Declare(
@@ -168,8 +168,8 @@ if (FRANAUDIO_USE_OPUS)
 	)
 	FetchContent_MakeAvailable(opusfile)
 	
-	set (OPUSFILE_LIBRARY "Libs/opusfile")
-	set (OpusFile_DIR "Libs/opusfile")
+	set(OPUSFILE_LIBRARY "Libs/opusfile")
+	set(OpusFile_DIR "Libs/opusfile")
 endif()
 
 # OpenAL

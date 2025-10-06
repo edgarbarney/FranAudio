@@ -86,24 +86,6 @@ namespace nqr
         virtual std::vector<std::string> GetSupportedFileExtensions() override final;
     };
 
-    struct VorbisDecoder final : public nqr::BaseDecoder
-    {
-        VorbisDecoder() = default;
-        virtual ~VorbisDecoder() override {}
-        virtual void LoadFromPath(nqr::AudioData * data, const std::string & path) override final;
-        virtual void LoadFromBuffer(nqr::AudioData * data, const std::vector<uint8_t> & memory) override final;
-        virtual std::vector<std::string> GetSupportedFileExtensions() override final;
-    };
-
-    struct OpusDecoder final : public nqr::BaseDecoder
-    {
-        OpusDecoder() = default;
-        virtual ~OpusDecoder() override {}
-        virtual void LoadFromPath(nqr::AudioData * data, const std::string & path) override final;
-        virtual void LoadFromBuffer(nqr::AudioData * data, const std::vector<uint8_t> & memory) override final;
-        virtual std::vector<std::string> GetSupportedFileExtensions() override final;
-    };
-
     struct MusepackDecoder final : public nqr::BaseDecoder
     {
         MusepackDecoder() = default;
@@ -130,6 +112,28 @@ namespace nqr
         virtual void LoadFromBuffer(nqr::AudioData * data, const std::vector<uint8_t> & memory) override final;
         virtual std::vector<std::string> GetSupportedFileExtensions() override final;
     };
+
+#ifdef FRANAUDIO_USE_VORBIS
+	struct VorbisDecoder final : public nqr::BaseDecoder
+	{
+		VorbisDecoder() = default;
+		virtual ~VorbisDecoder() override {}
+		virtual void LoadFromPath(nqr::AudioData* data, const std::string& path) override final;
+		virtual void LoadFromBuffer(nqr::AudioData* data, const std::vector<uint8_t>& memory) override final;
+		virtual std::vector<std::string> GetSupportedFileExtensions() override final;
+	};
+#endif
+
+#ifdef FRANAUDIO_USE_OPUS
+	struct OpusDecoder final : public nqr::BaseDecoder
+	{
+		OpusDecoder() = default;
+		virtual ~OpusDecoder() override {}
+		virtual void LoadFromPath(nqr::AudioData* data, const std::string& path) override final;
+		virtual void LoadFromBuffer(nqr::AudioData* data, const std::vector<uint8_t>& memory) override final;
+		virtual std::vector<std::string> GetSupportedFileExtensions() override final;
+	};
+#endif
 
 } // end namespace nqr
 

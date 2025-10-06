@@ -23,6 +23,8 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#ifdef FRANAUDIO_USE_OPUS
+
 #include "Decoders.h"
 #include "opusfile/include/opusfile.h"
 
@@ -181,3 +183,5 @@ std::vector<std::string> nqr::OpusDecoder::GetSupportedFileExtensions()
 {
     return {"opus"};
 }
+
+#endif
