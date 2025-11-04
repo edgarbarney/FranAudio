@@ -4,7 +4,6 @@
 #include <string>
 #include <string_view>
 #include <span>
-#include <array>
 #include <memory>
 
 #include "FranAudioAPI.hpp"
@@ -51,7 +50,7 @@ namespace FranAudio::Decoder
 
 		/// <summary>
 		/// Shutdown the decoder.
-		/// This is used to shutdown the decoder and clean up any resources.
+		/// This is used to shut down the decoder and clean up any resources.
 		/// </summary>
 		virtual void Shutdown() = 0;
 

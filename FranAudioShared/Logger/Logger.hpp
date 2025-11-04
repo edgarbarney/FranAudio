@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <streambuf>
+#include <memory>
 
 #include "FranAudioShared/Containers/Vector.hpp"
 

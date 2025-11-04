@@ -22,10 +22,13 @@
 #include <string>
 #include <format>
 
+#if defined(_WIN32) || defined(_WIN64)
 #include "windows.h"
+#endif
 
 #ifndef FRANAUDIO_USE_SERVER
 #include "FranAudio.hpp"
+#include "FranAudio/Backend/Backend.hpp"
 #else
 #include "FranAudioClient/FranAudioClient.hpp"
 #endif
@@ -169,12 +172,12 @@ static void SetDecodeSettings(const FranAudio::Decoder::DecodeSettings& settings
 
 static FranAudio::Decoder::DecodeSettings GetDecodeSettings()
 {
+	//FranAudioShared::Logger::LogMessage("Retrieved decode settings.");
 #ifndef FRANAUDIO_USE_SERVER
 	return FranAudio::GetBackend()->GetDecodeSettings();
 #else
 	return FranAudioClient::Wrapper::Backend::GetDecodeSettings();
 #endif
-	FranAudioShared::Logger::LogMessage("Retrieved decode settings.");
 }
 
 
@@ -577,7 +580,9 @@ int main()
 	glfwTerminate();
 }
 
+#if defined(_WIN32) || defined(_WIN64)
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
 	return main();
 }
+#endif

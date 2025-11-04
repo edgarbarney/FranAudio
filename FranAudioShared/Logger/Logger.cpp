@@ -1,5 +1,4 @@
 // FranticDreamer 2022-2025
-#pragma once
 
 #include <print>
 #include <format>

@@ -1,6 +1,7 @@
 // FranticDreamer 2022-2025
 #pragma once
 
+#include <cstdint>
 #include <variant>
 #include <algorithm>
 

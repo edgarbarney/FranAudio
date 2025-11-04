@@ -57,10 +57,24 @@ You can also see the `FranAudioTest/FranAudioTest.cpp`
 # Requirements and Building  
 ## Requirements  
 - CMake 3.23 or newer
-- A Compiler that supports C++23
+- A build system for CMake (e.g. Ninja)
+- A Compiler that supports C++23 (e.g. MSVC, GCC)
+- On Linux: X11 OR Wayland (You can find instructions for your distro [here](https://www.glfw.org/docs/latest/compile.html "Compiling GLFW")).
 
 ## Building on Linux  
-For now, only Windows is supported. In the near future, Linux support will be added.  
+#### Build and Install Steps for GCC & Ninja (Terminal)
+- Get the code
+    - (Recommended) Use git to clone the repository (for example, using `git clone https://github.com/edgarbarney/FranAudio`)
+    - Download the code using the `<> Code` button and `Download ZIP` option.
+- Navigate terminal to the project root
+    - Example: `cd "/home/frantic/projects/FranAudio"`
+- Create a new folder for builds and navigate to it
+    - Example: `mkdir build` then `cd build`
+- Run CMake using the project root directory as argument
+    - Example (CMake 3): `cmake ".." -G 1"Ninja"`
+    - Example (CMake 4): `cmake ".." -G 1"Ninja" -DCMAKE_POLICY_VERSION_MINIMUM=3.5`
+- Run Ninja to build the project
+    - Example `ninja`
 
 ## Building on Windows  
 #### Build and Install Steps for Visual Studio (MSVC)  
@@ -78,12 +92,12 @@ For now, only Windows is supported. In the near future, Linux support will be ad
     - You can use `Build > Install FranAudio`
 
 Upon completing the build process:  
- your binaries will be in `FranAudio/out/build/{build_profile}/bin`  
+Your binaries will be in `FranAudio/out/build/{build_profile}/bin`  
 
 Upon completing the installation:  
-your binaries will be in `FranAudio/out/install/{build_profile}/bin`  
-your headers will be in `FranAudio/out/install/{build_profile}/include`  
-your libraries will be in `FranAudio/out/install/{build_profile}/lib`  
+Your binaries will be in `FranAudio/out/install/{build_profile}/bin`  
+Your headers will be in `FranAudio/out/install/{build_profile}/include`  
+Your libraries will be in `FranAudio/out/install/{build_profile}/lib`  
 
 
 # Testing  

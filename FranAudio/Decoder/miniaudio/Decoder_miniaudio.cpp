@@ -2,6 +2,7 @@
 
 #include <iterator>
 #include <filesystem>
+#include <array>
 
 //Already included in FranAudio.hpp
 //#include "miniaudio/miniaudio.h"

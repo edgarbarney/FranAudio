@@ -29,6 +29,10 @@ out/
 Build/
 build/
 
+# CLion
+.idea/
+cmake-build-*
+
 ## Codeblocks
 
 *.layout

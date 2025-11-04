@@ -21,11 +21,6 @@ namespace FranAudio::Decoder
 
 	}
 
-	constexpr FRANAUDIO_API DecoderType libnyquist::GetDecoderType() const noexcept
-	{
-		return DecoderType::libnyquist;
-	}
-
 	FRANAUDIO_API bool libnyquist::DecodeAudioFile(const std::string& filename, FranAudio::Sound::WaveData& targetWaveData, FranAudio::Backend::Backend& caller, const DecodeSettings& settings)
 	{
 		nqr::AudioData audioData;
