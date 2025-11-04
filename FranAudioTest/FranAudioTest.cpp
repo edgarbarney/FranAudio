@@ -93,6 +93,34 @@ static void CompleteFrameDraw(GLFWwindow* window)
 	glfwSwapBuffers(window);
 }
 
+static void DrawConsole(FranAudioShared::Logger::FranAudioConsole& franConsole, size_t& orderedID)
+{
+	ImGui::Begin("Console", nullptr);
+	ImGui::Separator();
+	if (ImGui::Button("Clear Console"))
+	{
+		// Clear console entries
+		franConsole.Clear();
+	}
+	if (ImGui::BeginListBox("##consoleentries", ImVec2(-FLT_MIN, -FLT_MIN)))
+	{
+		for (size_t i = 0; i < franConsole.GetEntries().size(); i++)
+		{
+			ImGui::PushID(orderedID++);
+			if (ImGui::Selectable(franConsole.GetEntries()[i].text.c_str()))
+			{
+				franConsole.Remove(i);
+				ImGui::PopID();
+				break;
+			}
+			ImGui::PopID();
+		}
+		ImGui::EndListBox();
+	}
+	ImGui::Separator();
+	ImGui::End();
+}
+
 static size_t PlayTestFile(const std::string& filename)
 {
 	FranAudioShared::Logger::LogMessage(std::format("Playing test file: {}", filename));
@@ -196,13 +224,12 @@ static float GetSoundVolume(size_t soundId)
 
 static FranAudioShared::Containers::Vector<size_t> GetActiveSoundIDs()
 {
+	//FranAudioShared::Logger::LogMessage("Retrieved active sound ids.");
 #ifndef FRANAUDIO_USE_SERVER
 	return FranAudio::GetBackend()->GetActiveSoundIDs();
 #else
 	return FranAudioClient::Wrapper::Backend::GetActiveSoundIDs();
 #endif
-
-	FranAudioShared::Logger::LogMessage("Retrieved active sound ids.");
 }
 
 static void SetDecodeSettings(const FranAudio::Decoder::DecodeSettings& settings)
@@ -304,6 +331,9 @@ int main()
 
 		// ID to prevent conflicts
 		size_t orderedID = 0;
+
+		// Console
+		DrawConsole(franConsole, orderedID);
 
 		BACKEND_CHECK(false);
 
@@ -528,32 +558,6 @@ int main()
 		ImGui::End();
 
 		SetListenerTransform(listenerPosition, listenerForward, listenerUp);
-
-		// Console
-		ImGui::Begin("Console", nullptr);
-			ImGui::Separator();
-			if (ImGui::Button("Clear Console"))
-			{
-				// Clear console entries
-				franConsole.Clear();
-			}
-			if (ImGui::BeginListBox("##consoleentries", ImVec2(-FLT_MIN, -FLT_MIN)))
-			{
-					for (size_t i = 0; i < franConsole.GetEntries().size(); i++)
-					{
-						ImGui::PushID(orderedID++);
-						if (ImGui::Selectable(franConsole.GetEntries()[i].text.c_str()))
-						{
-							franConsole.Remove(i);
-							ImGui::PopID();
-							break;
-						}
-						ImGui::PopID();
-					}
-				ImGui::EndListBox();
-			}
-			ImGui::Separator();
-		ImGui::End();
 
 		auto soundIDs = GetActiveSoundIDs();
 
