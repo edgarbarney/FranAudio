@@ -59,13 +59,19 @@ namespace FranAudio::Decoder
 		/// Get the decoder type.
 		/// </summary>
 		/// <returns>Type of this decoder instance</returns>
-		virtual constexpr FRANAUDIO_API DecoderType GetDecoderType() const noexcept;
+		virtual constexpr FRANAUDIO_API DecoderType GetDecoderType() const noexcept
+		{
+			return DecoderType::None;
+		}
 
 		/// <summary>
 		/// Returns the name of the audio decoder.
 		/// </summary>
 		/// <returns>Name of the decoder.</returns>
-		virtual constexpr FRANAUDIO_API const char* GetDecoderName() const noexcept;
+		virtual constexpr FRANAUDIO_API const char* GetDecoderName() const noexcept
+		{
+			return DecoderTypeNames[static_cast<size_t>(GetDecoderType())];
+		}
 
 		/// <summary>
 		/// Decode an audio file.

@@ -31,7 +31,7 @@ namespace FranAudio::Backend
 		/// <remarks>
 		/// There is a small design oversight problem.
 		/// This was originally a raw pointer. So currentDecoder->Reset() was called so because there was no "confusion".
-		/// But now its a smart pointer, try not to call currentDecoder.reset() by mistake. IDE auto-complete may suggest it.
+		/// But now it's a smart pointer, try not to call currentDecoder.reset() by mistake. IDE auto-complete may suggest it.
 		/// </remarks>
 		std::unique_ptr<FranAudio::Decoder::Decoder> currentDecoder = nullptr;
 		FranAudio::Decoder::DecoderType currentDecoderType = FranAudio::Decoder::DecoderType::None;
@@ -76,7 +76,7 @@ namespace FranAudio::Backend
 
 	public:
 		Backend() = default;
-		FRANAUDIO_API ~Backend();
+		FRANAUDIO_API virtual ~Backend();
 
 		/// <summary>
 		/// Initialise the backend.
@@ -100,7 +100,7 @@ namespace FranAudio::Backend
 
 		/// <summary>
 		/// Shutdown the backend.
-		/// This is used to shutdown the backend and clean up any resources.
+		/// This is used to shut down the backend and clean up any resources.
 		///
 		/// <para/> Note: Called by DestroyBackend(). Unless you're manually managing backends, you shouldn't need to call this.
 		/// <para/> Note: Unlike Init(), this function will also de-initialise the decoder if it was initialised since Decoder is managed by the backend after it's set.
@@ -112,13 +112,19 @@ namespace FranAudio::Backend
 		/// Get the backend type.
 		/// </summary>
 		/// <returns>Type of this Backend instance</returns>
-		virtual constexpr FRANAUDIO_API BackendType GetBackendType() const noexcept;
+		virtual constexpr FRANAUDIO_API BackendType GetBackendType() const noexcept
+		{
+			return BackendType::None;
+		}
 
 		/// <summary>
 		/// Retrieves the name of the audio backend.
 		/// </summary>
 		/// <returns>Name of the backend.</returns>
-		virtual constexpr FRANAUDIO_API const char* GetBackendName() const noexcept;
+		virtual constexpr FRANAUDIO_API const char* GetBackendName() const noexcept
+		{
+			return BackendTypeNames[static_cast<size_t>(GetBackendType())];
+		}
 
 		// ========================
 		// Decoder Management
@@ -141,7 +147,10 @@ namespace FranAudio::Backend
 		/// Get the name of the current decoder.
 		/// </summary>
 		/// <returns>Name of the current decoder used by this backend</returns>
-		virtual constexpr FRANAUDIO_API const char* GetDecoderName() const noexcept;
+		virtual constexpr FRANAUDIO_API const char* GetDecoderName() const noexcept
+		{
+			return currentDecoder->GetDecoderName();
+		}
 
 		/// <summary>
 		/// Get the current decoder.
@@ -183,7 +192,10 @@ namespace FranAudio::Backend
 		/// Get the current decode settings.
 		/// </summary>
 		/// <returns>Current decode settings</returns>
-		constexpr FRANAUDIO_API const FranAudio::Decoder::DecodeSettings& GetDecodeSettings() const noexcept;
+		constexpr FRANAUDIO_API const FranAudio::Decoder::DecodeSettings& GetDecodeSettings() const noexcept
+		{
+			return currentDecodeSettings;
+		}
 
 		// ========================
 		// Listener (3D Audio)

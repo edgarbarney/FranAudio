@@ -73,11 +73,6 @@ namespace FranAudio::Backend
 		Backend::Shutdown(forReset);
 	}
 
-	constexpr FRANAUDIO_API BackendType OpenALSoft::GetBackendType() const noexcept
-	{
-		return BackendType::OpenALSoft;
-	}
-
 	// ========================
 	// Decoder Management
 	// ========================

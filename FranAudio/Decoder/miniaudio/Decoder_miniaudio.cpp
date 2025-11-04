@@ -87,11 +87,6 @@ namespace FranAudio::Decoder
 		}
 	}
 
-	constexpr FRANAUDIO_API DecoderType miniaudio::GetDecoderType() const noexcept
-	{
-		return DecoderType::miniaudio;
-	}
-
 	FRANAUDIO_API bool miniaudio::DecodeAudioFile(const std::string& filename, FranAudio::Sound::WaveData& targetWaveData, FranAudio::Backend::Backend& caller, const DecodeSettings& settings)
 	{
 		ma_decoder decoder;

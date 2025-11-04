@@ -70,16 +70,6 @@ namespace FranAudio::Backend
 		FranAudioShared::Logger::LogError(std::format("{}: Backend shut down.", GetBackendName()));
 	}
 
-	constexpr FRANAUDIO_API BackendType Backend::GetBackendType() const noexcept
-	{
-		return BackendType::None;
-	}
-
-	constexpr FRANAUDIO_API const char* Backend::GetBackendName() const noexcept
-	{
-		return BackendTypeNames[(size_t)GetBackendType()];
-	}
-
 	// ========================
 	// Decoder Management
 	// ========================
@@ -87,11 +77,6 @@ namespace FranAudio::Backend
 	FRANAUDIO_API FranAudio::Decoder::DecoderType Backend::GetDecoderType() const
 	{
 		return currentDecoderType;
-	}
-
-	constexpr FRANAUDIO_API const char* Backend::GetDecoderName() const noexcept
-	{
-		return currentDecoder->GetDecoderName();
 	}
 
 	FRANAUDIO_API FranAudio::Decoder::Decoder* Backend::GetCurrentDecoder() const
@@ -150,11 +135,6 @@ namespace FranAudio::Backend
 	FRANAUDIO_API void Backend::SetDecodeSettings(const FranAudio::Decoder::DecodeSettings& settings) noexcept
 	{
 		currentDecodeSettings = settings;
-	}
-
-	constexpr FRANAUDIO_API const FranAudio::Decoder::DecodeSettings& Backend::GetDecodeSettings() const noexcept
-	{
-		return currentDecodeSettings;
 	}
 
 	// ========================

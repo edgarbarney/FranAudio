@@ -10,16 +10,6 @@ namespace FranAudio::Decoder
 	// Decoder
 	// ========================
 
-	constexpr FRANAUDIO_API DecoderType Decoder::GetDecoderType() const noexcept
-	{ 
-		 return DecoderType::None;
-	}
-
-	constexpr FRANAUDIO_API const char* Decoder::GetDecoderName() const noexcept
-	{
-		return DecoderTypeNames[(size_t)GetDecoderType()];
-	}
-
 	FRANAUDIO_API std::unique_ptr<Decoder> Decoder::CreateDecoder(DecoderType decoderType)
 	{
 		std::unique_ptr<Decoder> newDecoder = nullptr;

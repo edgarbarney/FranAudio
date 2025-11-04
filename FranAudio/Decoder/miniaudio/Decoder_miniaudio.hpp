@@ -17,7 +17,7 @@ namespace FranAudio::Decoder
 		/// <summary>
 		/// Is this decoder standalone?
 		/// 
-		/// This is used to determine if the decoder is independend of the backend.
+		/// This is used to determine if the decoder is independent of the backend.
 		/// If the backend is not miniaudio, this decoder will handle main miniaudio engine.
 		/// </summary>
 		bool isStandalone = false;
@@ -46,7 +46,7 @@ namespace FranAudio::Decoder
 
 		/// <summary>
 		/// Shutdown the decoder.
-		/// This is used to shutdown the decoder and clean up any resources.
+		/// This is used to shut down the decoder and clean up any resources.
 		/// </summary>
 		virtual FRANAUDIO_API void Shutdown() override;
 
@@ -54,7 +54,10 @@ namespace FranAudio::Decoder
 		/// Get the decoder type.
 		/// </summary>
 		/// <returns>Type of this decoder instance</returns>
-		virtual constexpr FRANAUDIO_API DecoderType GetDecoderType() const noexcept override;
+		virtual constexpr FRANAUDIO_API DecoderType GetDecoderType() const noexcept override
+		{
+			return DecoderType::miniaudio;
+		}
 
 		/// <summary>
 		/// Decode an audio file.

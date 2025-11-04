@@ -22,7 +22,7 @@ namespace FranAudio::Backend
 	#ifdef FRANAUDIO_USE_OPUS
 		ma_decoding_backend_libopus,
 	#endif
-	// If neither vorbis or opus are defined, this will be nullptr.
+	// If neither vorbis nor opus are defined, this will be nullptr.
 	#if !defined(FRANAUDIO_USE_VORBIS) && !defined(FRANAUDIO_USE_OPUS)
 		nullptr,
 	#endif
@@ -78,7 +78,7 @@ namespace FranAudio::Backend
 			bool isPaused = false;
 
 			/// <summary>
-			/// Time the sound was paused at in miliseconds.
+			/// Time the sound was paused at in milliseconds.
 			/// </summary>
 			size_t pausedTime = 0;
 		};
@@ -116,7 +116,7 @@ namespace FranAudio::Backend
 
 		/// <summary>
 		/// Shutdown the backend.
-		/// This is used to shutdown the backend and clean up any resources.
+		/// This is used to shut down the backend and clean up any resources.
 		///
 		/// <para/> Note: Called by DestroyBackend(). Unless you're manually managing backends, you shouldn't need to call this.
 		/// <para/> Note: Unlike Init(), this function will also de-initialise the decoder if it was initialised since Decoder is managed by the backend after it's set.
@@ -128,7 +128,10 @@ namespace FranAudio::Backend
 		/// Get the backend type.
 		/// </summary>
 		/// <returns>Type of this Backend instance</returns>
-		virtual constexpr FRANAUDIO_API BackendType GetBackendType() const noexcept override;
+		virtual constexpr FRANAUDIO_API BackendType GetBackendType() const noexcept override
+		{
+			return BackendType::miniaudio;
+		}
 
 		// ========================
 		// Decoder Management

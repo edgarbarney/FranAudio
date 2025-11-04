@@ -89,11 +89,6 @@ namespace FranAudio::Backend
 		Backend::Shutdown(forReset);
 	}
 
-	constexpr FRANAUDIO_API BackendType miniaudio::GetBackendType() const noexcept
-	{
-		return BackendType::miniaudio;
-	}
-
 	// ========================
 	// Decoder Management
 	// ========================
