@@ -25,7 +25,7 @@ namespace FranAudio
 	class GlobalData
 	{
 	public:
-		std::unique_ptr<Backend::Backend> currentBackend;
+		std::unique_ptr<FranAudio::Backend::Backend> currentBackend;
 	};
 
 	/// <summary>
@@ -64,7 +64,8 @@ namespace FranAudio
 	/// Sets the audio backend to use.
 	/// </summary>
 	/// <param name="type">The backend type to set, specified as a value of Backend::BackendType.</param>
-	FRANAUDIO_API void SetBackend(Backend::BackendType type);
+	/// <returns>True if successful</returns>
+	FRANAUDIO_API bool SetBackend(Backend::BackendType type);
 
 	/// <summary>
 	/// Get the current backend.

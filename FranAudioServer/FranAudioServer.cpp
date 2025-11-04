@@ -92,7 +92,10 @@ namespace FranAudioServer
 				try
 				{
 					const auto backendType = static_cast<FranAudio::Backend::BackendType>(std::stoi(fn.params[0]));
-					FranAudio::SetBackend(backendType);
+					if (!FranAudio::SetBackend(backendType))
+					{
+						return std::string("err");
+					}
 				}
 				catch (const std::exception& e)
 				{
@@ -154,7 +157,10 @@ namespace FranAudioServer
 				try
 				{
 					const auto decoderType = static_cast<FranAudio::Decoder::DecoderType>(std::stoi(fn.params[0]));
-					FranAudio::GetBackend()->SetDecoder(decoderType);
+					if (!FranAudio::GetBackend()->SetDecoder(decoderType));
+					{
+						return std::string("err");
+					}
 				}
 				catch (const std::exception& e)
 				{

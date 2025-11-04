@@ -75,8 +75,8 @@ namespace FranAudio::Backend
 		FranAudio::Decoder::DecodeSettings currentDecodeSettings = {};
 
 	public:
-		Backend() = default;
-		FRANAUDIO_API virtual ~Backend();
+		//Backend() = default;
+		//FRANAUDIO_API virtual ~Backend();
 
 		/// <summary>
 		/// Initialise the backend.
@@ -169,7 +169,8 @@ namespace FranAudio::Backend
 		/// </summary>
 		/// <param name="decoderType">Type of the decoder to replace the current one</param>
 		/// <param name="force">Force the decoder to be replaced even if it's the same type</param>
-		FRANAUDIO_API void SetDecoder(FranAudio::Decoder::DecoderType decoderType, bool force = false);
+		/// <returns>True if successful.</returns>
+		FRANAUDIO_API bool SetDecoder(FranAudio::Decoder::DecoderType decoderType, bool force = false);
 
 		/// <summary>
 		/// Destroy the current decoder.
@@ -382,6 +383,6 @@ namespace FranAudio::Backend
 		/// </summary>
 		/// <param name="backendType">Type of the backend to create</param>
 		/// <returns>Pointer to the created backend instance</returns>
-		static FRANAUDIO_API std::unique_ptr<Backend> CreateBackend(BackendType backendType);
+		static FRANAUDIO_API std::unique_ptr<FranAudio::Backend::Backend> CreateBackend(BackendType backendType);
 	};
 }

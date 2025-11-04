@@ -15,9 +15,10 @@ FRANAUDIO_CLIENT_API void FranAudioClient::RouteClientLoggingToConsole(FranAudio
 namespace FranAudioClient::Wrapper
 {
 
-	FRANAUDIO_CLIENT_API void SetBackend(FranAudio::Backend::BackendType backendType)
+	FRANAUDIO_CLIENT_API bool SetBackend(FranAudio::Backend::BackendType backendType)
 	{
-		FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("server-set_backend", { std::to_string(static_cast<int>(backendType)) }));
+		const auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("server-set_backend", { std::to_string(static_cast<int>(backendType)) }));
+		return response != "err";
 	}
 	
 	namespace Backend
@@ -46,9 +47,10 @@ namespace FranAudioClient::Wrapper
 		// Decoder Management
 		// ========================
 
-		FRANAUDIO_CLIENT_API void SetDecoder(FranAudio::Decoder::DecoderType decoderType)
+		FRANAUDIO_CLIENT_API bool SetDecoder(FranAudio::Decoder::DecoderType decoderType)
 		{
-			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_decoder", { std::to_string(static_cast<int>(decoderType)) }));
+			const auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_decoder", { std::to_string(static_cast<int>(decoderType)) }));
+			return response != "err";
 		}
 
 		FRANAUDIO_CLIENT_API FranAudio::Decoder::DecoderType GetDecoderType()
@@ -112,14 +114,15 @@ namespace FranAudioClient::Wrapper
 		FRANAUDIO_CLIENT_API void SetListenerTransform(float position[3], float forward[3], float up[3])
 		{
 			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-set_listener_transform", 
-			{	std::to_string(position[0]), 
-				std::to_string(position[1]), 
+			{
+				std::to_string(position[0]),
+				std::to_string(position[1]),
 				std::to_string(position[2]),
-				std::to_string(forward[0]), 
-				std::to_string(forward[1]), 
+				std::to_string(forward[0]),
+				std::to_string(forward[1]),
 				std::to_string(forward[2]),
-				std::to_string(up[0]), 
-				std::to_string(up[1]), 
+				std::to_string(up[0]),
+				std::to_string(up[1]),
 				std::to_string(up[2])
 			}));
 		}

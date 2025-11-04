@@ -24,7 +24,7 @@ namespace FranAudioClient
 	// ===========================
 
 	/// <summary>
-	/// Initialize the FranAudio Client.
+	/// Initialise the FranAudio Client.
 	/// This must be called before any other functions are used.
 	/// NOTE: This should be called after the server is started.
 	/// </summary>
@@ -85,7 +85,8 @@ namespace FranAudioClient
 		/// Sets the audio backend to use.
 		/// </summary>
 		/// <param name="backendType">The backend type to set, specified as a value of Backend::BackendType.</param>
-		FRANAUDIO_CLIENT_API void SetBackend(FranAudio::Backend::BackendType backendType);
+		/// <returns>True if successful.</returns>
+		FRANAUDIO_CLIENT_API bool SetBackend(FranAudio::Backend::BackendType backendType);
 
 		/// <summary>
 		/// Backend related functions of the wrapper.
@@ -112,7 +113,8 @@ namespace FranAudioClient
 			/// Set the decoder type.
 			/// </summary>
 			/// <param name="decoderType">Type of the decoder to replace the current one</param>
-			FRANAUDIO_CLIENT_API void SetDecoder(FranAudio::Decoder::DecoderType decoderType);
+			/// <returns>True if successful.</returns>
+			FRANAUDIO_CLIENT_API bool SetDecoder(FranAudio::Decoder::DecoderType decoderType);
 
 			/// <summary>
 			/// Get the decoder type.

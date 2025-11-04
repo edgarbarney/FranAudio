@@ -10,12 +10,6 @@
 
 namespace FranAudio::Backend
 {
-	FRANAUDIO_API Backend::~Backend()
-	{
-		//Shutdown();
-		DestroyDecoder();
-	}
-
 	FRANAUDIO_API bool Backend::Init(FranAudio::Decoder::DecoderType decoderType)
 	{
 		bool decoderFail = false;
@@ -84,11 +78,11 @@ namespace FranAudio::Backend
 		return currentDecoder.get();
 	}
 
-	FRANAUDIO_API void Backend::SetDecoder(FranAudio::Decoder::DecoderType decoderType, bool force)
+	FRANAUDIO_API bool Backend::SetDecoder(FranAudio::Decoder::DecoderType decoderType, bool force)
 	{
 		if (currentDecoderType == decoderType && !force)
 		{
-			return; // No need to change the decoder
+			return true; // No need to change the decoder
 		}
 
 		if (currentDecoder != nullptr)
@@ -107,15 +101,16 @@ namespace FranAudio::Backend
 				currentDecoder = FranAudio::Decoder::Decoder::CreateDecoder(decoderType);
 				currentDecoderType = decoderType;
 				FranAudioShared::Logger::LogMessage(std::format("{}: Initialised decoder type {}", GetBackendName(), GetDecoderName()));
-				return;
 			}
 		}
 
 		if (currentDecoder == nullptr)
 		{
-			FranAudioShared::Logger::LogError(std::format("{}: Decoder type not supported", GetBackendName()));
-			return;
+			FranAudioShared::Logger::LogError(std::format("{}: Decoder type not supported or failed to initialise", GetBackendName()));
+			return false;
 		}
+
+		return true;
 	}
 
 	FRANAUDIO_API void Backend::DestroyDecoder()
@@ -244,9 +239,9 @@ namespace FranAudio::Backend
 		return soundIDs;
 	}
 
-	FRANAUDIO_API std::unique_ptr<Backend> Backend::CreateBackend(BackendType backendType)
+	FRANAUDIO_API std::unique_ptr<FranAudio::Backend::Backend> Backend::CreateBackend(BackendType backendType)
 	{
-		std::unique_ptr<Backend> newBackend = nullptr;
+		std::unique_ptr<FranAudio::Backend::Backend> newBackend = nullptr;
 
 		switch (backendType)
 		{

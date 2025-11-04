@@ -48,6 +48,51 @@
 
 #include "FranAudioTest.hpp"
 
+// I don't like macros, but this is useful now.
+#define BACKEND_CHECK(shouldEndPrematurely)	\
+if (!FranAudio::IsBackendValid())			\
+{											\
+	ImGui::Begin("Debug");					\
+	ImGui::Text("Backend is invalid!");		\
+	ImGui::End();							\
+											\
+	if (shouldEndPrematurely)				\
+	{										\
+		ImGui::End();						\
+	}										\
+											\
+	CompleteFrameDraw(window);				\
+	continue;								\
+}
+
+#define DECODER_CHECK(shouldEndPrematurely)			\
+if (!FranAudio::GetBackend()->GetCurrentDecoder())	\
+{													\
+	ImGui::Begin("Debug");							\
+	ImGui::Text("Decoder is invalid!");				\
+	ImGui::End();									\
+													\
+	if (shouldEndPrematurely)						\
+	{												\
+		ImGui::End();								\
+	}												\
+													\
+	CompleteFrameDraw(window);						\
+	continue;										\
+}
+
+static void CompleteFrameDraw(GLFWwindow* window)
+{
+	glClearColor(0.75f, 0.65f, 0.25f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+	// Swap buffers
+	glfwSwapBuffers(window);
+}
+
 static size_t PlayTestFile(const std::string& filename)
 {
 	FranAudioShared::Logger::LogMessage(std::format("Playing test file: {}", filename));
@@ -260,6 +305,8 @@ int main()
 		// ID to prevent conflicts
 		size_t orderedID = 0;
 
+		BACKEND_CHECK(false);
+
 		ImGui::Begin("FranAudio Test Controls", nullptr, ImGuiWindowFlags_NoResize);
 		ImGui::Text("This is a simple test window for FranAudio.");
 		ImGui::Text("You can test audio files by clicking the buttons below.");
@@ -283,6 +330,12 @@ int main()
 			ImGui::EndCombo();
 		}
 
+		// Check again
+		// User might've invalidated it
+		BACKEND_CHECK(true);
+
+		DECODER_CHECK(true);
+
 		ImGui::Text("Decoder:");
 		if (ImGui::BeginCombo("##decoder", FranAudio::GetBackend()->GetDecoderName()))
 		{
@@ -300,6 +353,8 @@ int main()
 			}
 			ImGui::EndCombo();
 		}
+
+		DECODER_CHECK(true);
 #else
 		ImGui::Text("Client-Server Mode Enabled");
 		ImGui::Text("Backend:");
@@ -557,14 +612,7 @@ int main()
 
 		// Controls End
 
-		glClearColor(0.75f, 0.65f, 0.25f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-		// Swap buffers
-		glfwSwapBuffers(window);
+		CompleteFrameDraw(window);
 	}
 
 #ifndef FRANAUDIO_USE_SERVER

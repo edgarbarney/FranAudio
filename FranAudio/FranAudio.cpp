@@ -36,7 +36,7 @@ namespace FranAudio
 		return gGlobals.currentBackend != nullptr;
 	}
 
-	FRANAUDIO_API void SetBackend(Backend::BackendType type)
+	FRANAUDIO_API bool SetBackend(Backend::BackendType type)
 	{
 		if (gGlobals.currentBackend)
 		{
@@ -47,8 +47,15 @@ namespace FranAudio
 		}
 
 		gGlobals.currentBackend = Backend::Backend::CreateBackend(type);
-		gGlobals.currentBackend->SetDecoder(gGlobals.currentBackend->GetDecoderType(), true); // Initialize with default decoder
-		return;
+
+		if (!gGlobals.currentBackend)
+		{
+			// Backend creation error
+			FranAudioShared::Logger::LogError("Backend Creation Error!");
+			return false;
+		}
+
+		return gGlobals.currentBackend->SetDecoder(gGlobals.currentBackend->GetDecoderType(), true); // Initialise with default decoder
 	}
 
 	FRANAUDIO_API Backend::Backend* GetBackend()
