@@ -88,6 +88,17 @@ namespace FranAudio::Sound
 		FRANAUDIO_API float GetVolume() const;
 
 		/// <summary>
+		/// Set the pitch of the sound.
+		/// </summary>
+		/// <param name="pitch">Pitch to set the sound to (1.0 = normal pitch)</param>
+		FRANAUDIO_API void SetPitch(float pitch) const;
+
+		/// <summary>
+		/// Get the pitch of the sound.
+		/// </summary>
+		FRANAUDIO_API float GetPitch() const;
+
+		/// <summary>
 		/// Set the position of the sound.
  		/// </summary>
 		FRANAUDIO_API void SetPosition(const float position[3]) const;
@@ -96,5 +107,22 @@ namespace FranAudio::Sound
 		/// Get the position of the sound.
 		/// </summary>
 		FRANAUDIO_API void GetPosition(float outPosition[3]) const;
+
+		/// <summary>
+		/// Set the attenuation parameters of the sound.
+		/// </summary>
+		/// <param name="rolloffFactor">Rolloff factor to set the sound attenuation to</param>
+		/// <param name="minDistance">Minimum distance to set the sound attenuation to</param>
+		/// <param name="maxDistance">Maximum distance to set the sound attenuation to</param>
+		FRANAUDIO_API void SetAttenuation(float rolloffFactor, float minDistance, float maxDistance) const;
+
+		/// <summary>
+		/// Get the attenuation parameters of the sound.
+		/// </summary>
+		/// <param name="outRolloffFactor">Output rolloff factor of the sound attenuation</param>
+		/// <param name="outMinDistance">Output minimum distance of the sound attenuation</param>
+		/// <param name="outMaxDistance">Output maximum distance of the sound attenuation</param>
+		FRANAUDIO_API void GetAttenuation(float& outRolloffFactor, float& outMinDistance, float& outMaxDistance) const;
+
 	};
 }

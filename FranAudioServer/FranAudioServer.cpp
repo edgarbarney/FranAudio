@@ -551,7 +551,7 @@ namespace FranAudioServer
 
 				if (fn.params[0] == std::to_string(SIZE_MAX))
 				{
-					FranAudioShared::Logger::LogError("Tried to play an unloaded audio file.");
+					FranAudioShared::Logger::LogError("Tried to stop an invalid sound.");
 					return std::string("err");
 				}
 
@@ -578,12 +578,12 @@ namespace FranAudioServer
 			{
 				if (fn.params.size() < 2)
 				{
-					FranAudioShared::Logger::LogError("Missing parameters for set_sound_paused");
+					FranAudioShared::Logger::LogError("Missing parameters for sound-set_paused");
 					return std::string("err");
 				}
 				if (fn.params[0] == std::to_string(SIZE_MAX))
 				{
-					FranAudioShared::Logger::LogError("Tried to play an unloaded audio file.");
+					FranAudioShared::Logger::LogError("Tried to set paused state of an invalid sound.");
 					return std::string("err");
 				}
 				try
@@ -615,7 +615,7 @@ namespace FranAudioServer
 				}
 				if (fn.params[0] == std::to_string(SIZE_MAX))
 				{
-					FranAudioShared::Logger::LogError("Tried to play an unloaded audio file.");
+					FranAudioShared::Logger::LogError("Tried to get paused state of an invalid sound.");
 					return std::string("err");
 				}
 				try
@@ -640,12 +640,12 @@ namespace FranAudioServer
 			{
 				if (fn.params.size() < 2)
 				{
-					FranAudioShared::Logger::LogError("Missing parameters for set_sound_volume");
+					FranAudioShared::Logger::LogError("Missing parameters for sound-set_volume");
 					return std::string("err");
 				}
 				if (fn.params[0] == std::to_string(SIZE_MAX))
 				{
-					FranAudioShared::Logger::LogError("Tried to play an unloaded audio file.");
+					FranAudioShared::Logger::LogError("Tried to set volume of an invalid sound.");
 					return std::string("err");
 				}
 				try
@@ -677,7 +677,7 @@ namespace FranAudioServer
 				}
 				if (fn.params[0] == std::to_string(SIZE_MAX))
 				{
-					FranAudioShared::Logger::LogError("Tried to play an unloaded audio file.");
+					FranAudioShared::Logger::LogError("Tried to get volume of an invalid sound.");
 					return std::string("err");
 				}
 				try
@@ -693,6 +693,68 @@ namespace FranAudioServer
 			}
 		},
 
+		// Sound::SetPitch
+		// Params: soundIndex, pitch
+		// Returns: nothing
+		{
+			"sound-set_pitch",
+			[](const FranAudioShared::Network::NetworkFunction& fn)
+			{
+				if (fn.params.size() < 2)
+				{
+					FranAudioShared::Logger::LogError("Missing parameters for sound-set_pitch");
+					return std::string("err");
+				}
+				if (fn.params[0] == std::to_string(SIZE_MAX))
+				{
+					FranAudioShared::Logger::LogError("Tried to set pitch of an invalid sound.");
+					return std::string("err");
+				}
+				try
+				{
+					const size_t soundId = std::stoull(fn.params[0]);
+					const float pitch = std::stof(fn.params[1]);
+					FranAudio::GetBackend()->SetSoundPitch(soundId, pitch);
+				}
+				catch (const std::exception& e)
+				{
+					FranAudioShared::Logger::LogError(std::format("Failed to set sound pitch: {}", e.what()));
+					return std::string("err");
+				}
+				return std::string();
+			}
+		},
+
+		// Sound::GetPitch
+		// Params: soundIndex
+		// Returns: pitch, or "err" on error
+		{
+			"sound-get_pitch",
+			[](const FranAudioShared::Network::NetworkFunction& fn)
+			{
+				if (fn.params.size() < 1)
+				{
+					FranAudioShared::Logger::LogError("Missing sound ID parameter");
+					return std::string("err");
+				}
+				if (fn.params[0] == std::to_string(SIZE_MAX))
+				{
+					FranAudioShared::Logger::LogError("Tried to get pitch of an invalid sound.");
+					return std::string("err");
+				}
+				try
+				{
+					const size_t soundId = std::stoull(fn.params[0]);
+					return std::to_string(FranAudio::GetBackend()->GetSoundPitch(soundId));
+				}
+				catch (const std::exception& e)
+				{
+					FranAudioShared::Logger::LogError(std::format("Failed to get pitch of sound with ID {}: {}", fn.params[0], e.what()));
+					return std::string("err");
+				}
+			}
+		},
+
 		// Sound::SetPosition
 		// Params: soundIndex, posX, posY, posZ
 		// Returns: nothing
@@ -702,7 +764,7 @@ namespace FranAudioServer
 			{
 				if (fn.params.size() < 4)
 				{
-					FranAudioShared::Logger::LogError("Missing parameters for set_sound_position");
+					FranAudioShared::Logger::LogError("Missing parameters for sound-set_position");
 					return std::string("err");
 				}
 				try
@@ -734,7 +796,7 @@ namespace FranAudioServer
 				}
 				if (fn.params[0] == std::to_string(SIZE_MAX))
 				{
-					FranAudioShared::Logger::LogError("Tried to play an unloaded audio file.");
+					FranAudioShared::Logger::LogError("Tried to get position of an invalid sound.");
 					return std::string("err");
 				}
 				try
@@ -748,6 +810,69 @@ namespace FranAudioServer
 				catch (const std::exception& e)
 				{
 					FranAudioShared::Logger::LogError(std::format("Failed to get position of sound with ID {}: {}", fn.params[0], e.what()));
+					return std::string("err");
+				}
+			}
+		},
+
+		// Sound::SetAttenuation
+		// Params: soundIndex, rolloffFactor, minDistance, maxDistance
+		// Returns: nothing
+		{
+			"sound-set_attenuation",
+			[](const FranAudioShared::Network::NetworkFunction& fn)
+			{
+				if (fn.params.size() < 4)
+				{
+					FranAudioShared::Logger::LogError("Missing parameters for sound-set_attenuation");
+					return std::string("err");
+				}
+				try
+				{
+					const size_t soundId = std::stoull(fn.params[0]);
+					const float rolloffFactor = std::stof(fn.params[1]);
+					const float minDistance = std::stof(fn.params[2]);
+					const float maxDistance = std::stof(fn.params[3]);
+					FranAudio::GetBackend()->SetSoundAttenuation(soundId, rolloffFactor, minDistance, maxDistance);
+				}
+				catch (const std::exception& e)
+				{
+					FranAudioShared::Logger::LogError(std::format("Failed to set sound attenuation: {}", e.what()));
+					return std::string("err");
+				}
+				return std::string();
+			}
+		},
+
+		// Sound::GetAttenuation
+		// Params: soundIndex
+		// Returns: rolloffFactor, minDistance, maxDistance, or "err" on error
+		{
+			"sound-get_attenuation",
+			[](const FranAudioShared::Network::NetworkFunction& fn)
+			{
+				if (fn.params.size() < 1)
+				{
+					FranAudioShared::Logger::LogError("Missing sound ID parameter");
+					return std::string("err");
+				}
+				if (fn.params[0] == std::to_string(SIZE_MAX))
+				{
+					FranAudioShared::Logger::LogError("Tried to get attenuation of an invalid sound");
+					return std::string("err");
+				}
+				try
+				{
+					const size_t soundId = std::stoull(fn.params[0]);
+					float rolloffFactor = 0.0f;
+					float minDistance = 0.0f;
+					float maxDistance = 0.0f;
+					FranAudio::GetBackend()->GetSoundAttenuation(soundId, rolloffFactor, minDistance, maxDistance);
+					return std::format("{}|{}|{}", rolloffFactor, minDistance, maxDistance);
+				}
+				catch (const std::exception& e)
+				{
+					FranAudioShared::Logger::LogError(std::format("Failed to get attenuation of sound with ID {}: {}", fn.params[0], e.what()));
 					return std::string("err");
 				}
 			}

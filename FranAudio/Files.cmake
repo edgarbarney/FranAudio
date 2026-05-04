@@ -32,6 +32,7 @@ FILE(GLOB FRANAUDIO_HEADERFILES
 	#Decoder
 	FranAudio/Decoder/Decoder.hpp
 	FranAudio/Decoder/DecoderTypes.hpp
+	FranAudio/Decoder/DecodeSettings.hpp
 	FranAudio/Decoder/miniaudio/Decoder_miniaudio.hpp
 	FranAudio/Decoder/libnyquist/Decoder_libnyquist.hpp
 	

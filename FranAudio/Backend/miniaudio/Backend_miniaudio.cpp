@@ -186,6 +186,12 @@ namespace FranAudio::Backend
 		ma_sound_set_volume(&miniaudioSound->sound, 1.0f);
 		ma_sound_start(&miniaudioSound->sound);
 
+		ma_sound_set_attenuation_model(&miniaudioSound->sound, ma_attenuation_model_inverse);
+
+		ma_sound_set_min_distance(&miniaudioSound->sound, 0.02f); // Non-attenuated distance. Within this distance, the sound is at full volume.
+		ma_sound_set_max_distance(&miniaudioSound->sound, 50.0f);  // Distance at which attenuation stops changing
+		ma_sound_set_rolloff(&miniaudioSound->sound, 1.0f); // How fast it fades after the min distance
+
 		miniaudioSoundData[soundID] = std::move(miniaudioSound);
 
 		return soundID;
@@ -303,6 +309,28 @@ namespace FranAudio::Backend
 		return ma_sound_get_volume(&miniaudioSoundData[soundID]->sound);
 	}
 
+    FRANAUDIO_API void miniaudio::SetSoundPitch(size_t soundID, float pitch)
+    {
+		if (!IsSoundValid(soundID))
+		{
+			FranAudioShared::Logger::LogError("MiniAudio: Tried to set pitch of an invalid sound.");
+			return;
+		}
+
+		ma_sound_set_pitch(&miniaudioSoundData[soundID]->sound, pitch);
+    }
+
+	FRANAUDIO_API float miniaudio::GetSoundPitch(size_t soundID)
+	{
+		if (!IsSoundValid(soundID))
+		{
+			FranAudioShared::Logger::LogError("MiniAudio: Tried to get pitch of an invalid sound.");
+			return 0.0f;
+		}
+
+		return ma_sound_get_pitch(&miniaudioSoundData[soundID]->sound);
+	}
+
 	FRANAUDIO_API void miniaudio::SetSoundPosition(size_t soundID, const float position[3])
 	{
 		if (!IsSoundValid(soundID))
@@ -321,10 +349,40 @@ namespace FranAudio::Backend
 			FranAudioShared::Logger::LogError("MiniAudio: Tried to get position of an invalid sound.");
 			return;
 		}
+
 		ma_vec3f pos = ma_sound_get_position(&miniaudioSoundData[soundID]->sound);
 		outPosition[0] = pos.x;
 		outPosition[1] = pos.y;
 		outPosition[2] = pos.z;
+	}
+
+	FRANAUDIO_API void miniaudio::SetSoundAttenuation(size_t soundID, float rolloffFactor, float minDistance, float maxDistance)
+	{
+		if (!IsSoundValid(soundID))
+		{
+			FranAudioShared::Logger::LogError("MiniAudio: Tried to set attenuation of an invalid sound.");
+			return;
+		}
+
+		auto& sound = miniaudioSoundData[soundID]->sound;
+		//ma_sound_set_attenuation_model(&sound, ma_attenuation_model_inverse);
+		ma_sound_set_rolloff(&sound, rolloffFactor);
+		ma_sound_set_min_distance(&sound, minDistance);
+		ma_sound_set_max_distance(&sound, maxDistance);
+	}
+
+	FRANAUDIO_API void miniaudio::GetSoundAttenuation(size_t soundID, float& outRolloffFactor, float& outMinDistance, float& outMaxDistance)
+	{
+		if (!IsSoundValid(soundID))
+		{
+			FranAudioShared::Logger::LogError("MiniAudio: Tried to get attenuation of an invalid sound.");
+			return;
+		}
+
+		auto& sound = miniaudioSoundData[soundID]->sound;
+		outRolloffFactor = ma_sound_get_rolloff(&sound);
+		outMinDistance = ma_sound_get_min_distance(&sound);
+		outMaxDistance = ma_sound_get_max_distance(&sound);
 	}
 
 	// ========================

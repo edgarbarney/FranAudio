@@ -281,6 +281,20 @@ namespace FranAudio::Backend
 		virtual FRANAUDIO_API float GetSoundVolume(size_t soundID) override;
 
 		/// <summary>
+		/// Set the pitch of a playing sound by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to set the pitch of</param>
+		/// <param name="pitch">Pitch to set the sound to (1.0 = normal pitch)</param>
+		virtual FRANAUDIO_API void SetSoundPitch(size_t soundID, float pitch) override;
+
+		/// <summary>
+		/// Get the pitch of a playing sound by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to get the pitch of</param>
+		/// <returns>Pitch of the sound (1.0 = normal pitch)</returns>
+		virtual FRANAUDIO_API float GetSoundPitch(size_t soundID) override;
+
+		/// <summary>
 		/// Set the position of a playing sound by its index.
 		/// </summary>
 		/// <param name="soundID">ID of the sound to set the position of</param>
@@ -293,6 +307,24 @@ namespace FranAudio::Backend
 		/// <param name="soundID">ID of the sound to get the position of</param>
 		/// <param name="outPosition">Output position of the sound</param>
 		virtual FRANAUDIO_API void GetSoundPosition(size_t soundID, float outPosition[3]) override;
+
+		/// <summary>
+		/// Set the attenuation parameters of a playing sound by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to set the attenuation of</param>
+		/// <param name="rolloffFactor">Rolloff factor to set the sound attenuation to</param>
+		/// <param name="minDistance">Minimum attenuation distance to set the sound attenuation to</param>
+		/// <param name="maxDistance">Maximum attenuation distance to set the sound attenuation to</param>
+		virtual FRANAUDIO_API void SetSoundAttenuation(size_t soundID, float rolloffFactor, float minDistance, float maxDistance) override;
+
+		/// <summary>
+		/// Get the attenuation parameters of a playing sound by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to get the attenuation of</param>
+		/// <param name="outRolloffFactor">Output rolloff factor of the sound</param>
+		/// <param name="outMinDistance">Output minimum attenuation distance of the sound</param>
+		/// <param name="outMaxDistance">Output maximum attenuation distance of the sound</param>
+		virtual FRANAUDIO_API void GetSoundAttenuation(size_t soundID, float& outRolloffFactor, float& outMinDistance, float& outMaxDistance) override;
 
 		// ========================
 		// Miniaudio Specific

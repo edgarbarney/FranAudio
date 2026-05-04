@@ -349,6 +349,25 @@ namespace FranAudioClient::Wrapper
 			}
 		}
 
+        FRANAUDIO_CLIENT_API void SetPitch(size_t soundID, float pitch)
+        {
+			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("sound-set_pitch", { std::to_string(soundID), std::to_string(pitch) }));
+        }
+
+		FRANAUDIO_CLIENT_API float GetPitch(size_t soundID)
+		{
+			auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("sound-get_pitch", { std::to_string(soundID) }));
+			try
+			{
+				return std::stof(response);
+			}
+			catch (const std::exception& e)
+			{
+				FranAudioShared::Logger::LogError(std::format("Failed to get pitch for sound index: {}", std::to_string(soundID)));
+				return 0.0f;
+			}
+		}
+
 		FRANAUDIO_CLIENT_API void SetPosition(size_t soundIndex, float position[3])
 		{
 			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("sound-set_position", { std::to_string(soundIndex), std::to_string(position[0]), std::to_string(position[1]), std::to_string(position[2]) }));
@@ -372,6 +391,39 @@ namespace FranAudioClient::Wrapper
 			catch (const std::exception& e)
 			{
 				FranAudioShared::Logger::LogError(std::format("Failed to get position for sound index: {}", std::to_string(soundIndex)));
+				return;
+			}
+		}
+
+		FRANAUDIO_CLIENT_API void SetAttenuation(size_t soundID, float rolloffFactor, float minDistance, float maxDistance)
+		{
+			FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("sound-set_attenuation", 
+			{ 
+				std::to_string(soundID), 
+				std::to_string(rolloffFactor), 
+				std::to_string(minDistance), 
+				std::to_string(maxDistance) 
+			}));
+		}
+
+		FRANAUDIO_CLIENT_API void GetAttenuation(size_t soundID, float& outRolloffFactor, float& outMinDistance, float& outMaxDistance)
+		{
+			auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("sound-get_attenuation", { std::to_string(soundID) }));
+			try
+			{
+				auto params = FranAudioShared::Network::NetworkFunction::ParseFunction(response).params;
+				if (params.size() < 3)
+				{
+					FranAudioShared::Logger::LogError(std::format("Invalid response from server for get_attenuation of sound index: {}", std::to_string(soundID)));
+					return;
+				}
+				outRolloffFactor = std::stof(params[0]);
+				outMinDistance = std::stof(params[1]);
+				outMaxDistance = std::stof(params[2]);
+			}
+			catch (const std::exception& e)
+			{
+				FranAudioShared::Logger::LogError(std::format("Failed to get attenuation for sound index: {}", std::to_string(soundID)));
 				return;
 			}
 		}

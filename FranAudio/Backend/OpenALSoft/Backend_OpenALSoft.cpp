@@ -41,7 +41,7 @@ namespace FranAudio::Backend
 		alc_isHRTFSupported = alcIsExtensionPresent(openALDevice, "ALC_SOFT_HRTF") == AL_TRUE;
 
 		alListenerf(AL_GAIN, 1.0f);
-		alDistanceModel(AL_LINEAR_DISTANCE);
+		alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
 
 		return Backend::Init();
 	}
@@ -222,9 +222,9 @@ namespace FranAudio::Backend
 		alSourcei(openalSound->sourceHandle, AL_LOOPING, AL_FALSE);
 		alSourcei(openalSound->sourceHandle, AL_BUFFER, openalSound->sourceBuffer);
 
-		alSourcef(openalSound->sourceHandle, AL_MAX_DISTANCE, 360.0f); // Could reference distance * 2 be good?
-		alSourcef(openalSound->sourceHandle, AL_ROLLOFF_FACTOR, 1.0f);
-		alSourcef(openalSound->sourceHandle, AL_REFERENCE_DISTANCE, 0.01f);
+		alSourcef(openalSound->sourceHandle, AL_REFERENCE_DISTANCE, 0.02f); // Non-attenuated distance. Within this distance, the sound is at full volume.
+		alSourcef(openalSound->sourceHandle, AL_MAX_DISTANCE, 50.0f); // Distance at which attenuation stops changing
+		alSourcef(openalSound->sourceHandle, AL_ROLLOFF_FACTOR, 1.0f); // How fast it fades after the reference distance
 
 		alSourcePlay(openalSound->sourceHandle);
 
@@ -345,6 +345,32 @@ namespace FranAudio::Backend
 		return vol;
 	}
 
+    FRANAUDIO_API void OpenALSoft::SetSoundPitch(size_t soundID, float pitch)
+    {
+		if (!IsSoundValid(soundID))
+		{
+			FranAudioShared::Logger::LogError(std::format("{}: Tried to set pitch of an invalid sound.", GetBackendName()));
+			return;
+		}
+
+		alSourcef(openalSoundData[soundID]->sourceHandle, AL_PITCH, pitch);
+		ALErrorCheck();
+    }
+
+	FRANAUDIO_API float OpenALSoft::GetSoundPitch(size_t soundID)
+	{
+		if (!IsSoundValid(soundID))
+		{
+			FranAudioShared::Logger::LogError(std::format("{}: Tried to get pitch of an invalid sound.", GetBackendName()));
+			return 0.0f;
+		}
+
+		float pitch;
+		alGetSourcef(openalSoundData[soundID]->sourceHandle, AL_PITCH, &pitch);
+		ALErrorCheck();
+		return pitch;
+	}
+
 	FRANAUDIO_API void OpenALSoft::SetSoundPosition(size_t soundID, const float position[3])
 	{
 		if (!IsSoundValid(soundID))
@@ -366,6 +392,39 @@ namespace FranAudio::Backend
 		}
 
 		alGetSourcefv(openalSoundData[soundID]->sourceHandle, AL_POSITION, outPosition);
+		ALErrorCheck();
+	}
+
+	FRANAUDIO_API void OpenALSoft::SetSoundAttenuation(size_t soundID, float rolloffFactor, float minDistance, float maxDistance)
+	{
+		if (!IsSoundValid(soundID))
+		{
+			FranAudioShared::Logger::LogError(std::format("{}: Tried to set attenuation of an invalid sound.", GetBackendName()));
+			return;
+		}
+
+		alSourcef(openalSoundData[soundID]->sourceHandle, AL_ROLLOFF_FACTOR, rolloffFactor);
+		ALErrorCheck();
+		alSourcef(openalSoundData[soundID]->sourceHandle, AL_REFERENCE_DISTANCE, minDistance);
+		ALErrorCheck();
+		alSourcef(openalSoundData[soundID]->sourceHandle, AL_MAX_DISTANCE, maxDistance);
+		ALErrorCheck();
+	}
+
+
+	FRANAUDIO_API void OpenALSoft::GetSoundAttenuation(size_t soundID, float& outRolloffFactor, float& outMinDistance, float& outMaxDistance)
+	{
+		if (!IsSoundValid(soundID))
+		{
+			FranAudioShared::Logger::LogError(std::format("{}: Tried to get attenuation of an invalid sound.", GetBackendName()));
+			return;
+		}
+
+		alGetSourcef(openalSoundData[soundID]->sourceHandle, AL_ROLLOFF_FACTOR, &outRolloffFactor);
+		ALErrorCheck();
+		alGetSourcef(openalSoundData[soundID]->sourceHandle, AL_REFERENCE_DISTANCE, &outMinDistance);
+		ALErrorCheck();
+		alGetSourcef(openalSoundData[soundID]->sourceHandle, AL_MAX_DISTANCE, &outMaxDistance);
 		ALErrorCheck();
 	}
 

@@ -13,7 +13,8 @@
 // It is meant to show a simple way to test the FranAudio library and its features.
 // 
 // If you want to see how you should use FranAudio in your own application,
-// please refer to the examples provided with the library.
+// please refer to the examples provided with the library. 
+// (Though as of now, there is none. But there will be, eventually.)
 //
 //
 // ====================================================================================
@@ -49,6 +50,8 @@
 #include "FranAudioTest.hpp"
 
 // I don't like macros, but this is useful now.
+#ifndef FRANAUDIO_USE_SERVER
+
 #define BACKEND_CHECK(shouldEndPrematurely)	\
 if (!FranAudio::IsBackendValid())			\
 {											\
@@ -80,6 +83,14 @@ if (!FranAudio::GetBackend()->GetCurrentDecoder())	\
 	CompleteFrameDraw(window);						\
 	continue;										\
 }
+
+#else
+
+// Don't do anything in the client-server mode
+#define BACKEND_CHECK(shouldEndPrematurely)
+#define DECODER_CHECK(shouldEndPrematurely)
+
+#endif
 
 static void CompleteFrameDraw(GLFWwindow* window)
 {

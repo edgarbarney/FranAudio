@@ -56,6 +56,16 @@ namespace FranAudio::Sound
 		return FranAudio::GetBackend()->GetSoundVolume(soundID);
 	}
 
+	FRANAUDIO_API void Sound::SetPitch(float pitch) const
+	{
+		FranAudio::GetBackend()->SetSoundPitch(soundID, pitch);
+	}
+
+	FRANAUDIO_API float Sound::GetPitch() const
+	{
+		return FranAudio::GetBackend()->GetSoundPitch(soundID);
+	}
+
 	FRANAUDIO_API void Sound::SetPosition(const float position[3]) const
 	{
 		FranAudio::GetBackend()->SetSoundPosition(soundID, position);
@@ -64,5 +74,15 @@ namespace FranAudio::Sound
 	FRANAUDIO_API void Sound::GetPosition(float outPosition[3]) const
 	{
 		FranAudio::GetBackend()->GetSoundPosition(soundID, outPosition);
+	}
+
+	FRANAUDIO_API void Sound::SetAttenuation(float rolloffFactor, float minDistance, float maxDistance) const
+	{
+		FranAudio::GetBackend()->SetSoundAttenuation(soundID, rolloffFactor, minDistance, maxDistance);
+	}
+
+	FRANAUDIO_API void Sound::GetAttenuation(float& outRolloffFactor, float& outMinDistance, float& outMaxDistance) const
+	{
+		FranAudio::GetBackend()->GetSoundAttenuation(soundID, outRolloffFactor, outMinDistance, outMaxDistance);
 	}
 }

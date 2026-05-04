@@ -285,7 +285,7 @@ namespace FranAudio::Backend
 
 		/// <summary>
 		/// Play an audio file after checking if it's loaded.
-		/// If the audio file is not loaded, it will be loaded and then played.
+		/// If the audio file is not loaded, it will not play and return SIZE_MAX.
 		/// </summary>
 		/// <param name="filename">Path to the audio file</param>
 		/// <returns>Active Sounds List Index</returns>
@@ -342,6 +342,20 @@ namespace FranAudio::Backend
 		virtual float GetSoundVolume(size_t soundID) = 0;
 
 		/// <summary>
+		/// Set the pitch of a playing sound by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to set the pitch of</param>
+		/// <param name="pitch">Pitch to set the sound to (1.0 = normal pitch)</param>
+		virtual void SetSoundPitch(size_t soundID, float pitch) = 0;
+
+		/// <summary>
+		/// Get the pitch of a playing sound by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to get the pitch of</param>
+		/// <returns>Pitch of the sound (1.0 = normal pitch)</returns>
+		virtual float GetSoundPitch(size_t soundID) = 0;
+
+		/// <summary>
 		/// Set the position of a playing sound by its index.
 		/// </summary>
 		/// <param name="soundID">ID of the sound to set the position of</param>
@@ -354,6 +368,24 @@ namespace FranAudio::Backend
 		/// <param name="soundID">ID of the sound to get the position of</param>
 		/// <param name="outPosition">Output position of the sound</param>
 		virtual void GetSoundPosition(size_t soundID, float outPosition[3]) = 0;
+
+		/// <summary>
+		/// Set the attenuation parameters of a playing sound by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to set the attenuation of</param>
+		/// <param name="rolloffFactor">Rolloff factor to set the sound attenuation to</param>
+		/// <param name="minDistance">Minimum attenuation distance to set the sound attenuation to</param>
+		/// <param name="maxDistance">Maximum attenuation distance to set the sound attenuation to</param>
+		virtual void SetSoundAttenuation(size_t soundID, float rolloffFactor, float minDistance, float maxDistance) = 0;
+
+		/// <summary>
+		/// Get the attenuation parameters of a playing sound by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to get the attenuation of</param>
+		/// <param name="outRolloffFactor">Output rolloff factor of the sound</param>
+		/// <param name="outMinDistance">Output minimum attenuation distance of the sound</param>
+		/// <param name="outMaxDistance">Output maximum attenuation distance of the sound</param>
+		virtual void GetSoundAttenuation(size_t soundID, float& outRolloffFactor, float& outMinDistance, float& outMaxDistance) = 0;
 
 		/// <summary>
 		/// Get a reference to a playing sound by its index.
