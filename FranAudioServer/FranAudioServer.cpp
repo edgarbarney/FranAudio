@@ -157,7 +157,7 @@ namespace FranAudioServer
 				try
 				{
 					const auto decoderType = static_cast<FranAudio::Decoder::DecoderType>(std::stoi(fn.params[0]));
-					if (!FranAudio::GetBackend()->SetDecoder(decoderType));
+					if (!FranAudio::GetBackend()->SetDecoder(decoderType))
 					{
 						return std::string("err");
 					}
@@ -272,9 +272,9 @@ namespace FranAudioServer
 
 				try
 				{
-					const float position[3] = { std::stof(fn.params[0]), std::stof(fn.params[1]), std::stof(fn.params[2]) };
-					const float forward[3] = { std::stof(fn.params[3]), std::stof(fn.params[4]), std::stof(fn.params[5]) };
-					const float up[3] = { std::stof(fn.params[6]), std::stof(fn.params[7]), std::stof(fn.params[8]) };
+					const FranAudioShared::Vector3 position = { std::stof(fn.params[0]), std::stof(fn.params[1]), std::stof(fn.params[2]) };
+					const FranAudioShared::Vector3 forward = { std::stof(fn.params[3]), std::stof(fn.params[4]), std::stof(fn.params[5]) };
+					const FranAudioShared::Vector3 up = { std::stof(fn.params[6]), std::stof(fn.params[7]), std::stof(fn.params[8]) };
 
 					FranAudio::GetBackend()->SetListenerTransform(position, forward, up);
 				}
@@ -295,16 +295,13 @@ namespace FranAudioServer
 			"backend-get_listener_transform",
 			[](const FranAudioShared::Network::NetworkFunction& fn)
 			{
-				float position[3] = { 0.0f, 0.0f, 0.0f };
-				float forward[3] = { 0.0f, 0.0f, 0.0f };
-				float up[3] = { 0.0f, 0.0f, 0.0f };
-				FranAudio::GetBackend()->GetListenerTransform(position, forward, up);
+				const FranAudioShared::ListenerTransform transform = FranAudio::GetBackend()->GetListenerTransform();
 
 				return std::format
-				(	"{}|{}|{}|{}|{}|{}|{}|{}|{}", 
-					position[0], position[1], position[2],
-					forward[0], forward[1], forward[2],
-					up[0], up[1], up[2]
+				(	"{}|{}|{}|{}|{}|{}|{}|{}|{}",
+					transform.position.x, transform.position.y, transform.position.z,
+					transform.forward.x, transform.forward.y, transform.forward.z,
+					transform.up.x, transform.up.y, transform.up.z
 				);
 			}
 		},
@@ -323,7 +320,7 @@ namespace FranAudioServer
 				}
 				try
 				{
-					const float position[3] = { std::stof(fn.params[0]), std::stof(fn.params[1]), std::stof(fn.params[2]) };
+					const FranAudioShared::Vector3 position = { std::stof(fn.params[0]), std::stof(fn.params[1]), std::stof(fn.params[2]) };
 					FranAudio::GetBackend()->SetListenerPosition(position);
 				}
 				catch (const std::exception& e)
@@ -342,10 +339,9 @@ namespace FranAudioServer
 			"backend-get_listener_position",
 			[](const FranAudioShared::Network::NetworkFunction& fn)
 			{
-				float position[3] = { 0.0f, 0.0f, 0.0f };
-				FranAudio::GetBackend()->GetListenerPosition(position);
+				const FranAudioShared::Vector3 position = FranAudio::GetBackend()->GetListenerPosition();
 
-				return std::format("{}|{}|{}", position[0], position[1], position[2]);
+				return std::format("{}|{}|{}", position.x, position.y, position.z);
 			}
 		},
 
@@ -363,8 +359,8 @@ namespace FranAudioServer
 				}
 				try
 				{
-					const float forward[3] = { std::stof(fn.params[0]), std::stof(fn.params[1]), std::stof(fn.params[2]) };
-					const float up[3] = { std::stof(fn.params[3]), std::stof(fn.params[4]), std::stof(fn.params[5]) };
+					const FranAudioShared::Vector3 forward = { std::stof(fn.params[0]), std::stof(fn.params[1]), std::stof(fn.params[2]) };
+					const FranAudioShared::Vector3 up = { std::stof(fn.params[3]), std::stof(fn.params[4]), std::stof(fn.params[5]) };
 					FranAudio::GetBackend()->SetListenerOrientation(forward, up);
 				}
 				catch (const std::exception& e)
@@ -383,11 +379,13 @@ namespace FranAudioServer
 			"backend-get_listener_orientation",
 			[](const FranAudioShared::Network::NetworkFunction& fn)
 			{
-				float forward[3] = { 0.0f, 0.0f, 0.0f };
-				float up[3] = { 0.0f, 0.0f, 0.0f };
-				FranAudio::GetBackend()->GetListenerOrientation(forward, up);
+				const FranAudioShared::ListenerOrientation orientation = FranAudio::GetBackend()->GetListenerOrientation();
 
-				return std::format("{}|{}|{}|{}|{}|{}", forward[0], forward[1], forward[2], up[0], up[1], up[2]);
+				return std::format
+				(	"{}|{}|{}|{}|{}|{}",
+					orientation.forward.x, orientation.forward.y, orientation.forward.z,
+					orientation.up.x, orientation.up.y, orientation.up.z
+				);
 			}
 		},
 
@@ -770,7 +768,7 @@ namespace FranAudioServer
 				try
 				{
 					const size_t soundId = std::stoull(fn.params[0]);
-					const float position[3] = { std::stof(fn.params[1]), std::stof(fn.params[2]), std::stof(fn.params[3]) };
+					const FranAudioShared::Vector3 position = { std::stof(fn.params[1]), std::stof(fn.params[2]), std::stof(fn.params[3]) };
 					FranAudio::GetBackend()->SetSoundPosition(soundId, position);
 				}
 				catch (const std::exception& e)
@@ -802,10 +800,9 @@ namespace FranAudioServer
 				try
 				{
 					const size_t soundId = std::stoull(fn.params[0]);
-					float position[3] = { 0.0f, 0.0f, 0.0f };
-					FranAudio::GetBackend()->GetSoundPosition(soundId, position);
+					const FranAudioShared::Vector3 position = FranAudio::GetBackend()->GetSoundPosition(soundId);
 
-					return std::format("{}|{}|{}", position[0], position[1], position[2]);
+					return std::format("{}|{}|{}", position.x, position.y, position.z);
 				}
 				catch (const std::exception& e)
 				{
@@ -864,11 +861,8 @@ namespace FranAudioServer
 				try
 				{
 					const size_t soundId = std::stoull(fn.params[0]);
-					float rolloffFactor = 0.0f;
-					float minDistance = 0.0f;
-					float maxDistance = 0.0f;
-					FranAudio::GetBackend()->GetSoundAttenuation(soundId, rolloffFactor, minDistance, maxDistance);
-					return std::format("{}|{}|{}", rolloffFactor, minDistance, maxDistance);
+					const FranAudioShared::SoundAttenuation attenuation = FranAudio::GetBackend()->GetSoundAttenuation(soundId);
+					return std::format("{}|{}|{}", attenuation.rolloffFactor, attenuation.minDistance, attenuation.maxDistance);
 				}
 				catch (const std::exception& e)
 				{

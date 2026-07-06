@@ -108,47 +108,40 @@ namespace FranAudio::Backend
 	// Listener (3D Audio)
 	// ========================
 
-	FRANAUDIO_API void miniaudio::SetListenerTransform(const float position[3], const float forward[3], const float up[3])
+	FRANAUDIO_API void miniaudio::SetListenerTransform(const FranAudioShared::Vector3& position, const FranAudioShared::Vector3& forward, const FranAudioShared::Vector3& up)
 	{
 		SetListenerPosition(position);
 		SetListenerOrientation(forward, up);
 	}
 
-	FRANAUDIO_API void miniaudio::GetListenerTransform(float outPosition[3], float outForward[3], float outUp[3])
+	FRANAUDIO_API FranAudioShared::ListenerTransform miniaudio::GetListenerTransform()
 	{
-		GetListenerPosition(outPosition);
-		GetListenerOrientation(outForward, outUp);
+		const FranAudioShared::ListenerOrientation orientation = GetListenerOrientation();
+		return { GetListenerPosition(), orientation.forward, orientation.up };
 	}
 
-	FRANAUDIO_API void miniaudio::SetListenerPosition(const float position[3])
+	FRANAUDIO_API void miniaudio::SetListenerPosition(const FranAudioShared::Vector3& position)
 	{
-		ma_engine_listener_set_position(&engine, 0, position[0], position[1], position[2]);
+		ma_engine_listener_set_position(&engine, 0, position.x, position.y, position.z);
 	}
 
-	FRANAUDIO_API void miniaudio::GetListenerPosition(float outPosition[3])
+	FRANAUDIO_API FranAudioShared::Vector3 miniaudio::GetListenerPosition()
 	{
 		ma_vec3f result = ma_engine_listener_get_position(&engine, 0);
-		outPosition[0] = result.x;
-		outPosition[1] = result.y;
-		outPosition[2] = result.z;
+		return { result.x, result.y, result.z };
 	}
 
-	FRANAUDIO_API void miniaudio::SetListenerOrientation(const float forward[3], const float up[3])
+	FRANAUDIO_API void miniaudio::SetListenerOrientation(const FranAudioShared::Vector3& forward, const FranAudioShared::Vector3& up)
 	{
-		ma_engine_listener_set_direction(&engine, 0, forward[0], forward[1], forward[2]);
-		ma_engine_listener_set_world_up(&engine, 0, up[0], up[1], up[2]);
+		ma_engine_listener_set_direction(&engine, 0, forward.x, forward.y, forward.z);
+		ma_engine_listener_set_world_up(&engine, 0, up.x, up.y, up.z);
 	}
 
-	FRANAUDIO_API void miniaudio::GetListenerOrientation(float outForward[3], float outUp[3])
+	FRANAUDIO_API FranAudioShared::ListenerOrientation miniaudio::GetListenerOrientation()
 	{
 		ma_vec3f fwd = ma_engine_listener_get_direction(&engine, 0);
 		ma_vec3f u = ma_engine_listener_get_world_up(&engine, 0);
-		outForward[0] = fwd.x;
-		outForward[1] = fwd.y;
-		outForward[2] = fwd.z;
-		outUp[0] = u.x;
-		outUp[1] = u.y;
-		outUp[2] = u.z;
+		return { { fwd.x, fwd.y, fwd.z }, { u.x, u.y, u.z } };
 	}
 
 	FRANAUDIO_API void miniaudio::SetMasterVolume(float volume)
@@ -331,7 +324,7 @@ namespace FranAudio::Backend
 		return ma_sound_get_pitch(&miniaudioSoundData[soundID]->sound);
 	}
 
-	FRANAUDIO_API void miniaudio::SetSoundPosition(size_t soundID, const float position[3])
+	FRANAUDIO_API void miniaudio::SetSoundPosition(size_t soundID, const FranAudioShared::Vector3& position)
 	{
 		if (!IsSoundValid(soundID))
 		{
@@ -339,21 +332,19 @@ namespace FranAudio::Backend
 			return;
 		}
 
-		ma_sound_set_position(&miniaudioSoundData[soundID]->sound, position[0], position[1], position[2]);
+		ma_sound_set_position(&miniaudioSoundData[soundID]->sound, position.x, position.y, position.z);
 	}
 
-	FRANAUDIO_API void miniaudio::GetSoundPosition(size_t soundID, float outPosition[3])
+	FRANAUDIO_API FranAudioShared::Vector3 miniaudio::GetSoundPosition(size_t soundID)
 	{
 		if (!IsSoundValid(soundID))
 		{
 			FranAudioShared::Logger::LogError("MiniAudio: Tried to get position of an invalid sound.");
-			return;
+			return {};
 		}
 
 		ma_vec3f pos = ma_sound_get_position(&miniaudioSoundData[soundID]->sound);
-		outPosition[0] = pos.x;
-		outPosition[1] = pos.y;
-		outPosition[2] = pos.z;
+		return { pos.x, pos.y, pos.z };
 	}
 
 	FRANAUDIO_API void miniaudio::SetSoundAttenuation(size_t soundID, float rolloffFactor, float minDistance, float maxDistance)
@@ -371,18 +362,16 @@ namespace FranAudio::Backend
 		ma_sound_set_max_distance(&sound, maxDistance);
 	}
 
-	FRANAUDIO_API void miniaudio::GetSoundAttenuation(size_t soundID, float& outRolloffFactor, float& outMinDistance, float& outMaxDistance)
+	FRANAUDIO_API FranAudioShared::SoundAttenuation miniaudio::GetSoundAttenuation(size_t soundID)
 	{
 		if (!IsSoundValid(soundID))
 		{
 			FranAudioShared::Logger::LogError("MiniAudio: Tried to get attenuation of an invalid sound.");
-			return;
+			return {};
 		}
 
 		auto& sound = miniaudioSoundData[soundID]->sound;
-		outRolloffFactor = ma_sound_get_rolloff(&sound);
-		outMinDistance = ma_sound_get_min_distance(&sound);
-		outMaxDistance = ma_sound_get_max_distance(&sound);
+		return { ma_sound_get_rolloff(&sound), ma_sound_get_min_distance(&sound), ma_sound_get_max_distance(&sound) };
 	}
 
 	// ========================

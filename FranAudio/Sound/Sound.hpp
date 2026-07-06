@@ -6,6 +6,8 @@
 
 #include "FranAudioAPI.hpp"
 
+#include "FranAudioShared/FranAudioShared.hpp"
+
 #include "WaveData/WaveData.hpp"
 
 /// <summary>
@@ -102,12 +104,14 @@ namespace FranAudio::Sound
 		/// <summary>
 		/// Set the position of the sound.
  		/// </summary>
-		FRANAUDIO_API void SetPosition(std::span<const float, 3> position) const;
+		/// <param name="position">New position of the sound</param>
+		FRANAUDIO_API void SetPosition(const FranAudioShared::Vector3& position) const;
 
 		/// <summary>
 		/// Get the position of the sound.
 		/// </summary>
-		FRANAUDIO_API void GetPosition(std::span<const float, 3> outPosition) const;
+		/// <returns>Position of the sound</returns>
+		FRANAUDIO_API FranAudioShared::Vector3 GetPosition() const;
 
 		/// <summary>
 		/// Set the attenuation parameters of the sound.
@@ -120,10 +124,8 @@ namespace FranAudio::Sound
 		/// <summary>
 		/// Get the attenuation parameters of the sound.
 		/// </summary>
-		/// <param name="outRolloffFactor">Output rolloff factor of the sound attenuation</param>
-		/// <param name="outMinDistance">Output minimum distance of the sound attenuation</param>
-		/// <param name="outMaxDistance">Output maximum distance of the sound attenuation</param>
-		FRANAUDIO_API void GetAttenuation(float& outRolloffFactor, float& outMinDistance, float& outMaxDistance) const;
+		/// <returns>Attenuation parameters of the sound</returns>
+		FRANAUDIO_API FranAudioShared::SoundAttenuation GetAttenuation() const;
 
 	};
 }

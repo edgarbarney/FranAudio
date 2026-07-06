@@ -182,10 +182,10 @@ namespace FranAudioShared
 		// Console Routing
 		// =========================
 
-		inline static std::unique_ptr<std::ostream> customOstream = nullptr;
-		inline static ConsoleStreamBuffer* customStreamBuffer = nullptr;
-		inline static std::streambuf* defaultCoutBuffer = nullptr;
-		inline static std::streambuf* defaultCerrBuffer = nullptr;
+		inline std::unique_ptr<std::ostream> customOstream = nullptr;
+		inline ConsoleStreamBuffer* customStreamBuffer = nullptr;
+		inline std::streambuf* defaultCoutBuffer = nullptr;
+		inline std::streambuf* defaultCerrBuffer = nullptr;
 
 		/// <summary>
 		/// Redirects the standard output and error streams to the specified console stream buffer.

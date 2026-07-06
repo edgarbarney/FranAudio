@@ -1,5 +1,7 @@
 // FranticDreamer 2022-2025
 
+#ifdef FRANAUDIO_USE_OPENAL
+
 #include <array>
 
 #include "Backend_OpenALSoft.hpp"
@@ -92,93 +94,54 @@ namespace FranAudio::Backend
 	// Listener (3D Audio)
 	// ========================
 
-	FRANAUDIO_API void OpenALSoft::SetListenerTransform(const float position[3], const float forward[3], const float up[3])
+	FRANAUDIO_API void OpenALSoft::SetListenerTransform(const FranAudioShared::Vector3& position, const FranAudioShared::Vector3& forward, const FranAudioShared::Vector3& up)
 	{
-		//float orientationCache[6];
-
-		positionCache[0] = position[0];
-		positionCache[1] = position[1];
-		positionCache[2] = position[2];
-		alListenerfv(AL_POSITION, position);
-		ALErrorCheck();
-
-		orientationCache[0] = forward[0];
-		orientationCache[1] = forward[1];
-		orientationCache[2] = forward[2];
-		orientationCache[3] = up[0];
-		orientationCache[4] = up[1];
-		orientationCache[5] = up[2];
-
-		alListenerfv(AL_ORIENTATION, orientationCache);
-		ALErrorCheck();
+		SetListenerPosition(position);
+		SetListenerOrientation(forward, up);
 	}
 
-	FRANAUDIO_API void OpenALSoft::GetListenerTransform(float outPosition[3], float outForward[3], float outUp[3])
+	FRANAUDIO_API FranAudioShared::ListenerTransform OpenALSoft::GetListenerTransform()
 	{
-		/*
-		float orientation_vec[6];
-
-		alGetListenerfv(AL_POSITION, position);
-
-		alGetListenerfv(AL_ORIENTATION, orientation_vec);
-		forward[0] = orientation_vec[0];
-		forward[1] = orientation_vec[1];
-		forward[2] = orientation_vec[2];
-		up[0] = orientation_vec[3];
-		up[1] = orientation_vec[4];
-		up[2] = orientation_vec[5];
-		*/
-
-		std::copy(std::begin(positionCache), std::end(positionCache), outPosition);
-		std::copy(std::begin(orientationCache), std::begin(orientationCache) + 3, outForward);
-		std::copy(std::begin(orientationCache) + 3, std::end(orientationCache), outUp);
+		const FranAudioShared::ListenerOrientation orientation = GetListenerOrientation();
+		return { GetListenerPosition(), orientation.forward, orientation.up };
 	}
 
-	FRANAUDIO_API void OpenALSoft::SetListenerPosition(const float position[3])
+	FRANAUDIO_API void OpenALSoft::SetListenerPosition(const FranAudioShared::Vector3& position)
 	{
-		positionCache[0] = position[0];
-		positionCache[1] = position[1];
-		positionCache[2] = position[2];
-		alListenerfv(AL_POSITION, position);
+		positionCache[0] = position.x;
+		positionCache[1] = position.y;
+		positionCache[2] = position.z;
+		alListenerfv(AL_POSITION, positionCache);
 		ALErrorCheck();
 	}
 
-	FRANAUDIO_API void OpenALSoft::GetListenerPosition(float outPosition[3])
+	FRANAUDIO_API FranAudioShared::Vector3 OpenALSoft::GetListenerPosition()
 	{
 		//alGetListenerfv(AL_POSITION, position);
-		std::copy(std::begin(positionCache), std::end(positionCache), outPosition);
+		return { positionCache[0], positionCache[1], positionCache[2] };
 	}
 
-	FRANAUDIO_API void OpenALSoft::SetListenerOrientation(const float forward[3], const float up[3])
+	FRANAUDIO_API void OpenALSoft::SetListenerOrientation(const FranAudioShared::Vector3& forward, const FranAudioShared::Vector3& up)
 	{
-		orientationCache[0] = forward[0];
-		orientationCache[1] = forward[1];
-		orientationCache[2] = forward[2];
-		orientationCache[3] = up[0];
-		orientationCache[4] = up[1];
-		orientationCache[5] = up[2];
+		orientationCache[0] = forward.x;
+		orientationCache[1] = forward.y;
+		orientationCache[2] = forward.z;
+		orientationCache[3] = up.x;
+		orientationCache[4] = up.y;
+		orientationCache[5] = up.z;
 
 		alListenerfv(AL_ORIENTATION, orientationCache);
 		ALErrorCheck();
 	}
 
-	FRANAUDIO_API void OpenALSoft::GetListenerOrientation(float outForward[3], float outUp[3])
+	FRANAUDIO_API FranAudioShared::ListenerOrientation OpenALSoft::GetListenerOrientation()
 	{
-		/*
-		float orientation_vec[6];
-
-		alGetListenerfv(AL_ORIENTATION, orientation_vec);
-		ALErrorCheck();
-		forward[0] = orientation_vec[0];
-		forward[1] = orientation_vec[1];
-		forward[2] = orientation_vec[2];
-		up[0] = orientation_vec[3];
-		up[1] = orientation_vec[4];
-		up[2] = orientation_vec[5];
-		*/
-
-		std::copy(std::begin(orientationCache), std::begin(orientationCache) + 3, outForward);
-		std::copy(std::begin(orientationCache) + 3, std::end(orientationCache), outUp);
+		//alGetListenerfv(AL_ORIENTATION, orientation_vec);
+		return
+		{
+			{ orientationCache[0], orientationCache[1], orientationCache[2] },
+			{ orientationCache[3], orientationCache[4], orientationCache[5] }
+		};
 	}
 
 	FRANAUDIO_API void OpenALSoft::SetMasterVolume(float volume)
@@ -371,7 +334,7 @@ namespace FranAudio::Backend
 		return pitch;
 	}
 
-	FRANAUDIO_API void OpenALSoft::SetSoundPosition(size_t soundID, const float position[3])
+	FRANAUDIO_API void OpenALSoft::SetSoundPosition(size_t soundID, const FranAudioShared::Vector3& position)
 	{
 		if (!IsSoundValid(soundID))
 		{
@@ -379,20 +342,22 @@ namespace FranAudio::Backend
 			return;
 		}
 
-		alSourcefv(openalSoundData[soundID]->sourceHandle, AL_POSITION, position);
+		alSource3f(openalSoundData[soundID]->sourceHandle, AL_POSITION, position.x, position.y, position.z);
 		ALErrorCheck();
 	}
 
-	FRANAUDIO_API void OpenALSoft::GetSoundPosition(size_t soundID, float outPosition[3])
+	FRANAUDIO_API FranAudioShared::Vector3 OpenALSoft::GetSoundPosition(size_t soundID)
 	{
 		if (!IsSoundValid(soundID))
 		{
 			FranAudioShared::Logger::LogError(std::format("{}: Tried to get position of an invalid sound.", GetBackendName()));
-			return;
+			return {};
 		}
 
-		alGetSourcefv(openalSoundData[soundID]->sourceHandle, AL_POSITION, outPosition);
+		FranAudioShared::Vector3 position = {};
+		alGetSource3f(openalSoundData[soundID]->sourceHandle, AL_POSITION, &position.x, &position.y, &position.z);
 		ALErrorCheck();
+		return position;
 	}
 
 	FRANAUDIO_API void OpenALSoft::SetSoundAttenuation(size_t soundID, float rolloffFactor, float minDistance, float maxDistance)
@@ -412,20 +377,22 @@ namespace FranAudio::Backend
 	}
 
 
-	FRANAUDIO_API void OpenALSoft::GetSoundAttenuation(size_t soundID, float& outRolloffFactor, float& outMinDistance, float& outMaxDistance)
+	FRANAUDIO_API FranAudioShared::SoundAttenuation OpenALSoft::GetSoundAttenuation(size_t soundID)
 	{
 		if (!IsSoundValid(soundID))
 		{
 			FranAudioShared::Logger::LogError(std::format("{}: Tried to get attenuation of an invalid sound.", GetBackendName()));
-			return;
+			return {};
 		}
 
-		alGetSourcef(openalSoundData[soundID]->sourceHandle, AL_ROLLOFF_FACTOR, &outRolloffFactor);
+		FranAudioShared::SoundAttenuation attenuation = {};
+		alGetSourcef(openalSoundData[soundID]->sourceHandle, AL_ROLLOFF_FACTOR, &attenuation.rolloffFactor);
 		ALErrorCheck();
-		alGetSourcef(openalSoundData[soundID]->sourceHandle, AL_REFERENCE_DISTANCE, &outMinDistance);
+		alGetSourcef(openalSoundData[soundID]->sourceHandle, AL_REFERENCE_DISTANCE, &attenuation.minDistance);
 		ALErrorCheck();
-		alGetSourcef(openalSoundData[soundID]->sourceHandle, AL_MAX_DISTANCE, &outMaxDistance);
+		alGetSourcef(openalSoundData[soundID]->sourceHandle, AL_MAX_DISTANCE, &attenuation.maxDistance);
 		ALErrorCheck();
+		return attenuation;
 	}
 
 	// ========================
@@ -528,3 +495,5 @@ namespace FranAudio::Backend
 		return AL_NONE; // Invalid or unsupported format
 	}
 }
+
+#endif // FRANAUDIO_USE_OPENAL

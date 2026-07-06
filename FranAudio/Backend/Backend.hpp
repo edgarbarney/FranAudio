@@ -219,7 +219,7 @@ namespace FranAudio::Backend
 		/// Set the listener's position and orientation using a struct.
 		/// </summary>
 		/// <param name="transform">New position and orientation of the listener</param>
-		virtual void SetListenerTransform(const FranAudioShared::ListenerTransform& transform);
+		virtual FRANAUDIO_API void SetListenerTransform(const FranAudioShared::ListenerTransform& transform);
 
 		/// <summary>
 		/// Get the listener's position and orientation.
@@ -250,7 +250,7 @@ namespace FranAudio::Backend
 		/// Set the listener's orientation using a struct.
 		/// </summary>
 		/// <param name="orientation">New orientation of the listener</param>
-		virtual void SetListenerOrientation(const FranAudioShared::ListenerOrientation& orientation);
+		virtual FRANAUDIO_API void SetListenerOrientation(const FranAudioShared::ListenerOrientation& orientation);
 
 		/// <summary>
 		/// Get the listener's orientation.

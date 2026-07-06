@@ -153,41 +153,38 @@ namespace FranAudio::Backend
 		/// <param name="position">New position of the listener</param>
 		/// <param name="forward">New forward vector of the listener</param>
 		/// <param name="up">New up vector of the listener</param>
-		virtual FRANAUDIO_API void SetListenerTransform(Vector3Arg position, Vector3Arg forward, Vector3Arg up) override;
+		virtual FRANAUDIO_API void SetListenerTransform(const FranAudioShared::Vector3& position, const FranAudioShared::Vector3& forward, const FranAudioShared::Vector3& up) override;
 
 		/// <summary>
 		/// Get the listener's position and orientation.
 		/// </summary>
-		/// <param name="outPosition">Output position of the listener</param>
-		/// <param name="outForward">Output forward vector of the listener</param>
-		/// <param name="outUp">Output up vector of the listener</param>
-		virtual FRANAUDIO_API GetListenerTransform(float outPosition[3], float outForward[3], float outUp[3]) override;
+		/// <returns>Output position, forward and up vectors of the listener</returns>
+		virtual FRANAUDIO_API FranAudioShared::ListenerTransform GetListenerTransform() override;
 
 		/// <summary>
 		/// Set the listener's position.
 		/// </summary>
-		/// <param name="position">New position of the listener</param> 
-		virtual FRANAUDIO_API void SetListenerPosition(const float position[3]) override;
+		/// <param name="position">New position of the listener</param>
+		virtual FRANAUDIO_API void SetListenerPosition(const FranAudioShared::Vector3& position) override;
 
 		/// <summary>
 		/// Get the listener's position.
 		/// </summary>
-		/// <param name="outPosition">Output position of the listener</param>
-		virtual FRANAUDIO_API void GetListenerPosition(float outPosition[3]) override;
+		/// <returns>Output position of the listener</returns>
+		virtual FRANAUDIO_API FranAudioShared::Vector3 GetListenerPosition() override;
 
 		/// <summary>
 		/// Set the listener's orientation.
 		/// </summary>
 		/// <param name="forward">New forward vector of the listener</param>
 		/// <param name="up">New up vector of the listener</param>
-		virtual FRANAUDIO_API void SetListenerOrientation(const float forward[3], const float up[3]) override;
+		virtual FRANAUDIO_API void SetListenerOrientation(const FranAudioShared::Vector3& forward, const FranAudioShared::Vector3& up) override;
 
 		/// <summary>
 		/// Get the listener's orientation.
 		/// </summary>
-		/// <param name="outForward">Output forward vector of the listener</param>
-		/// <param name="outUp">Output up vector of the listener</param>
-		virtual FRANAUDIO_API void GetListenerOrientation(float outForward[3], float outUp[3]) override;
+		/// <returns>Output forward and up vectors of the listener</returns>
+		virtual FRANAUDIO_API FranAudioShared::ListenerOrientation GetListenerOrientation() override;
 
 		/// <summary>
 		/// Set the master volume.
@@ -299,14 +296,14 @@ namespace FranAudio::Backend
 		/// </summary>
 		/// <param name="soundID">ID of the sound to set the position of</param>
 		/// <param name="position">New position of the sound</param>
-		virtual FRANAUDIO_API void SetSoundPosition(size_t soundID, const float position[3]) override;
+		virtual FRANAUDIO_API void SetSoundPosition(size_t soundID, const FranAudioShared::Vector3& position) override;
 
 		/// <summary>
 		/// Get the position of a playing sound by its index.
 		/// </summary>
 		/// <param name="soundID">ID of the sound to get the position of</param>
-		/// <param name="outPosition">Output position of the sound</param>
-		virtual FRANAUDIO_API void GetSoundPosition(size_t soundID, float outPosition[3]) override;
+		/// <returns>Position of the sound</returns>
+		virtual FRANAUDIO_API FranAudioShared::Vector3 GetSoundPosition(size_t soundID) override;
 
 		/// <summary>
 		/// Set the attenuation parameters of a playing sound by its index.
@@ -321,10 +318,8 @@ namespace FranAudio::Backend
 		/// Get the attenuation parameters of a playing sound by its index.
 		/// </summary>
 		/// <param name="soundID">ID of the sound to get the attenuation of</param>
-		/// <param name="outRolloffFactor">Output rolloff factor of the sound</param>
-		/// <param name="outMinDistance">Output minimum attenuation distance of the sound</param>
-		/// <param name="outMaxDistance">Output maximum attenuation distance of the sound</param>
-		virtual FRANAUDIO_API void GetSoundAttenuation(size_t soundID, float& outRolloffFactor, float& outMinDistance, float& outMaxDistance) override;
+		/// <returns>Attenuation parameters of the sound</returns>
+		virtual FRANAUDIO_API FranAudioShared::SoundAttenuation GetSoundAttenuation(size_t soundID) override;
 
 		// ========================
 		// Miniaudio Specific

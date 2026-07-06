@@ -287,7 +287,7 @@ namespace FranAudioClient::Wrapper
 			}
 			catch (const std::exception& e)
 			{
-				FranAudioShared::Logger::LogError(std::format("Failed to play audio file stream: ", filename));
+				FranAudioShared::Logger::LogError(std::format("Failed to play audio file: {}", filename));
 				return SIZE_MAX;
 			}
 		}

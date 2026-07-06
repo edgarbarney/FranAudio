@@ -4,7 +4,9 @@
 
 #include "Backend.hpp"
 #include "miniaudio/Backend_miniaudio.hpp"
+#ifdef FRANAUDIO_USE_OPENAL
 #include "OpenALSoft/Backend_OpenALSoft.hpp"
+#endif
 
 #include "FranAudioShared/Logger/Logger.hpp"
 
@@ -266,9 +268,11 @@ namespace FranAudio::Backend
 		case BackendType::miniaudio:
 			newBackend = std::make_unique<FranAudio::Backend::miniaudio>();
 			break;
+#ifdef FRANAUDIO_USE_OPENAL
 		case BackendType::OpenALSoft:
 			newBackend = std::make_unique<FranAudio::Backend::OpenALSoft>();
 			break;
+#endif
 		default:
 			return nullptr;
 			break;
