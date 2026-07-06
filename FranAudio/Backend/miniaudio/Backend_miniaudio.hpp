@@ -153,7 +153,7 @@ namespace FranAudio::Backend
 		/// <param name="position">New position of the listener</param>
 		/// <param name="forward">New forward vector of the listener</param>
 		/// <param name="up">New up vector of the listener</param>
-		virtual FRANAUDIO_API void SetListenerTransform(const float position[3], const float forward[3], const float up[3]) override;
+		virtual FRANAUDIO_API void SetListenerTransform(Vector3Arg position, Vector3Arg forward, Vector3Arg up) override;
 
 		/// <summary>
 		/// Get the listener's position and orientation.
@@ -161,7 +161,7 @@ namespace FranAudio::Backend
 		/// <param name="outPosition">Output position of the listener</param>
 		/// <param name="outForward">Output forward vector of the listener</param>
 		/// <param name="outUp">Output up vector of the listener</param>
-		virtual FRANAUDIO_API void GetListenerTransform(float outPosition[3], float outForward[3], float outUp[3]) override;
+		virtual FRANAUDIO_API GetListenerTransform(float outPosition[3], float outForward[3], float outUp[3]) override;
 
 		/// <summary>
 		/// Set the listener's position.

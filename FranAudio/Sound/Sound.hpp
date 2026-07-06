@@ -2,6 +2,7 @@
 #pragma once
 
 #include <memory>
+#include <span>
 
 #include "FranAudioAPI.hpp"
 
@@ -101,12 +102,12 @@ namespace FranAudio::Sound
 		/// <summary>
 		/// Set the position of the sound.
  		/// </summary>
-		FRANAUDIO_API void SetPosition(const float position[3]) const;
+		FRANAUDIO_API void SetPosition(std::span<const float, 3> position) const;
 
 		/// <summary>
 		/// Get the position of the sound.
 		/// </summary>
-		FRANAUDIO_API void GetPosition(float outPosition[3]) const;
+		FRANAUDIO_API void GetPosition(std::span<const float, 3> outPosition) const;
 
 		/// <summary>
 		/// Set the attenuation parameters of the sound.

@@ -26,7 +26,8 @@ namespace FranAudioClient
 	/// <summary>
 	/// Initialise the FranAudio Client.
 	/// This must be called before any other functions are used.
-	/// NOTE: This should be called after the server is started.
+	/// 
+	/// <para/> NOTE: This should be called after the server is started.
 	/// </summary>
 	FRANAUDIO_CLIENT_API void Init(bool isTestmode = false);
 

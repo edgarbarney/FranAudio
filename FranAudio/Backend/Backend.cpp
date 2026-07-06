@@ -10,6 +10,11 @@
 
 namespace FranAudio::Backend
 {
+	FRANAUDIO_API Backend::~Backend()
+	{
+
+	}
+
 	FRANAUDIO_API bool Backend::Init(FranAudio::Decoder::DecoderType decoderType)
 	{
 		bool decoderFail = false;
@@ -38,7 +43,7 @@ namespace FranAudio::Backend
 		// Decoder will be initialised by the FranAudio::Init
 		currentDecoderType = decoderType;
 
-		FranAudioShared::Logger::LogError(std::format("{}: Initialised Backend.", GetBackendName()));
+		FranAudioShared::Logger::LogMessage(std::format("{}: Initialised Backend.", GetBackendName()));
 		return true; // Default backend does nothing
 	}
 
@@ -51,7 +56,7 @@ namespace FranAudio::Backend
 
 	FRANAUDIO_API void Backend::Shutdown(bool forReset)
 	{
-		FranAudioShared::Logger::LogError(std::format("{}: Shutting down backend...", GetBackendName()));
+		FranAudioShared::Logger::LogMessage(std::format("{}: Shutting down backend...", GetBackendName()));
 
 		nextSoundID = 0;
 		activeSounds.clear();
@@ -61,7 +66,7 @@ namespace FranAudio::Backend
 			DestroyDecoder();
 		}
 
-		FranAudioShared::Logger::LogError(std::format("{}: Backend shut down.", GetBackendName()));
+		FranAudioShared::Logger::LogMessage(std::format("{}: Backend shut down.", GetBackendName()));
 	}
 
 	// ========================
@@ -101,6 +106,7 @@ namespace FranAudio::Backend
 				currentDecoder = FranAudio::Decoder::Decoder::CreateDecoder(decoderType);
 				currentDecoderType = decoderType;
 				FranAudioShared::Logger::LogMessage(std::format("{}: Initialised decoder type {}", GetBackendName(), GetDecoderName()));
+				break;
 			}
 		}
 
@@ -132,6 +138,16 @@ namespace FranAudio::Backend
 		currentDecodeSettings = settings;
 	}
 
+	FRANAUDIO_API void Backend::SetListenerTransform(const FranAudioShared::ListenerTransform& transform)
+	{
+		SetListenerTransform(transform.position, transform.forward, transform.up);
+	}
+
+	FRANAUDIO_API void Backend::SetListenerOrientation(const FranAudioShared::ListenerOrientation& orientation)
+	{
+		SetListenerOrientation(orientation.forward, orientation.up);
+	}
+
 	// ========================
 	// Audio File Management
 	// ========================
@@ -143,6 +159,9 @@ namespace FranAudio::Backend
 
 	FRANAUDIO_API size_t Backend::LoadAudioFile(const std::string& filename, const FranAudio::Decoder::DecodeSettings& decodeSettings)
 	{
+		if (auto it = filenameWaveMap.find(filename); it != filenameWaveMap.end())
+			return it->second;
+
 		std::filesystem::path filePath(filename);
 
 		if (!std::filesystem::exists(filePath))
@@ -174,9 +193,9 @@ namespace FranAudio::Backend
 
 		const size_t index = waveDataCache.size();
 		waveData.SetWaveDataIndex(index);
-		waveDataCache.emplace_back(waveData);
+		waveDataCache.emplace_back(std::move(waveData));
 		filenameWaveMap[filename] = index;
-		FranAudioShared::Logger::LogMessage(std::format("{}: Loaded audio file: {} ({}s, {} channels, {}Hz, Format: {})", GetBackendName(), filename, waveData.GetLength(), (int)waveData.GetChannels(), waveData.GetSampleRate(), FranAudio::Sound::WaveFormatNames[(size_t)waveData.GetFormat()]));
+		FranAudioShared::Logger::LogMessage(std::format("{}: Loaded audio file: {} ({}s, {} channels, {}Hz, Format: {})", GetBackendName(), filename, waveDataCache[index].GetLength(), (int)waveDataCache[index].GetChannels(), waveDataCache[index].GetSampleRate(), FranAudio::Sound::WaveFormatNames[(size_t)waveDataCache[index].GetFormat()]));
 
 		return index;
 	}
@@ -225,8 +244,7 @@ namespace FranAudio::Backend
 
 	const FRANAUDIO_API FranAudioShared::Containers::Vector<size_t> Backend::GetActiveSoundIDs() const
 	{
-		// No need to reallocate every time
-		static FranAudioShared::Containers::Vector<size_t> soundIDs;
+		FranAudioShared::Containers::Vector<size_t> soundIDs;
 
 		soundIDs.clear();
 		soundIDs.reserve(activeSounds.size());

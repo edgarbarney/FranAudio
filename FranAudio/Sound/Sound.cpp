@@ -66,12 +66,12 @@ namespace FranAudio::Sound
 		return FranAudio::GetBackend()->GetSoundPitch(soundID);
 	}
 
-	FRANAUDIO_API void Sound::SetPosition(const float position[3]) const
+	FRANAUDIO_API void Sound::SetPosition(std::span<const float, 3> position) const
 	{
 		FranAudio::GetBackend()->SetSoundPosition(soundID, position);
 	}
 
-	FRANAUDIO_API void Sound::GetPosition(float outPosition[3]) const
+	FRANAUDIO_API void Sound::GetPosition(std::span<const float, 3> outPosition) const
 	{
 		FranAudio::GetBackend()->GetSoundPosition(soundID, outPosition);
 	}

@@ -164,7 +164,7 @@ int main()
 
 void FranAudioServer::Shutdown()
 {
-	if (clientSocket)
+	if (clientSocket != INVALID_SOCKET)
 		closesocket(clientSocket);
 	if (isSocketValid)
 		closesocket(listenSocket);

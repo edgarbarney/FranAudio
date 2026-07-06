@@ -3,6 +3,9 @@
 
 #include <string>
 #include <memory>
+#include <array>
+#include <tuple>
+#include <span>
 
 #include "FranAudioAPI.hpp"
 
@@ -10,9 +13,11 @@
 
 #include "FranAudioShared/Containers/UnorderedMap.hpp"
 #include "FranAudioShared/Containers/Vector.hpp"
+#include "FranAudioShared/FranAudioShared.hpp"
 #include "Decoder/Decoder.hpp"
 #include "Sound/WaveData/WaveData.hpp"
 #include "Sound/Sound.hpp"
+
 
 /// <summary>
 /// Namespace for Backend Abstract and Implementations.
@@ -76,7 +81,7 @@ namespace FranAudio::Backend
 
 	public:
 		//Backend() = default;
-		//FRANAUDIO_API virtual ~Backend();
+		FRANAUDIO_API virtual ~Backend();
 
 		/// <summary>
 		/// Initialise the backend.
@@ -208,41 +213,50 @@ namespace FranAudio::Backend
 		/// <param name="position">New position of the listener</param>
 		/// <param name="forward">New forward vector of the listener</param>
 		/// <param name="up">New up vector of the listener</param>
-		virtual void SetListenerTransform(const float position[3], const float forward[3], const float up[3]) = 0;
+		virtual void SetListenerTransform(const FranAudioShared::Vector3& position, const FranAudioShared::Vector3& forward, const FranAudioShared::Vector3& up) = 0;
+
+		/// <summary>
+		/// Set the listener's position and orientation using a struct.
+		/// </summary>
+		/// <param name="transform">New position and orientation of the listener</param>
+		virtual void SetListenerTransform(const FranAudioShared::ListenerTransform& transform);
 
 		/// <summary>
 		/// Get the listener's position and orientation.
 		/// </summary>
-		/// <param name="outPosition">Output position of the listener</param>
-		/// <param name="outForward">Output forward vector of the listener</param>
-		/// <param name="outUp">Output up vector of the listener</param>
-		virtual void GetListenerTransform(float outPosition[3], float outForward[3], float outUp[3]) = 0;
+		/// <returns>Output position, forward and up vectors of the listener</returns>
+		virtual FranAudioShared::ListenerTransform GetListenerTransform() = 0;
 
 		/// <summary>
 		/// Set the listener's position.
 		/// </summary>
 		/// <param name="position">New position of the listener</param> 
-		virtual void SetListenerPosition(const float position[3]) = 0;
+		virtual void SetListenerPosition(const FranAudioShared::Vector3& position) = 0;
 
 		/// <summary>
 		/// Get the listener's position.
 		/// </summary>
-		/// <param name="outPosition">Output position of the listener</param>
-		virtual void GetListenerPosition(float outPosition[3]) = 0;
+		/// <returns>Output position of the listener</returns>
+		virtual FranAudioShared::Vector3 GetListenerPosition() = 0;
 
 		/// <summary>
 		/// Set the listener's orientation.
 		/// </summary>
 		/// <param name="forward">New forward vector of the listener</param>
 		/// <param name="up">New up vector of the listener</param>
-		virtual void SetListenerOrientation(const float forward[3], const float up[3]) = 0;
+		virtual void SetListenerOrientation(const FranAudioShared::Vector3& forward, const FranAudioShared::Vector3& up) = 0;
+
+		/// <summary>
+		/// Set the listener's orientation using a struct.
+		/// </summary>
+		/// <param name="orientation">New orientation of the listener</param>
+		virtual void SetListenerOrientation(const FranAudioShared::ListenerOrientation& orientation);
 
 		/// <summary>
 		/// Get the listener's orientation.
 		/// </summary>
-		/// <param name="outForward">Output forward vector of the listener</param>
-		/// <param name="outUp">Output up vector of the listener</param>
-		virtual void GetListenerOrientation(float outForward[3], float outUp[3]) = 0;
+		/// <returns>Output forward and up vectors of the listener</returns>
+		virtual FranAudioShared::ListenerOrientation GetListenerOrientation() = 0;
 
 		/// <summary>
 		/// Set the master volume.
@@ -360,14 +374,14 @@ namespace FranAudio::Backend
 		/// </summary>
 		/// <param name="soundID">ID of the sound to set the position of</param>
 		/// <param name="position">Position to set the sound to</param>
-		virtual void SetSoundPosition(size_t soundID, const float position[3]) = 0;
+		virtual void SetSoundPosition(size_t soundID, const FranAudioShared::Vector3& position) = 0;
 
 		/// <summary>
 		/// Get the position of a playing sound by its index.
 		/// </summary>
 		/// <param name="soundID">ID of the sound to get the position of</param>
-		/// <param name="outPosition">Output position of the sound</param>
-		virtual void GetSoundPosition(size_t soundID, float outPosition[3]) = 0;
+		/// <returns>Position of the sound</returns>
+		virtual FranAudioShared::Vector3 GetSoundPosition(size_t soundID) = 0;
 
 		/// <summary>
 		/// Set the attenuation parameters of a playing sound by its index.
@@ -379,13 +393,21 @@ namespace FranAudio::Backend
 		virtual void SetSoundAttenuation(size_t soundID, float rolloffFactor, float minDistance, float maxDistance) = 0;
 
 		/// <summary>
+		/// Set the attenuation parameters of a playing sound by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to set the attenuation of</param>
+		/// <param name="attenuation">Attenuation parameters to set the new sound attenuation to</param>
+		virtual void SetSoundAttenuation(size_t soundID, const FranAudioShared::SoundAttenuation& attenuation)
+		{
+			SetSoundAttenuation(soundID, attenuation.rolloffFactor, attenuation.minDistance, attenuation.maxDistance);
+		}
+
+		/// <summary>
 		/// Get the attenuation parameters of a playing sound by its index.
 		/// </summary>
 		/// <param name="soundID">ID of the sound to get the attenuation of</param>
-		/// <param name="outRolloffFactor">Output rolloff factor of the sound</param>
-		/// <param name="outMinDistance">Output minimum attenuation distance of the sound</param>
-		/// <param name="outMaxDistance">Output maximum attenuation distance of the sound</param>
-		virtual void GetSoundAttenuation(size_t soundID, float& outRolloffFactor, float& outMinDistance, float& outMaxDistance) = 0;
+		/// <returns>Attenuation parameters of the sound</returns>
+		virtual FranAudioShared::SoundAttenuation GetSoundAttenuation(size_t soundID) = 0;
 
 		/// <summary>
 		/// Get a reference to a playing sound by its index.

@@ -22,7 +22,7 @@ namespace FranAudio::Backend
 			return false;
 		}
 
-		ALCcontext* mainContext = alcCreateContext(openALDevice, nullptr);
+		mainContext = alcCreateContext(openALDevice, nullptr);
 
 		if (!mainContext)
 		{

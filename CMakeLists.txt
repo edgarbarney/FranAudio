@@ -80,7 +80,7 @@ include("CMakeMacros.cmake")
 include(FetchContent)
 FetchContent_Declare(
     doxygen-awesome-css
-    URL https://github.com/jothepro/doxygen-awesome-css/archive/refs/heads/main.zip
+    URL https://github.com/jothepro/doxygen-awesome-css/archive/refs/tags/v2.4.2.zip
 	SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Docs/doxygen-awesome-css
 	DOWNLOAD_EXTRACT_TIMESTAMP YES
 )
@@ -139,8 +139,8 @@ if (FRANAUDIO_USE_VORBIS)
 	)
 	FetchContent_MakeAvailable(vorbis)
 	
-	set(VORBIS_LIBRARY "Libs/ogg")
-	set(Vorbis_DIR "Libs/ogg")
+	set(VORBIS_LIBRARY "Libs/vorbis")
+	set(Vorbis_DIR "Libs/vorbis")
 endif()
 
 if (FRANAUDIO_USE_OPUS)
@@ -254,6 +254,10 @@ if (FRANAUDIO_USE_SERVER)
 		${FRANAUDIOSHARED_SOURCEFILES}
 	)
 	target_link_libraries(FranAudioServer PRIVATE FranAudio)
+
+	if (WIN32)
+		target_link_libraries(FranAudioServer PRIVATE ws2_32)
+	endif()
 
 	add_library(FranAudioClient SHARED
 		${FRANAUDIOCLIENT_SOURCEFILES}
