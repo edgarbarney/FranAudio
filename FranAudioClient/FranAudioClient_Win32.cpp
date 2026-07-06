@@ -29,13 +29,23 @@ static const wchar_t* StringToWideString(const char* asciiStr)
 	return wideStr;
 }
 
+static void ApplySocketOptions(SOCKET socket)
+{
+	setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&FranAudioShared::Network::messageTimeout, sizeof(FranAudioShared::Network::messageTimeout));
+	setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, (const char*)&FranAudioShared::Network::messageTimeout, sizeof(FranAudioShared::Network::messageTimeout));
+
+	// Request/Response Ping-pong protocol. Nagle's Algorithm only adds lag here.
+	constexpr DWORD noDelay = 1;
+	setsockopt(socket, IPPROTO_TCP, TCP_NODELAY, (const char*)&noDelay, sizeof(noDelay));
+}
+
 namespace FranAudioClient
 {
 	FRANAUDIO_CLIENT_API void Init(bool isTestmode)
 	{
-		// Setup Logger to route to console
-		FranAudioShared::Logger::FranAudioConsole franConsole;
-		FranAudioShared::Logger::ConsoleStreamBuffer consoleBuffer(franConsole);
+		// Setup Logger to route to console.
+		static FranAudioShared::Logger::FranAudioConsole franConsole;
+		static FranAudioShared::Logger::ConsoleStreamBuffer consoleBuffer(franConsole);
 		FranAudioShared::Logger::RouteToConsole(&consoleBuffer);
 
 		if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
@@ -71,7 +81,7 @@ namespace FranAudioClient
 			return;
 		}
 
-		setsockopt(tcpSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&FranAudioShared::Network::messageTimeout, sizeof(FranAudioShared::Network::messageTimeout));
+		ApplySocketOptions(tcpSocket);
 
 		Send("$server-init");
 	}
@@ -105,6 +115,8 @@ namespace FranAudioClient
 
 		if (connect(tcpSocket, (sockaddr*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR)
 			return false;
+
+		ApplySocketOptions(tcpSocket);
 
 		isSocketValid = true;
 		return true;

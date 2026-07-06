@@ -187,7 +187,12 @@ static bool IsTestSoundPaused(size_t soundId)
 static void SetListenerTransform(float position[3], float forward[3], float up[3])
 {
 #ifndef FRANAUDIO_USE_SERVER
-	FranAudio::GetBackend()->SetListenerTransform(position, forward, up);
+	FranAudio::GetBackend()->SetListenerTransform
+	(
+		{ position[0], position[1], position[2] },
+		{ forward[0], forward[1], forward[2] },
+		{ up[0], up[1], up[2] }
+	);
 #else
 	FranAudioClient::Wrapper::Backend::SetListenerTransform(position, forward, up);
 #endif
@@ -206,7 +211,7 @@ static void SetSoundPosition(size_t soundId, float position[3])
 {
 #ifndef FRANAUDIO_USE_SERVER
 	//FranAudio::GetBackend()->GetSound(soundId).SetPosition(position);
-	FranAudio::GetBackend()->SetSoundPosition(soundId, position);
+	FranAudio::GetBackend()->SetSoundPosition(soundId, { position[0], position[1], position[2] });
 #else
 	FranAudioClient::Wrapper::Sound::SetPosition(soundId, position);
 #endif

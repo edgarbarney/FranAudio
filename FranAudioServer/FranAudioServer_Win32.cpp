@@ -15,7 +15,8 @@
 #pragma comment(lib, "ws2_32.lib")
 
 WSADATA wsaData;
-SOCKET listenSocket, clientSocket;
+SOCKET listenSocket = INVALID_SOCKET;
+SOCKET clientSocket = INVALID_SOCKET;
 sockaddr_in serverAddress;
 
 bool isSocketValid = false;
@@ -117,9 +118,20 @@ int main()
 		clientSocket = accept(listenSocket, nullptr, nullptr);
 		if (clientSocket == INVALID_SOCKET)
 		{
+			const int acceptError = WSAGetLastError();
+			if (acceptError == WSAEINTR || acceptError == WSAENOTSOCK || acceptError == WSAEINVAL)
+			{
+				// Listen socket was closed, maybe by the shutdown handler.
+				break;
+			}
+
 			FranAudioShared::Logger::LogError("Accept failed! Retrying...");
-			break;
+			continue;
 		}
+
+		// Request/Response Ping-pong protocol. Nagle's Algorithm only adds lag here.
+		constexpr DWORD noDelay = 1;
+		setsockopt(clientSocket, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char*>(&noDelay), sizeof(noDelay));
 
 		FranAudioShared::Logger::LogMessage("Client connected.");
 
@@ -129,14 +141,10 @@ int main()
 			auto requestOpt = FranAudioShared::Network::Win32Helpers::RecvFrame(clientSocket);
 			if (!requestOpt)
 			{
-				/*
-				FranAudioShared::Logger::LogMessage("Client disconnected. Retrying...");
+				FranAudioShared::Logger::LogMessage("Client disconnected. Waiting for a new connection...");
 				closesocket(clientSocket);
+				clientSocket = INVALID_SOCKET;
 				break; // Let's go back to accept loop.
-				*/
-				shutDown = true;
-				closesocket(clientSocket);
-				break;
 			}
 
 			std::string request = *requestOpt;
@@ -152,6 +160,7 @@ int main()
 			{
 				shutDown = true;
 				closesocket(clientSocket);
+				clientSocket = INVALID_SOCKET;
 				break;
 			}
 
