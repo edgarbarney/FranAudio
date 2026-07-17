@@ -58,10 +58,18 @@ namespace FranAudioClient
 	/// <summary>
 	/// Send a message to the server, and wait for a response.
 	/// Response will be returned as a string, and will be empty if no response is received.
-	/// 
+	///
 	/// <param name="message">Message to Send</param>
 	/// <returns>Response from the server, empty if no response is received</returns>
 	FRANAUDIO_CLIENT_API std::string Send(const FranAudioShared::Network::NetworkFunction& message);
+
+	/// <summary>
+	/// Send a fire-and-forget message to the server without waiting for a response.
+	/// The server executes the command but does not reply, so there is no round-trip cost.
+	/// Use for setters; errors are only visible in the server log.
+	/// </summary>
+	/// <param name="message">Message to Send</param>
+	FRANAUDIO_CLIENT_API void SendNoReply(const FranAudioShared::Network::NetworkFunction& message);
 
 	// ===========================
 	// End of Functions with Platform Specific Implementations
@@ -82,6 +90,13 @@ namespace FranAudioClient
 	/// </summary>
 	namespace Wrapper
 	{
+		/// <summary>
+		/// Clears the client-side cache of last-known values (master volume, listener
+		/// transform, per-sound state, group volumes). Called automatically by Init and
+		/// Reconnect; call manually if the server was restarted behind the client's back.
+		/// </summary>
+		FRANAUDIO_CLIENT_API void ClearCache();
+
 		/// <summary>
 		/// Sets the audio backend to use.
 		/// </summary>
@@ -226,12 +241,45 @@ namespace FranAudioClient
 			FRANAUDIO_CLIENT_API size_t LoadAudioFile(const std::string& filename, const FranAudio::Decoder::DecodeSettings& decodeSettings);
 
 			/// <summary>
+			/// Unload a previously loaded audio file and free its decoded data on the server.
+			/// Fails if any active sound is still playing this wave data.
+			/// </summary>
+			/// <param name="filename">Path to the audio file that was loaded</param>
+			/// <returns>True if the file was unloaded, false if it was not loaded or still in use</returns>
+			FRANAUDIO_CLIENT_API bool UnloadAudioFile(const std::string& filename);
+
+			/// <summary>
 			/// Play an audio file after checking if it's loaded.
 			/// If the audio file is not loaded, it will be loaded and then played.
 			/// </summary>
 			/// <param name="filename">Path to the audio file</param>
+			/// <param name="looping">True to loop the sound, false to play it once (default)</param>
 			/// <returns>Active Sounds List Index</returns>
-			FRANAUDIO_CLIENT_API size_t PlayAudioFile(const std::string& filename);
+			FRANAUDIO_CLIENT_API size_t PlayAudioFile(const std::string& filename, bool looping = false);
+
+			/// <summary>
+			/// Play an audio file by streaming it from disk in chunks instead of decoding it
+			/// fully into memory. Intended for music and other long files.
+			/// </summary>
+			/// <param name="filename">Path to the audio file</param>
+			/// <param name="looping">True to loop the sound, false to play it once (default)</param>
+			/// <returns>Active Sounds List Index</returns>
+			FRANAUDIO_CLIENT_API size_t PlayAudioFileStream(const std::string& filename, bool looping = false);
+
+			/// <summary>
+			/// Set the volume multiplier of a sound group (e.g. "sfx", "music", "voice").
+			/// Applied on top of each grouped sound's own volume.
+			/// </summary>
+			/// <param name="groupName">Name of the group (must not contain '|')</param>
+			/// <param name="volume">Volume multiplier for the group (0.0 - 1.0)</param>
+			FRANAUDIO_CLIENT_API void SetGroupVolume(const std::string& groupName, float volume);
+
+			/// <summary>
+			/// Get the volume multiplier of a sound group.
+			/// </summary>
+			/// <param name="groupName">Name of the group</param>
+			/// <returns>Volume multiplier of the group (1.0 if never set)</returns>
+			FRANAUDIO_CLIENT_API float GetGroupVolume(const std::string& groupName);
 
 			// ========================
 			// Macro Sound Management
@@ -306,6 +354,36 @@ namespace FranAudioClient
 			/// <param name="soundID">ID of the sound to get the pitch of</param>
 			/// <returns>Pitch of the sound (1.0 = normal pitch)</returns>
 			FRANAUDIO_CLIENT_API float GetPitch(size_t soundID);
+
+			/// <summary>
+			/// Set whether a playing sound loops by its ID.
+			/// </summary>
+			/// <param name="soundID">ID of the sound to modify</param>
+			/// <param name="looping">True to loop the sound, false to play it once</param>
+			FRANAUDIO_CLIENT_API void SetLooping(size_t soundID, bool looping);
+
+			/// <summary>
+			/// Check if a playing sound loops by its ID.
+			/// </summary>
+			/// <param name="soundID">ID of the sound to check</param>
+			/// <returns>True if the sound is looping, false if not</returns>
+			FRANAUDIO_CLIENT_API bool IsLooping(size_t soundID);
+
+			/// <summary>
+			/// Assign a playing sound to a group (e.g. "sfx", "music", "voice").
+			/// </summary>
+			/// <param name="soundID">ID of the sound to assign</param>
+			/// <param name="groupName">Name of the group (must not contain '|')</param>
+			FRANAUDIO_CLIENT_API void SetGroup(size_t soundID, const std::string& groupName);
+
+			/// <summary>
+			/// Get the group a playing sound belongs to.
+			/// Every sound belongs to a group.
+			/// Unassigned sounds are in the default "__ungrpd__" group (FranAudioShared::defaultSoundGroupName).
+			/// </summary>
+			/// <param name="soundID">ID of the sound to check</param>
+			/// <returns>Group name</returns>
+			FRANAUDIO_CLIENT_API std::string GetGroup(size_t soundID);
 
 			/// <summary>
 			/// Set the position of a playing sound by its ID.

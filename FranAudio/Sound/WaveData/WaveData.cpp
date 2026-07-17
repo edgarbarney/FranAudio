@@ -8,8 +8,8 @@
 
 namespace FranAudio::Sound
 {
-	FRANAUDIO_API WaveData::WaveData(const std::string& filename, size_t waveDataIndex, WaveFormat format, double length, int channels, int sampleRate, bool isPersistent)
-		: filename(filename), waveDataIndex(waveDataIndex), format(format), length(length), channels(channels), sampleRate(sampleRate), frameSize(0), isPersistent(isPersistent)
+	FRANAUDIO_API WaveData::WaveData(const std::string& filename, size_t waveDataID, WaveFormat format, double length, int channels, int sampleRate, bool isPersistent)
+		: filename(filename), waveDataID(waveDataID), format(format), length(length), channels(channels), sampleRate(sampleRate), frameSize(0), isPersistent(isPersistent)
 	{
 		//sizeInFrames = frames.size() / channels;
 		//frameSize = sizeof(float) * channels;
@@ -21,9 +21,9 @@ namespace FranAudio::Sound
 		this->filename = filename;
 	}
 
-	FRANAUDIO_API void WaveData::SetWaveDataIndex(size_t index)
+	FRANAUDIO_API void WaveData::SetWaveDataID(size_t id)
 	{
-		this->waveDataIndex = index;
+		this->waveDataID = id;
 	}
 
 	FRANAUDIO_API void WaveData::SetFormat(WaveFormat format)
@@ -51,9 +51,9 @@ namespace FranAudio::Sound
 		return filename;
 	}
 
-	FRANAUDIO_API size_t WaveData::GetWaveDataIndex() const
+	FRANAUDIO_API size_t WaveData::GetWaveDataID() const
 	{
-		return waveDataIndex;
+		return waveDataID;
 	}
 
 	FRANAUDIO_API WaveFormat WaveData::GetFormat() const

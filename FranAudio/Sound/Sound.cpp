@@ -10,8 +10,8 @@
 
 namespace FranAudio::Sound
 {
-	FRANAUDIO_API Sound::Sound(size_t soundID, size_t waveDataIndex)
-		: soundID(soundID), waveDataIndex(waveDataIndex)
+	FRANAUDIO_API Sound::Sound(size_t soundID, size_t waveDataID)
+		: soundID(soundID), waveDataID(waveDataID)
 	{
 
 	}
@@ -26,9 +26,9 @@ namespace FranAudio::Sound
 		return soundID;
 	}
 
-	FRANAUDIO_API size_t Sound::GetWaveDataIndex() const
+	FRANAUDIO_API size_t Sound::GetWaveDataID() const
 	{
-		return waveDataIndex;
+		return waveDataID;
 	}
 
 	FRANAUDIO_API void Sound::Stop() const
@@ -64,6 +64,26 @@ namespace FranAudio::Sound
 	FRANAUDIO_API float Sound::GetPitch() const
 	{
 		return FranAudio::GetBackend()->GetSoundPitch(soundID);
+	}
+
+	FRANAUDIO_API void Sound::SetLooping(bool looping) const
+	{
+		FranAudio::GetBackend()->SetSoundLooping(soundID, looping);
+	}
+
+	FRANAUDIO_API bool Sound::IsLooping() const
+	{
+		return FranAudio::GetBackend()->IsSoundLooping(soundID);
+	}
+
+	FRANAUDIO_API void Sound::SetGroup(const std::string& groupName) const
+	{
+		FranAudio::GetBackend()->SetSoundGroup(soundID, groupName);
+	}
+
+	FRANAUDIO_API std::string Sound::GetGroup() const
+	{
+		return FranAudio::GetBackend()->GetSoundGroup(soundID);
 	}
 
 	FRANAUDIO_API void Sound::SetPosition(const FranAudioShared::Vector3& position) const

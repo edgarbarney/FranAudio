@@ -72,6 +72,12 @@ namespace FranAudio::Backend
 			/// The actual miniaudio sound object.
 			/// </summary>
 			ma_sound sound = {};
+
+			/// <summary>
+			/// True if the sound streams from disk; it has no audio buffer to uninitialise.
+			/// </summary>
+			bool isStreamed = false;
+
 			/// <summary>
 			/// Whether the sound is paused or not.
 			/// </summary>
@@ -233,6 +239,15 @@ namespace FranAudio::Backend
 		/// <returns>Active Sounds List Index</returns>
 		virtual FRANAUDIO_API size_t PlayAudioFile(const std::string& filename) override;
 
+		/// <summary>
+		/// Play an audio file by streaming it from disk in chunks (native miniaudio streaming).
+		/// Intended for music and other long files; nothing is added to the wave data cache.
+		/// </summary>
+		/// <param name="filename">Path to the audio file</param>
+		/// <param name="looping">True to loop the sound, false to play it once</param>
+		/// <returns>Active Sounds List Index</returns>
+		virtual FRANAUDIO_API size_t PlayAudioFileStream(const std::string& filename, bool looping = false) override;
+
 		// ========================
 		// Sound Management
 		// ========================
@@ -264,18 +279,18 @@ namespace FranAudio::Backend
 		virtual FRANAUDIO_API bool IsSoundPaused(size_t soundID) override;
 
 		/// <summary>
-		/// Set the volume of a playing sound by its index.
+		/// Apply a volume directly to the miniaudio sound instance.
 		/// </summary>
 		/// <param name="soundID">ID of the sound to set the volume of</param>
-		/// <param name="volume">Volume to set the sound to (0.0 - 1.0)</param>
-		virtual FRANAUDIO_API void SetSoundVolume(size_t soundID, float volume) override;
+		/// <param name="volume">Final volume to apply (0.0 - 1.0)</param>
+		virtual FRANAUDIO_API void SetSoundVolumeRaw(size_t soundID, float volume) override;
 
 		/// <summary>
-		/// Get the volume of a playing sound by its index.
+		/// Read the volume currently applied to the miniaudio sound instance.
 		/// </summary>
 		/// <param name="soundID">ID of the sound to get the volume of</param>
-		/// <returns>Volume of the sound (0.0 - 1.0)</returns>
-		virtual FRANAUDIO_API float GetSoundVolume(size_t soundID) override;
+		/// <returns>Applied volume of the sound (0.0 - 1.0)</returns>
+		virtual FRANAUDIO_API float GetSoundVolumeRaw(size_t soundID) override;
 
 		/// <summary>
 		/// Set the pitch of a playing sound by its index.
@@ -290,6 +305,20 @@ namespace FranAudio::Backend
 		/// <param name="soundID">ID of the sound to get the pitch of</param>
 		/// <returns>Pitch of the sound (1.0 = normal pitch)</returns>
 		virtual FRANAUDIO_API float GetSoundPitch(size_t soundID) override;
+
+		/// <summary>
+		/// Set whether a playing sound loops by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to modify</param>
+		/// <param name="looping">True to loop the sound, false to play it once</param>
+		virtual FRANAUDIO_API void SetSoundLooping(size_t soundID, bool looping) override;
+
+		/// <summary>
+		/// Check if a playing sound loops by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to check</param>
+		/// <returns>True if the sound is looping, false if not</returns>
+		virtual FRANAUDIO_API bool IsSoundLooping(size_t soundID) override;
 
 		/// <summary>
 		/// Set the position of a playing sound by its index.

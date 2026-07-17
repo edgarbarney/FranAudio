@@ -220,18 +220,18 @@ namespace FranAudio::Backend
 		virtual FRANAUDIO_API bool IsSoundPaused(size_t soundID) override;
 
 		/// <summary>
-		/// Set the volume of a playing sound by its index.
+		/// Apply a volume directly to the OpenAL source.
 		/// </summary>
 		/// <param name="soundID">ID of the sound to set the volume of</param>
-		/// <param name="volume">Volume to set the sound to (0.0 - 1.0)</param>
-		virtual FRANAUDIO_API void SetSoundVolume(size_t soundID, float volume) override;
+		/// <param name="volume">Final volume to apply (0.0 - 1.0)</param>
+		virtual FRANAUDIO_API void SetSoundVolumeRaw(size_t soundID, float volume) override;
 
 		/// <summary>
-		/// Get the volume of a playing sound by its index.
+		/// Read the volume currently applied to the OpenAL source.
 		/// </summary>
 		/// <param name="soundID">ID of the sound to get the volume of</param>
-		/// <returns>Volume of the sound (0.0 - 1.0)</returns>
-		virtual FRANAUDIO_API float GetSoundVolume(size_t soundID) override;
+		/// <returns>Applied volume of the sound (0.0 - 1.0)</returns>
+		virtual FRANAUDIO_API float GetSoundVolumeRaw(size_t soundID) override;
 
 		/// <summary>
 		/// Set the pitch of a playing sound by its index.
@@ -246,6 +246,20 @@ namespace FranAudio::Backend
 		/// <param name="soundID">ID of the sound to get the pitch of</param>
 		/// <returns>Pitch of the sound (1.0 = normal pitch)</returns>
 		virtual FRANAUDIO_API float GetSoundPitch(size_t soundID) override;
+
+		/// <summary>
+		/// Set whether a playing sound loops by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to modify</param>
+		/// <param name="looping">True to loop the sound, false to play it once</param>
+		virtual FRANAUDIO_API void SetSoundLooping(size_t soundID, bool looping) override;
+
+		/// <summary>
+		/// Check if a playing sound loops by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to check</param>
+		/// <returns>True if the sound is looping, false if not</returns>
+		virtual FRANAUDIO_API bool IsSoundLooping(size_t soundID) override;
 
 		/// <summary>
 		/// Set the position of a playing sound by its index.

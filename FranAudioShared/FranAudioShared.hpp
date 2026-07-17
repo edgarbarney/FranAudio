@@ -5,6 +5,7 @@
 #include <array>
 #include <tuple>
 #include <span>
+#include <string>
 
 #include "FranAudioAPI.hpp"
 
@@ -19,14 +20,12 @@ namespace FranAudioShared
 {
 	// ========================
 	// General Data Start
-	// 
-	// TODO: Maybe move these to shared or somewhere more fitting.
 	// ========================
 
 	/// <summary>
 	/// 3D Vector type used for sound positions, listener positions, etc.
 	/// </summary>
-	FRANAUDIO_API struct Vector3
+	struct Vector3
 	{
 		float x;
 		float y;
@@ -36,7 +35,7 @@ namespace FranAudioShared
 	/// <summary>
 	/// Tuple-like type for listener transform, containing position, forward vector, and up vector.
 	/// </summary>
-	FRANAUDIO_API struct ListenerTransform
+	struct ListenerTransform
 	{
 		Vector3 position;
 		Vector3 forward;
@@ -46,7 +45,7 @@ namespace FranAudioShared
 	/// <summary>
 	/// Tuple-like type for listener orientation, containing forward vector and up vector.
 	/// </summary>
-	FRANAUDIO_API struct ListenerOrientation
+	struct ListenerOrientation
 	{
 		Vector3 forward;
 		Vector3 up;
@@ -55,12 +54,18 @@ namespace FranAudioShared
 	/// <summary>
 	/// Tuple-like type for sound attenuation parameters, containing rolloff factor, minimum distance, and maximum distance.
 	/// </summary>
-	FRANAUDIO_API struct SoundAttenuation
+	struct SoundAttenuation
 	{
 		float rolloffFactor;
 		float minDistance;
 		float maxDistance;
 	};
+
+	/// <summary>
+	/// The group every sound belongs to unless explicitly assigned to another one.
+	/// There is no "ungrouped" sounds. Group operations on this name will modify all unassigned sounds.
+	/// </summary>
+	inline constexpr auto defaultSoundGroupName = "__ungrpd__";
 
 	// ========================
 	// General Data End

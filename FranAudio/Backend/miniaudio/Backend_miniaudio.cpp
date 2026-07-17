@@ -79,7 +79,10 @@ namespace FranAudio::Backend
 		{
 			ma_sound_stop(&soundData->sound);
 			ma_sound_uninit(&soundData->sound);
-			ma_audio_buffer_uninit(&soundData->audioBuffer);
+			if (!soundData->isStreamed)
+			{
+				ma_audio_buffer_uninit(&soundData->audioBuffer);
+			}
 		}
 
 		miniaudioSoundData.clear();
@@ -175,7 +178,7 @@ namespace FranAudio::Backend
 		// Generate our unique ID
 		const size_t soundID = nextSoundID++;
 
-		activeSounds[soundID] = FranAudio::Sound::Sound(soundID, waveData.GetWaveDataIndex());
+		activeSounds[soundID] = FranAudio::Sound::Sound(soundID, waveData.GetWaveDataID());
 		ma_sound_set_volume(&miniaudioSound->sound, 1.0f);
 		ma_sound_start(&miniaudioSound->sound);
 
@@ -205,6 +208,40 @@ namespace FranAudio::Backend
 		return Backend::PlayAudioFile(filename);
 	}
 
+	FRANAUDIO_API size_t miniaudio::PlayAudioFileStream(const std::string& filename, bool looping)
+	{
+		auto miniaudioSound = std::make_unique<MiniaudioSound>();
+
+		if (ma_sound_init_from_file(&engine, filename.c_str(), MA_SOUND_FLAG_STREAM, nullptr, nullptr, &miniaudioSound->sound) != MA_SUCCESS)
+		{
+			FranAudioShared::Logger::LogError(std::format("MiniAudio: Failed to open audio file for streaming: {}", filename));
+			return SIZE_MAX;
+		}
+
+		miniaudioSound->isStreamed = true;
+
+		// Generate our unique ID
+		const size_t soundID = nextSoundID++;
+
+		// Streamed sounds are not in the wave data cache, so they have no wave data index.
+		activeSounds[soundID] = FranAudio::Sound::Sound(soundID, SIZE_MAX);
+
+		ma_sound_set_volume(&miniaudioSound->sound, 1.0f);
+		ma_sound_set_looping(&miniaudioSound->sound, looping ? MA_TRUE : MA_FALSE);
+
+		ma_sound_set_attenuation_model(&miniaudioSound->sound, ma_attenuation_model_inverse);
+
+		ma_sound_set_min_distance(&miniaudioSound->sound, 0.02f); // Non-attenuated distance. Within this distance, the sound is at full volume.
+		ma_sound_set_max_distance(&miniaudioSound->sound, 50.0f);  // Distance at which attenuation stops changing
+		ma_sound_set_rolloff(&miniaudioSound->sound, 1.0f); // How fast it fades after the min distance
+
+		ma_sound_start(&miniaudioSound->sound);
+
+		miniaudioSoundData[soundID] = std::move(miniaudioSound);
+
+		return soundID;
+	}
+
 	// ========================
 	// Sound Management
 	// ========================
@@ -230,7 +267,10 @@ namespace FranAudio::Backend
 		}
 
 		ma_sound_uninit(&soundPtr->sound);
-		ma_audio_buffer_uninit(&soundPtr->audioBuffer);
+		if (!soundPtr->isStreamed)
+		{
+			ma_audio_buffer_uninit(&soundPtr->audioBuffer);
+		}
 
 		soundPtr.reset();
 		miniaudioSoundData.erase(soundID);
@@ -280,7 +320,7 @@ namespace FranAudio::Backend
 		return miniaudioSoundData[soundID]->isPaused;
 	}
 
-	FRANAUDIO_API void miniaudio::SetSoundVolume(size_t soundID, float volume)
+	FRANAUDIO_API void miniaudio::SetSoundVolumeRaw(size_t soundID, float volume)
 	{
 		if (!IsSoundValid(soundID))
 		{
@@ -291,7 +331,7 @@ namespace FranAudio::Backend
 		ma_sound_set_volume(&miniaudioSoundData[soundID]->sound, volume);
 	}
 
-	FRANAUDIO_API float miniaudio::GetSoundVolume(size_t soundID)
+	FRANAUDIO_API float miniaudio::GetSoundVolumeRaw(size_t soundID)
 	{
 		if (!IsSoundValid(soundID))
 		{
@@ -322,6 +362,28 @@ namespace FranAudio::Backend
 		}
 
 		return ma_sound_get_pitch(&miniaudioSoundData[soundID]->sound);
+	}
+
+	FRANAUDIO_API void miniaudio::SetSoundLooping(size_t soundID, bool looping)
+	{
+		if (!IsSoundValid(soundID))
+		{
+			FranAudioShared::Logger::LogError("MiniAudio: Tried to set looping of an invalid sound.");
+			return;
+		}
+
+		ma_sound_set_looping(&miniaudioSoundData[soundID]->sound, looping ? MA_TRUE : MA_FALSE);
+	}
+
+	FRANAUDIO_API bool miniaudio::IsSoundLooping(size_t soundID)
+	{
+		if (!IsSoundValid(soundID))
+		{
+			FranAudioShared::Logger::LogError("MiniAudio: Tried to check looping of an invalid sound.");
+			return false;
+		}
+
+		return ma_sound_is_looping(&miniaudioSoundData[soundID]->sound) == MA_TRUE;
 	}
 
 	FRANAUDIO_API void miniaudio::SetSoundPosition(size_t soundID, const FranAudioShared::Vector3& position)

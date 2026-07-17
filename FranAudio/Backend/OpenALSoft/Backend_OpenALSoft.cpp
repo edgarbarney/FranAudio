@@ -29,12 +29,18 @@ namespace FranAudio::Backend
 		if (!mainContext)
 		{
 			FranAudioShared::Logger::LogError(std::format("{}: Init - create context error!!", GetBackendName()));
+			alcCloseDevice(openALDevice);
+			openALDevice = nullptr;
 			return false;
 		}
 
 		if (!alcMakeContextCurrent(mainContext) || alcGetError(openALDevice) != ALC_NO_ERROR)
 		{
 			FranAudioShared::Logger::LogError(std::format("{}: Init - make context current error!!", GetBackendName()));
+			alcDestroyContext(mainContext);
+			mainContext = nullptr;
+			alcCloseDevice(openALDevice);
+			openALDevice = nullptr;
 			return false;
 		}
 
@@ -197,7 +203,7 @@ namespace FranAudio::Backend
 
 		// Generate our unique ID
 		const size_t soundID = nextSoundID++;
-		activeSounds[soundID] = FranAudio::Sound::Sound(soundID, waveData.GetWaveDataIndex());
+		activeSounds[soundID] = FranAudio::Sound::Sound(soundID, waveData.GetWaveDataID());
 		openalSoundData[soundID] = std::move(openalSound);
 
 		return soundID;
@@ -282,7 +288,7 @@ namespace FranAudio::Backend
 		return openalSoundData[soundID]->sourceState == AL_PAUSED;
 	}
 
-	FRANAUDIO_API void OpenALSoft::SetSoundVolume(size_t soundID, float volume)
+	FRANAUDIO_API void OpenALSoft::SetSoundVolumeRaw(size_t soundID, float volume)
 	{
 		if (!IsSoundValid(soundID))
 		{
@@ -294,7 +300,7 @@ namespace FranAudio::Backend
 		ALErrorCheck();
 	}
 
-	FRANAUDIO_API float OpenALSoft::GetSoundVolume(size_t soundID)
+	FRANAUDIO_API float OpenALSoft::GetSoundVolumeRaw(size_t soundID)
 	{
 		if (!IsSoundValid(soundID))
 		{
@@ -332,6 +338,32 @@ namespace FranAudio::Backend
 		alGetSourcef(openalSoundData[soundID]->sourceHandle, AL_PITCH, &pitch);
 		ALErrorCheck();
 		return pitch;
+	}
+
+	FRANAUDIO_API void OpenALSoft::SetSoundLooping(size_t soundID, bool looping)
+	{
+		if (!IsSoundValid(soundID))
+		{
+			FranAudioShared::Logger::LogError(std::format("{}: Tried to set looping of an invalid sound.", GetBackendName()));
+			return;
+		}
+
+		alSourcei(openalSoundData[soundID]->sourceHandle, AL_LOOPING, looping ? AL_TRUE : AL_FALSE);
+		ALErrorCheck();
+	}
+
+	FRANAUDIO_API bool OpenALSoft::IsSoundLooping(size_t soundID)
+	{
+		if (!IsSoundValid(soundID))
+		{
+			FranAudioShared::Logger::LogError(std::format("{}: Tried to check looping of an invalid sound.", GetBackendName()));
+			return false;
+		}
+
+		ALint looping = AL_FALSE;
+		alGetSourcei(openalSoundData[soundID]->sourceHandle, AL_LOOPING, &looping);
+		ALErrorCheck();
+		return looping == AL_TRUE;
 	}
 
 	FRANAUDIO_API void OpenALSoft::SetSoundPosition(size_t soundID, const FranAudioShared::Vector3& position)

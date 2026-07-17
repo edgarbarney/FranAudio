@@ -1,12 +1,16 @@
 // FranticDreamer 2022-2025
 
 #include <filesystem>
+#include <algorithm>
+#include <cctype>
 
 #include "Backend.hpp"
 #include "miniaudio/Backend_miniaudio.hpp"
 #ifdef FRANAUDIO_USE_OPENAL
 #include "OpenALSoft/Backend_OpenALSoft.hpp"
 #endif
+
+#include <ranges>
 
 #include "FranAudioShared/Logger/Logger.hpp"
 
@@ -62,6 +66,9 @@ namespace FranAudio::Backend
 
 		nextSoundID = 0;
 		activeSounds.clear();
+		groupVolumes.clear();
+		soundGroups.clear();
+		soundBaseVolumes.clear();
 
 		if (!forReset)
 		{
@@ -99,9 +106,7 @@ namespace FranAudio::Backend
 		}
 
 		// Check if the decoder type is supported
-		const auto& supportedDecoders = GetSupportedDecoders();
-
-		for (const auto& supportedDecoder : supportedDecoders)
+		for (const auto& supportedDecoder : GetSupportedDecoders())
 		{
 			if (supportedDecoder == decoderType)
 			{
@@ -154,6 +159,21 @@ namespace FranAudio::Backend
 	// Audio File Management
 	// ========================
 
+	std::string Backend::CanonicalisePath(const std::string& filename)
+	{
+		std::error_code errorCode;
+		std::filesystem::path canonical = std::filesystem::weakly_canonical(filename, errorCode);
+
+		std::string result = errorCode ? filename : canonical.string();
+
+	#ifdef _WIN32
+		// Windows paths are case-insensitive.
+		std::ranges::transform(result, result.begin(), [](const unsigned char c) { return static_cast<char>(std::tolower(c)); });
+	#endif
+
+		return result;
+	}
+
 	FRANAUDIO_API size_t Backend::LoadAudioFile(const std::string& filename)
 	{
 		return LoadAudioFile(filename, currentDecodeSettings);
@@ -161,10 +181,12 @@ namespace FranAudio::Backend
 
 	FRANAUDIO_API size_t Backend::LoadAudioFile(const std::string& filename, const FranAudio::Decoder::DecodeSettings& decodeSettings)
 	{
-		if (auto it = filenameWaveMap.find(filename); it != filenameWaveMap.end())
+		const std::string pathKey = CanonicalisePath(filename);
+
+		if (const auto it = filenameWaveMap.find(pathKey); it != filenameWaveMap.end())
 			return it->second;
 
-		std::filesystem::path filePath(filename);
+		const std::filesystem::path filePath(filename);
 
 		if (!std::filesystem::exists(filePath))
 		{
@@ -193,29 +215,86 @@ namespace FranAudio::Backend
 			return SIZE_MAX;
 		}
 
-		const size_t index = waveDataCache.size();
-		waveData.SetWaveDataIndex(index);
-		waveDataCache.emplace_back(std::move(waveData));
-		filenameWaveMap[filename] = index;
-		FranAudioShared::Logger::LogMessage(std::format("{}: Loaded audio file: {} ({}s, {} channels, {}Hz, Format: {})", GetBackendName(), filename, waveDataCache[index].GetLength(), (int)waveDataCache[index].GetChannels(), waveDataCache[index].GetSampleRate(), FranAudio::Sound::WaveFormatNames[(size_t)waveDataCache[index].GetFormat()]));
+		// Wave data IDs are unique and never reused, just like sound IDs.
+		const size_t waveDataID = nextWaveDataID++;
+		waveData.SetWaveDataID(waveDataID);
+		waveDataCache[waveDataID] = std::move(waveData);
+		filenameWaveMap[pathKey] = waveDataID;
 
-		return index;
+		const auto& loadedWaveData = waveDataCache[waveDataID];
+		FranAudioShared::Logger::LogMessage(std::format("{}: Loaded audio file: {} ({}s, {} channels, {}Hz, Format: {})", GetBackendName(), filename, loadedWaveData.GetLength(), (int)loadedWaveData.GetChannels(), loadedWaveData.GetSampleRate(), FranAudio::Sound::WaveFormatNames[(size_t)loadedWaveData.GetFormat()]));
+
+		return waveDataID;
 	}
 
 	FRANAUDIO_API size_t Backend::PlayAudioFile(const std::string& filename)
 	{
-		auto it = filenameWaveMap.find(filename); // Filename - Wave data cache index
+		const auto it = filenameWaveMap.find(CanonicalisePath(filename)); // Canonical path - Wave data ID
 		if (it == filenameWaveMap.end())
 		{
 			FranAudioShared::Logger::LogError(std::format("{}: Audio file not loaded: {}", GetBackendName(), filename));
 			return SIZE_MAX;
 		}
 
-		const auto& waveData = waveDataCache[it->second];
-		return PlayAudioWave(waveData);
+		auto waveIt = waveDataCache.find(it->second);
+		if (waveIt == waveDataCache.end())
+		{
+			FranAudioShared::Logger::LogError(std::format("{}: Wave data missing for loaded audio file: {}", GetBackendName(), filename));
+			return SIZE_MAX;
+		}
+
+		return PlayAudioWave(waveIt->second);
 	}
 
-	const FRANAUDIO_API FranAudioShared::Containers::Vector<FranAudio::Sound::WaveData>& Backend::GetWaveDataCache()
+	FRANAUDIO_API size_t Backend::PlayAudioFileStream(const std::string& filename, bool looping)
+	{
+		// Default implementation for backends without native streaming: full in-memory decode.
+		FranAudioShared::Logger::LogWarning(std::format("{}: Streaming is not supported by this backend, falling back to a full decode for: {}", GetBackendName(), filename));
+
+		if (LoadAudioFile(filename) == SIZE_MAX)
+		{
+			return SIZE_MAX;
+		}
+
+		const size_t soundID = PlayAudioFile(filename);
+
+		if (soundID != SIZE_MAX && looping)
+		{
+			SetSoundLooping(soundID, true);
+		}
+
+		return soundID;
+	}
+
+	FRANAUDIO_API bool Backend::UnloadAudioFile(const std::string& filename)
+	{
+		const auto it = filenameWaveMap.find(CanonicalisePath(filename));
+		if (it == filenameWaveMap.end())
+		{
+			FranAudioShared::Logger::LogError(std::format("{}: Cannot unload audio file that is not loaded: {}", GetBackendName(), filename));
+			return false;
+		}
+
+		const size_t waveDataID = it->second;
+
+		for (const auto& [soundID, sound] : activeSounds)
+		{
+			if (sound.GetWaveDataID() == waveDataID)
+			{
+				FranAudioShared::Logger::LogError(std::format("{}: Cannot unload audio file still in use by sound {}: {}", GetBackendName(), soundID, filename));
+				return false;
+			}
+		}
+
+		// The ID is never reused; reloading the file later gets a fresh ID.
+		waveDataCache.erase(waveDataID);
+		filenameWaveMap.erase(it);
+
+		FranAudioShared::Logger::LogMessage(std::format("{}: Unloaded audio file: {}", GetBackendName(), filename));
+		return true;
+	}
+
+	const FRANAUDIO_API FranAudioShared::Containers::UnorderedMap<size_t, FranAudio::Sound::WaveData>& Backend::GetWaveDataCache()
     {
 		return waveDataCache;
     }
@@ -234,10 +313,119 @@ namespace FranAudio::Backend
 		return activeSounds.contains(soundIndex);
 	}
 
+	FRANAUDIO_API void Backend::SetSoundVolume(size_t soundID, float volume)
+	{
+		if (!IsSoundValid(soundID))
+		{
+			FranAudioShared::Logger::LogError(std::format("{}: Tried to set volume of an invalid sound.", GetBackendName()));
+			return;
+		}
+
+		soundBaseVolumes[soundID] = volume;
+		SetSoundVolumeRaw(soundID, volume * GetGroupVolumeForSound(soundID));
+	}
+
+	FRANAUDIO_API float Backend::GetSoundVolume(size_t soundID)
+	{
+		if (const auto it = soundBaseVolumes.find(soundID); it != soundBaseVolumes.end())
+		{
+			return it->second;
+		}
+
+		// No multiplier yet.
+		return GetSoundVolumeRaw(soundID);
+	}
+
+	// ========================
+	// Sound Groups
+	// ========================
+
+	float Backend::GetGroupVolumeForSound(size_t soundID) const
+	{
+		return GetGroupVolume(GetSoundGroup(soundID));
+	}
+
+	FRANAUDIO_API void Backend::SetSoundGroup(size_t soundID, const std::string& groupName)
+	{
+		if (!IsSoundValid(soundID))
+		{
+			FranAudioShared::Logger::LogError(std::format("{}: Tried to set group of an invalid sound.", GetBackendName()));
+			return;
+		}
+
+		if (!soundBaseVolumes.contains(soundID))
+		{
+			const float previousGroupVolume = GetGroupVolumeForSound(soundID);
+			soundBaseVolumes[soundID] = previousGroupVolume > 0.0f ? GetSoundVolumeRaw(soundID) / previousGroupVolume : 1.0f;
+		}
+
+		soundGroups[soundID] = groupName.empty() ? FranAudioShared::defaultSoundGroupName : groupName;
+		SetSoundVolumeRaw(soundID, soundBaseVolumes[soundID] * GetGroupVolume(soundGroups[soundID]));
+	}
+
+	FRANAUDIO_API std::string Backend::GetSoundGroup(size_t soundID) const
+	{
+		if (const auto it = soundGroups.find(soundID); it != soundGroups.end())
+		{
+			return it->second;
+		}
+
+		// Every sound belongs to a group. Unassigned sounds are in the default group.
+		return FranAudioShared::defaultSoundGroupName;
+	}
+
+	FRANAUDIO_API void Backend::SetGroupVolume(const std::string& groupName, float volume)
+	{
+		const std::string targetGroup = groupName.empty() ? FranAudioShared::defaultSoundGroupName : groupName;
+
+		// Needed to recover base volumes of first-touched sounds. Be careful.
+		const float oldVolume = GetGroupVolume(targetGroup);
+		groupVolumes[targetGroup] = volume;
+
+		// Lazily drop state of sounds that finished or were stopped.
+		for (auto it = soundGroups.begin(); it != soundGroups.end();)
+		{
+			if (!IsSoundValid(it->first))
+			{
+				soundBaseVolumes.erase(it->first);
+				it = soundGroups.erase(it);
+				continue;
+			}
+
+			++it;
+		}
+
+		// Iterate all active sounds so members of the default group are reachable too.
+		for (const auto& soundID : activeSounds | std::views::keys)
+		{
+			if (GetSoundGroup(soundID) != targetGroup)
+			{
+				continue;
+			}
+
+			if (!soundBaseVolumes.contains(soundID))
+			{
+				soundBaseVolumes[soundID] = oldVolume > 0.0f ? GetSoundVolumeRaw(soundID) / oldVolume : 1.0f;
+			}
+
+			SetSoundVolumeRaw(soundID, soundBaseVolumes[soundID] * volume);
+		}
+	}
+
+	FRANAUDIO_API float Backend::GetGroupVolume(const std::string& groupName) const
+	{
+		if (const auto it = groupVolumes.find(groupName.empty() ? FranAudioShared::defaultSoundGroupName : groupName); it != groupVolumes.end())
+		{
+			return it->second;
+		}
+
+		return 1.0f;
+	}
+
 	FRANAUDIO_API FranAudio::Sound::Sound& Backend::GetSound(size_t soundID)
 	{
 		return activeSounds[soundID];
-	} 
+	}
 
 	const FRANAUDIO_API FranAudioShared::Containers::UnorderedMap<size_t, FranAudio::Sound::Sound>& Backend::GetActiveSounds() const
 	{
@@ -251,7 +439,7 @@ namespace FranAudio::Backend
 		soundIDs.clear();
 		soundIDs.reserve(activeSounds.size());
 
-		for (const auto& [soundID, sound] : activeSounds)
+		for (const auto& soundID : activeSounds | std::views::keys)
 		{
 			soundIDs.push_back(soundID);
 		}

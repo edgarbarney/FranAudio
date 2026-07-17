@@ -473,20 +473,105 @@ namespace FranAudioServer
 			}
 		},
 
-		// Backend::PlayAudioFile
+		// Backend::UnloadAudioFile
 		// Params: filename
-		// Returns: sound index
+		// Returns: "1" if unloaded, "0" if not loaded or still in use
 		{
-			"backend-play_audio_file", 
+			"backend-unload_audio_file",
 			[](const FranAudioShared::Network::NetworkFunction& fn)
 			{
-				if (fn.params.size() < 1) 
+				if (fn.params.size() < 1)
+				{
+					FranAudioShared::Logger::LogError("Missing filename parameter for unload_audio_file");
+					return std::string("err");
+				}
+
+				return FranAudio::GetBackend()->UnloadAudioFile(fn.params[0]) ? std::string("1") : std::string("0");
+			}
+		},
+
+		// Backend::PlayAudioFile
+		// Params: filename, [looping (1 or 0, optional, default 0)]
+		// Returns: sound index
+		{
+			"backend-play_audio_file",
+			[](const FranAudioShared::Network::NetworkFunction& fn)
+			{
+				if (fn.params.size() < 1)
 				{
 					FranAudioShared::Logger::LogError("Missing filename parameter");
 					return std::string("err");
 				}
 
-				return std::to_string(FranAudio::GetBackend()->PlayAudioFile(fn.params[0]));
+				const size_t soundId = FranAudio::GetBackend()->PlayAudioFile(fn.params[0]);
+
+				if (soundId != SIZE_MAX && fn.params.size() >= 2 && fn.params[1] == "1")
+				{
+					FranAudio::GetBackend()->SetSoundLooping(soundId, true);
+				}
+
+				return std::to_string(soundId);
+			}
+		},
+
+		// Backend::PlayAudioFileStream
+		// Params: filename, [looping (1 or 0, optional, default 0)]
+		// Returns: sound index
+		{
+			"backend-play_audio_file_stream",
+			[](const FranAudioShared::Network::NetworkFunction& fn)
+			{
+				if (fn.params.size() < 1)
+				{
+					FranAudioShared::Logger::LogError("Missing filename parameter");
+					return std::string("err");
+				}
+
+				const bool looping = fn.params.size() >= 2 && fn.params[1] == "1";
+
+				return std::to_string(FranAudio::GetBackend()->PlayAudioFileStream(fn.params[0], looping));
+			}
+		},
+
+		// Backend::SetGroupVolume
+		// Params: groupName, volume
+		// Returns: nothing
+		{
+			"backend-set_group_volume",
+			[](const FranAudioShared::Network::NetworkFunction& fn)
+			{
+				if (fn.params.size() < 2)
+				{
+					FranAudioShared::Logger::LogError("Missing parameters for set_group_volume");
+					return std::string("err");
+				}
+				try
+				{
+					FranAudio::GetBackend()->SetGroupVolume(fn.params[0], std::stof(fn.params[1]));
+				}
+				catch (const std::exception& e)
+				{
+					FranAudioShared::Logger::LogError(std::format("Failed to set group volume: {}", e.what()));
+					return std::string("err");
+				}
+				return std::string();
+			}
+		},
+
+		// Backend::GetGroupVolume
+		// Params: groupName
+		// Returns: volume
+		{
+			"backend-get_group_volume",
+			[](const FranAudioShared::Network::NetworkFunction& fn)
+			{
+				if (fn.params.size() < 1)
+				{
+					FranAudioShared::Logger::LogError("Missing group name parameter for get_group_volume");
+					return std::string("err");
+				}
+
+				return std::to_string(FranAudio::GetBackend()->GetGroupVolume(fn.params[0]));
 			}
 		},
 
@@ -748,6 +833,127 @@ namespace FranAudioServer
 				catch (const std::exception& e)
 				{
 					FranAudioShared::Logger::LogError(std::format("Failed to get pitch of sound with ID {}: {}", fn.params[0], e.what()));
+					return std::string("err");
+				}
+			}
+		},
+
+		// Sound::SetLooping
+		// Params: soundIndex, looping (1 or 0)
+		// Returns: nothing
+		{
+			"sound-set_looping",
+			[](const FranAudioShared::Network::NetworkFunction& fn)
+			{
+				if (fn.params.size() < 2)
+				{
+					FranAudioShared::Logger::LogError("Missing parameters for sound-set_looping");
+					return std::string("err");
+				}
+				if (fn.params[0] == std::to_string(SIZE_MAX))
+				{
+					FranAudioShared::Logger::LogError("Tried to set looping of an invalid sound.");
+					return std::string("err");
+				}
+				try
+				{
+					const size_t soundId = std::stoull(fn.params[0]);
+					const bool looping = fn.params[1] == "1";
+					FranAudio::GetBackend()->SetSoundLooping(soundId, looping);
+				}
+				catch (const std::exception& e)
+				{
+					FranAudioShared::Logger::LogError(std::format("Failed to set sound looping: {}", e.what()));
+					return std::string("err");
+				}
+				return std::string();
+			}
+		},
+
+		// Sound::IsLooping
+		// Params: soundIndex
+		// Returns: "1" if looping, "0" if not looping, "err" on error
+		{
+			"sound-is_looping",
+			[](const FranAudioShared::Network::NetworkFunction& fn)
+			{
+				if (fn.params.size() < 1)
+				{
+					FranAudioShared::Logger::LogError("Missing sound ID parameter");
+					return std::string("err");
+				}
+				if (fn.params[0] == std::to_string(SIZE_MAX))
+				{
+					FranAudioShared::Logger::LogError("Tried to check looping of an invalid sound.");
+					return std::string("err");
+				}
+				try
+				{
+					const size_t soundId = std::stoull(fn.params[0]);
+					return FranAudio::GetBackend()->IsSoundLooping(soundId) ? std::string("1") : std::string("0");
+				}
+				catch (const std::exception& e)
+				{
+					FranAudioShared::Logger::LogError(std::format("Failed to check if sound with ID {} is looping: {}", fn.params[0], e.what()));
+					return std::string("err");
+				}
+			}
+		},
+
+		// Sound::SetGroup
+		// Params: soundIndex, groupName
+		// Returns: nothing
+		{
+			"sound-set_group",
+			[](const FranAudioShared::Network::NetworkFunction& fn)
+			{
+				if (fn.params.size() < 2)
+				{
+					FranAudioShared::Logger::LogError("Missing parameters for sound-set_group");
+					return std::string("err");
+				}
+				if (fn.params[0] == std::to_string(SIZE_MAX))
+				{
+					FranAudioShared::Logger::LogError("Tried to set group of an invalid sound.");
+					return std::string("err");
+				}
+				try
+				{
+					FranAudio::GetBackend()->SetSoundGroup(std::stoull(fn.params[0]), fn.params[1]);
+				}
+				catch (const std::exception& e)
+				{
+					FranAudioShared::Logger::LogError(std::format("Failed to set sound group: {}", e.what()));
+					return std::string("err");
+				}
+				return std::string();
+			}
+		},
+
+		// Sound::GetGroup
+		// Params: soundIndex
+		// Returns: group name (empty if the sound is not in a group), or "err" on error
+		{
+			"sound-get_group",
+			[](const FranAudioShared::Network::NetworkFunction& fn)
+			{
+				if (fn.params.size() < 1)
+				{
+					FranAudioShared::Logger::LogError("Missing sound ID parameter");
+					return std::string("err");
+				}
+				if (fn.params[0] == std::to_string(SIZE_MAX))
+				{
+					FranAudioShared::Logger::LogError("Tried to get group of an invalid sound.");
+					return std::string("err");
+				}
+				try
+				{
+					return FranAudio::GetBackend()->GetSoundGroup(std::stoull(fn.params[0]));
+				}
+				catch (const std::exception& e)
+				{
+					FranAudioShared::Logger::LogError(std::format("Failed to get sound group: {}", e.what()));
 					return std::string("err");
 				}
 			}

@@ -30,17 +30,18 @@ namespace FranAudio::Sound
 		size_t soundID;
 
 		/// <summary>
-		/// Wave data index of the sound.
-		/// 
+		/// Unique wave data ID of the sound.
+		///
 		/// This is used to identify the wave data associated with the sound.
+		/// SIZE_MAX for sounds without cached wave data (e.g. streamed sounds).
 		/// </summary>
-		size_t waveDataIndex;
+		size_t waveDataID;
 
 	public:
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		FRANAUDIO_API Sound(size_t soundID = SIZE_MAX, size_t waveDataIndex = SIZE_MAX);
+		FRANAUDIO_API Sound(size_t soundID = SIZE_MAX, size_t waveDataID = SIZE_MAX);
 
 		/// <summary>
 		/// Destructor.
@@ -58,9 +59,9 @@ namespace FranAudio::Sound
 		FRANAUDIO_API size_t GetSoundID() const;
 
 		/// <summary>
-		/// Get the wave data index.
+		/// Get the unique wave data ID.
 		/// </summary>
-		FRANAUDIO_API size_t GetWaveDataIndex() const;
+		FRANAUDIO_API size_t GetWaveDataID() const;
 
 		/// <summary>
 		/// Stop and clear the sound.
@@ -100,6 +101,29 @@ namespace FranAudio::Sound
 		/// Get the pitch of the sound.
 		/// </summary>
 		FRANAUDIO_API float GetPitch() const;
+
+		/// <summary>
+		/// Set whether the sound loops.
+		/// </summary>
+		/// <param name="looping">True to loop the sound, false to play it once</param>
+		FRANAUDIO_API void SetLooping(bool looping) const;
+
+		/// <summary>
+		/// Check if the sound loops.
+		/// </summary>
+		FRANAUDIO_API bool IsLooping() const;
+
+		/// <summary>
+		/// Assign the sound to a group (e.g. "sfx", "music", "voice").
+		/// </summary>
+		/// <param name="groupName">Name of the group</param>
+		FRANAUDIO_API void SetGroup(const std::string& groupName) const;
+
+		/// <summary>
+		/// Get the group the sound belongs to.
+		/// </summary>
+		/// <returns>Group name, or an empty string if the sound is not in a group</returns>
+		FRANAUDIO_API std::string GetGroup() const;
 
 		/// <summary>
 		/// Set the position of the sound.

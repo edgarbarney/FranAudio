@@ -23,9 +23,9 @@ namespace FranAudio::Sound
 		std::string filename;
 
 		/// <summary>
-		/// ID of the wave data.
+		/// Unique ID of the wave data. Never reused, like sound IDs.
 		/// </summary>
-		size_t waveDataIndex;
+		size_t waveDataID;
 
 		// =========
 		// Wave Info
@@ -71,14 +71,15 @@ namespace FranAudio::Sound
 
 		/// <summary>
 		/// If true, wave data will be kept in memory when the cache is cleared.
+		/// Not const so WaveData stays assignable; there is intentionally no setter.
 		/// </summary>
-		const bool isPersistent;
+		bool isPersistent;
 
 	public:
 		/// <summary>
 		/// Default constructor.
 		/// </summary>
-		FRANAUDIO_API WaveData(const std::string& filename = "", size_t waveDataIndex = 0, WaveFormat format = WaveFormat::Unknown, double length = 0.0, int channels = 0, int sampleRate = 0, bool isPersistent = false);
+		FRANAUDIO_API WaveData(const std::string& filename = "", size_t waveDataID = 0, WaveFormat format = WaveFormat::Unknown, double length = 0.0, int channels = 0, int sampleRate = 0, bool isPersistent = false);
 
 		// =========
 		// Setters
@@ -91,10 +92,10 @@ namespace FranAudio::Sound
 		FRANAUDIO_API void SetFilename(const std::string& filename);
 
 		/// <summary>
-		/// Sets the ID of the wave data.
+		/// Sets the unique ID of the wave data.
 		/// </summary>
-		/// <param name="index">Input Index</param>
-		FRANAUDIO_API void SetWaveDataIndex(size_t index);
+		/// <param name="id">Input ID</param>
+		FRANAUDIO_API void SetWaveDataID(size_t id);
 
 		/// <summary>
 		/// Sets the audio format of the wave data.
@@ -132,10 +133,10 @@ namespace FranAudio::Sound
 		[[nodiscard]] FRANAUDIO_API const std::string& GetFilename() const;
 
 		/// <summary>
-		/// Get the ID of the wave data.
+		/// Get the unique ID of the wave data.
 		/// </summary>
-		/// <returns>Wave data Index</returns>
-		[[nodiscard]] FRANAUDIO_API size_t GetWaveDataIndex() const;
+		/// <returns>Wave data ID</returns>
+		[[nodiscard]] FRANAUDIO_API size_t GetWaveDataID() const;
 
 		/// <summary>
 		/// Get the audio format of the wave data.

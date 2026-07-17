@@ -48,22 +48,77 @@ namespace FranAudio::Backend
 		size_t nextSoundID = 0;
 
 		/// <summary>
-		/// Cache for decoded audio data.
-		/// This is used to cache the decoded audio data to avoid decoding every time the audio is played.
+		/// Next Wave Data ID to be used.
+		/// Like sound IDs, wave data IDs are unique and never reused: unloading a file
+		/// permanently invalidates its ID. Never reset, so stale IDs stay invalid.
 		/// </summary>
-		FranAudioShared::Containers::Vector<FranAudio::Sound::WaveData> waveDataCache;
+		size_t nextWaveDataID = 0;
 
 		/// <summary>
-		/// Map for finding decoded audio data in cache by filename.
-		/// This is used to evade a lookup in the vector.
+		/// Cache for decoded audio data, keyed by unique wave data ID.
+		/// This is used to cache the decoded audio data to avoid decoding every time the audio is played.
+		/// </summary>
+		FranAudioShared::Containers::UnorderedMap<size_t, FranAudio::Sound::WaveData> waveDataCache;
+
+		/// <summary>
+		/// Map for finding decoded audio data in the cache by canonical file path.
+		/// This is what prevents the same file from being decoded twice.
 		/// </summary>
 		FranAudioShared::Containers::UnorderedMap<std::string, size_t> filenameWaveMap;
+
+		/// <summary>
+		/// Canonicalise a path for use as a filenameWaveMap key: absolute, normalised,
+		/// symlinks resolved, and lowercased on Windows. Different spellings of the same
+		/// file ("a.wav", ".\a.wav", its absolute path) map to the same key.
+		/// </summary>
+		static std::string CanonicalisePath(const std::string& filename);
 
 		/// <summary>
 		/// Currently Active Sounds
 		/// Tied to nextSoundID
 		/// </summary>
 		FranAudioShared::Containers::UnorderedMap<size_t, FranAudio::Sound::Sound> activeSounds;
+
+		// ========================
+		// Sound Groups
+		// ========================
+
+		/// <summary>
+		/// Volume multiplier per sound group. Groups are created implicitly on first use.
+		/// </summary>
+		FranAudioShared::Containers::UnorderedMap<std::string, float> groupVolumes;
+
+		/// <summary>
+		/// Group assignment per sound ID. Sounds without an entry belong to no group.
+		/// Stale entries of finished sounds are cleaned up lazily in SetGroupVolume.
+		/// </summary>
+		FranAudioShared::Containers::UnorderedMap<size_t, std::string> soundGroups;
+
+		/// <summary>
+		/// The volume set by the user per sound ID, before the group multiplier is applied.
+		/// The backend itself is given baseVolume * groupVolume.
+		/// </summary>
+		FranAudioShared::Containers::UnorderedMap<size_t, float> soundBaseVolumes;
+
+		/// <summary>
+		/// Get the group volume multiplier that applies to a sound (1.0 if ungrouped).
+		/// </summary>
+		float GetGroupVolumeForSound(size_t soundID) const;
+
+		/// <summary>
+		/// Apply a volume directly to the backend's sound instance.
+		/// This is the raw applied volume; group multipliers are handled by SetSoundVolume().
+		/// </summary>
+		/// <param name="soundID">ID of the sound to set the volume of</param>
+		/// <param name="volume">Final volume to apply (0.0 - 1.0)</param>
+		virtual void SetSoundVolumeRaw(size_t soundID, float volume) = 0;
+
+		/// <summary>
+		/// Read the volume currently applied to the backend's sound instance.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to get the volume of</param>
+		/// <returns>Applied volume of the sound (0.0 - 1.0)</returns>
+		virtual float GetSoundVolumeRaw(size_t soundID) = 0;
 
 		// ========================
 		// Decode Settings
@@ -306,10 +361,36 @@ namespace FranAudio::Backend
 		virtual FRANAUDIO_API size_t PlayAudioFile(const std::string& filename);
 
 		/// <summary>
-		/// Retrieves the list of currently loaded wave data.
+		/// Unload a previously loaded audio file and free its decoded data.
+		/// Fails if any active sound is still playing this wave data.
+		///
+		/// <para/> Note: The freed cache slot is recycled by the next LoadAudioFile call,
+		/// so wave data indices of other loaded files stay valid.
+		/// </summary>
+		/// <param name="filename">Path to the audio file that was loaded</param>
+		/// <returns>True if the file was unloaded, false if it was not loaded or still in use</returns>
+		virtual FRANAUDIO_API bool UnloadAudioFile(const std::string& filename);
+
+		/// <summary>
+		/// Play an audio file by streaming it from disk in chunks instead of decoding it
+		/// fully into memory. Intended for music and other long files.
+		///
+		/// <para/> Note: Streamed sounds are not cached in the wave data cache and have no
+		/// wave data index. All per-sound operations (volume, pitch, position, looping...)
+		/// work as usual.
+		/// <para/> Note: Backends without native streaming support fall back to a full
+		/// in-memory decode via LoadAudioFile + PlayAudioFile.
+		/// </summary>
+		/// <param name="filename">Path to the audio file</param>
+		/// <param name="looping">True to loop the sound, false to play it once</param>
+		/// <returns>Active Sounds List Index</returns>
+		virtual FRANAUDIO_API size_t PlayAudioFileStream(const std::string& filename, bool looping = false);
+
+		/// <summary>
+		/// Retrieves the currently loaded wave data, keyed by unique wave data ID.
 		/// </summary>
 		/// <returns>Wave data cache</returns>
-		virtual const FRANAUDIO_API FranAudioShared::Containers::Vector<FranAudio::Sound::WaveData>& GetWaveDataCache();
+		virtual const FRANAUDIO_API FranAudioShared::Containers::UnorderedMap<size_t, FranAudio::Sound::WaveData>& GetWaveDataCache();
 
 		// ========================
 		// Sound Management
@@ -343,17 +424,55 @@ namespace FranAudio::Backend
 
 		/// <summary>
 		/// Set the volume of a playing sound by its index.
+		/// If the sound is in a group, the group's volume multiplier is applied on top.
 		/// </summary>
 		/// <param name="soundID">ID of the sound to set the volume of</param>
 		/// <param name="volume">Volume to set the sound to (0.0 - 1.0)</param>
-		virtual void SetSoundVolume(size_t soundID, float volume) = 0;
+		FRANAUDIO_API void SetSoundVolume(size_t soundID, float volume);
 
 		/// <summary>
 		/// Get the volume of a playing sound by its index.
+		/// This is the volume set by SetSoundVolume, without the group multiplier.
 		/// </summary>
 		/// <param name="soundID">ID of the sound to get the volume of</param>
 		/// <returns>Volume of the sound (0.0 - 1.0)</returns>
-		virtual float GetSoundVolume(size_t soundID) = 0;
+		FRANAUDIO_API float GetSoundVolume(size_t soundID);
+
+		// ========================
+		// Sound Groups
+		// ========================
+
+		/// <summary>
+		/// Assign a sound to a group (e.g. "sfx", "music", "voice").
+		/// Groups are created implicitly; the group's volume multiplier is applied immediately.
+		/// Group names must not contain the '|' character (reserved by the network protocol).
+		/// </summary>
+		/// <param name="soundID">ID of the sound to assign</param>
+		/// <param name="groupName">Name of the group</param>
+		FRANAUDIO_API void SetSoundGroup(size_t soundID, const std::string& groupName);
+
+		/// <summary>
+		/// Get the group a sound belongs to.
+		/// Every sound belongs to a group; unassigned sounds are in the default
+		/// "__ungrpd__" group (FranAudioShared::defaultSoundGroupName).
+		/// </summary>
+		/// <param name="soundID">ID of the sound to check</param>
+		/// <returns>Group name</returns>
+		FRANAUDIO_API std::string GetSoundGroup(size_t soundID) const;
+
+		/// <summary>
+		/// Set the volume multiplier of a group and reapply it to all sounds in the group.
+		/// </summary>
+		/// <param name="groupName">Name of the group</param>
+		/// <param name="volume">Volume multiplier for the group (0.0 - 1.0)</param>
+		FRANAUDIO_API void SetGroupVolume(const std::string& groupName, float volume);
+
+		/// <summary>
+		/// Get the volume multiplier of a group.
+		/// </summary>
+		/// <param name="groupName">Name of the group</param>
+		/// <returns>Volume multiplier of the group (1.0 if never set)</returns>
+		FRANAUDIO_API float GetGroupVolume(const std::string& groupName) const;
 
 		/// <summary>
 		/// Set the pitch of a playing sound by its index.
@@ -368,6 +487,20 @@ namespace FranAudio::Backend
 		/// <param name="soundID">ID of the sound to get the pitch of</param>
 		/// <returns>Pitch of the sound (1.0 = normal pitch)</returns>
 		virtual float GetSoundPitch(size_t soundID) = 0;
+
+		/// <summary>
+		/// Set whether a playing sound loops by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to modify</param>
+		/// <param name="looping">True to loop the sound, false to play it once</param>
+		virtual void SetSoundLooping(size_t soundID, bool looping) = 0;
+
+		/// <summary>
+		/// Check if a playing sound loops by its index.
+		/// </summary>
+		/// <param name="soundID">ID of the sound to check</param>
+		/// <returns>True if the sound is looping, false if not</returns>
+		virtual bool IsSoundLooping(size_t soundID) = 0;
 
 		/// <summary>
 		/// Set the position of a playing sound by its index.

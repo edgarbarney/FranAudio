@@ -22,9 +22,9 @@ sockaddr_in serverAddress;
 bool isSocketValid = false;
 bool isWSAInitialised = false;
 
-static const wchar_t* StringToWideString(const char* asciiStr)
+static std::wstring StringToWideString(const char* asciiStr)
 {
-	static wchar_t wideStr[256];
+	wchar_t wideStr[256] = {};
 	MultiByteToWideChar(CP_UTF8, 0, asciiStr, -1, wideStr, 256);
 	return wideStr;
 }
@@ -49,8 +49,34 @@ void ClosedBySignal(int signal)
 	FranAudioServer::Shutdown();
 }
 
-int main()
+/// <summary>
+/// Waits until the listen socket has a pending connection.
+/// </summary>
+/// <param name="timeoutSeconds">Maximum time to wait, or -1 to wait forever</param>
+/// <returns>True if a connection is pending, false if the wait timed out or failed</returns>
+static bool WaitForPendingConnection(SOCKET socket, int timeoutSeconds)
 {
+	fd_set readSet;
+	FD_ZERO(&readSet);
+	FD_SET(socket, &readSet);
+
+	timeval timeout = { timeoutSeconds, 0 };
+	return select(0, &readSet, nullptr, nullptr, timeoutSeconds < 0 ? nullptr : &timeout) == 1;
+}
+
+int main(int argc, char** argv)
+{
+	// -autoexit is used when the client launches the server automatically.
+	// When it's used, the server exits when no client (re)connects within the idle timeout, so it dies with the game.
+	bool autoExit = false;
+	for (int i = 1; i < argc; ++i)
+	{
+		if (std::string_view(argv[i]) == "-autoexit")
+		{
+			autoExit = true;
+		}
+	}
+
 	if (!SetConsoleCtrlHandler(ConsoleEventsHandler, TRUE))
 	{
 		FranAudioShared::Logger::LogError("Could not set control handler");
@@ -89,7 +115,7 @@ int main()
 
 	serverAddress.sin_family = AF_INET;
 	serverAddress.sin_port = htons(FranAudioShared::Network::listenPort);
-	if (InetPton(AF_INET, StringToWideString(FranAudioShared::Network::listenAddress), &serverAddress.sin_addr) != 1)
+	if (InetPton(AF_INET, StringToWideString(FranAudioShared::Network::listenAddress).c_str(), &serverAddress.sin_addr) != 1)
 	{
 		FranAudioShared::Logger::LogError("Invalid address!");
 		FranAudioServer::Shutdown();
@@ -115,6 +141,12 @@ int main()
 	bool shutDown = false;
 	while (!shutDown)
 	{
+		if (autoExit && !WaitForPendingConnection(listenSocket, FranAudioShared::Network::serverIdleTimeoutSeconds))
+		{
+			FranAudioShared::Logger::LogMessage(std::format("No client connected within {} seconds, exiting.", FranAudioShared::Network::serverIdleTimeoutSeconds));
+			break;
+		}
+
 		clientSocket = accept(listenSocket, nullptr, nullptr);
 		if (clientSocket == INVALID_SOCKET)
 		{
@@ -148,7 +180,20 @@ int main()
 			}
 
 			std::string request = *requestOpt;
+
+			// Fire-and-Forget no reply messages ("$!name|...") are executed without sending a reply.
+			const bool noReply = request.size() >= 2 && request[0] == '$' && request[1] == FranAudioShared::Network::noReplyMarker;
+			if (noReply)
+			{
+				request.erase(1, 1); // Strip the marker so the handler sees a normal "$name|..." message.
+			}
+
 			std::string response = FranAudioServer::Receive(request);
+
+			if (noReply)
+			{
+				continue;
+			}
 
 			if (response.empty())
 			{
