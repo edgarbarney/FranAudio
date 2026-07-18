@@ -187,6 +187,15 @@ namespace FranAudioClient
 
 		// The server may have been restarted, so cached values may be stale.
 		Wrapper::ClearCache();
+
+		// Re-initialise the server's backend state.
+		// Uses the raw frame helpers instead of Send().
+		// Because Send() calls Reconnect() on failure, which would recurse back into here.
+		if (FranAudioShared::Network::Win32Helpers::SendFrame(tcpSocket, "$server-init"))
+		{
+			FranAudioShared::Network::Win32Helpers::RecvFrame(tcpSocket);
+		}
+
 		return true;
 	}
 

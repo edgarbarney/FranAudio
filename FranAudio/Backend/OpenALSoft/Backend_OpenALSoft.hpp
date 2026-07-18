@@ -51,6 +51,12 @@ namespace FranAudio::Backend
 
 	public:
 		/// <summary>
+		/// Safety Net: Uninitialises the engine and device if Shutdown() was never called.
+		/// So destroying a live backend can't cause a segfault.
+		/// </summary>
+		FRANAUDIO_API ~OpenALSoft() override;
+
+		/// <summary>
 		/// Initialise the backend.
 		/// This is used to initialise the backend and set it up for use.
 		/// Called by CreateBackend(). Unless you're manually managing backends, you shouldn't need to call this.

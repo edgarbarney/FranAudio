@@ -62,6 +62,13 @@ namespace FranAudioShared
 	};
 
 	/// <summary>
+	/// Default attenuation parameters applied to newly played 3D sounds.
+	/// minDistance is the radius in which the sound plays at full volume.
+	/// Beyond it, gain falls off as minDistance / distance (inverse model, rolloffFactor = 1).
+	/// </summary>
+	inline constexpr SoundAttenuation defaultSoundAttenuation = { 1.0f, 1.0f, 10000.0f };
+
+	/// <summary>
 	/// The group every sound belongs to unless explicitly assigned to another one.
 	/// There is no "ungrouped" sounds. Group operations on this name will modify all unassigned sounds.
 	/// </summary>

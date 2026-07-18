@@ -9,6 +9,14 @@
 
 namespace FranAudio::Backend
 {
+	FRANAUDIO_API miniaudio::~miniaudio()
+	{
+		if (isEngineInitialised)
+		{
+			Shutdown();
+		}
+	}
+
 	FRANAUDIO_API bool miniaudio::Init(FranAudio::Decoder::DecoderType decoderType)
 	{
 		engineConfig = ma_engine_config_init();
@@ -25,6 +33,8 @@ namespace FranAudio::Backend
 			ma_engine_uninit(&engine);
 			return false;
 		}
+
+		isEngineInitialised = true;
 
 		// In case we're using miniaudio decoder with custom decoder backend
 		defaultDecoderConfig = ma_decoder_config_init_default();
@@ -74,20 +84,25 @@ namespace FranAudio::Backend
 
 	FRANAUDIO_API void miniaudio::Shutdown(bool forReset)
 	{
-		// Stop and uninit all active sounds
-		for (auto& [soundID, soundData] : miniaudioSoundData)
+		if (isEngineInitialised)
 		{
-			ma_sound_stop(&soundData->sound);
-			ma_sound_uninit(&soundData->sound);
-			if (!soundData->isStreamed)
+			// Stop and uninit all active sounds
+			for (auto& [soundID, soundData] : miniaudioSoundData)
 			{
-				ma_audio_buffer_uninit(&soundData->audioBuffer);
+				ma_sound_stop(&soundData->sound);
+				ma_sound_uninit(&soundData->sound);
+				if (!soundData->isStreamed)
+				{
+					ma_audio_buffer_uninit(&soundData->audioBuffer);
+				}
 			}
-		}
 
-		miniaudioSoundData.clear();
-		ma_device_uninit(&device);
-		ma_engine_uninit(&engine);
+			miniaudioSoundData.clear();
+			ma_device_uninit(&device);
+			ma_engine_uninit(&engine);
+
+			isEngineInitialised = false;
+		}
 
 		Backend::Shutdown(forReset);
 	}
@@ -184,9 +199,9 @@ namespace FranAudio::Backend
 
 		ma_sound_set_attenuation_model(&miniaudioSound->sound, ma_attenuation_model_inverse);
 
-		ma_sound_set_min_distance(&miniaudioSound->sound, 0.02f); // Non-attenuated distance. Within this distance, the sound is at full volume.
-		ma_sound_set_max_distance(&miniaudioSound->sound, 50.0f);  // Distance at which attenuation stops changing
-		ma_sound_set_rolloff(&miniaudioSound->sound, 1.0f); // How fast it fades after the min distance
+		ma_sound_set_min_distance(&miniaudioSound->sound, FranAudioShared::defaultSoundAttenuation.minDistance); // Non-attenuated distance. Within this distance, the sound is at full volume.
+		ma_sound_set_max_distance(&miniaudioSound->sound, FranAudioShared::defaultSoundAttenuation.maxDistance); // Distance at which attenuation stops changing
+		ma_sound_set_rolloff(&miniaudioSound->sound, FranAudioShared::defaultSoundAttenuation.rolloffFactor); // How fast it fades after the min distance
 
 		miniaudioSoundData[soundID] = std::move(miniaudioSound);
 
@@ -231,9 +246,9 @@ namespace FranAudio::Backend
 
 		ma_sound_set_attenuation_model(&miniaudioSound->sound, ma_attenuation_model_inverse);
 
-		ma_sound_set_min_distance(&miniaudioSound->sound, 0.02f); // Non-attenuated distance. Within this distance, the sound is at full volume.
-		ma_sound_set_max_distance(&miniaudioSound->sound, 50.0f);  // Distance at which attenuation stops changing
-		ma_sound_set_rolloff(&miniaudioSound->sound, 1.0f); // How fast it fades after the min distance
+		ma_sound_set_min_distance(&miniaudioSound->sound, FranAudioShared::defaultSoundAttenuation.minDistance); // Non-attenuated distance. Within this distance, the sound is at full volume.
+		ma_sound_set_max_distance(&miniaudioSound->sound, FranAudioShared::defaultSoundAttenuation.maxDistance); // Distance at which attenuation stops changing
+		ma_sound_set_rolloff(&miniaudioSound->sound, FranAudioShared::defaultSoundAttenuation.rolloffFactor); // How fast it fades after the min distance
 
 		ma_sound_start(&miniaudioSound->sound);
 

@@ -487,6 +487,35 @@ namespace FranAudioClient::Wrapper
 			}
 		}
 
+		FRANAUDIO_CLIENT_API const FranAudioShared::Containers::Vector<std::pair<size_t, std::string>> GetLoadedAudioFiles()
+		{
+			FranAudioShared::Containers::Vector<std::pair<size_t, std::string>> loadedFiles;
+
+			const auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-get_loaded_files", {}));
+
+			// Empty reply just means nothing is loaded.
+			if (response.empty() || response == "err")
+			{
+				return loadedFiles;
+			}
+
+			const auto parts = SplitResponse(response);
+			for (size_t i = 0; i + 1 < parts.size(); i += 2)
+			{
+				try
+				{
+					loadedFiles.emplace_back(static_cast<size_t>(std::stoull(parts[i])), parts[i + 1]);
+				}
+				catch (const std::exception&)
+				{
+					FranAudioShared::Logger::LogError("Invalid response from server for get_loaded_files");
+					break;
+				}
+			}
+
+			return loadedFiles;
+		}
+
 		FRANAUDIO_CLIENT_API void SetGroupVolume(const std::string& groupName, float volume)
 		{
 			cache.groupVolumes[groupName] = volume;

@@ -40,6 +40,12 @@ namespace FranAudio::Backend
 		ma_device_config deviceConfig = {};
 		ma_decoder_config defaultDecoderConfig = {};
 
+		/// <summary>
+		/// True while the engine and device are initialised.
+		/// Guards against double-uninitialisation.
+		/// </summary>
+		bool isEngineInitialised = false;
+
 		// ==========
 		// VORBIS
 		// ==========
@@ -97,8 +103,11 @@ namespace FranAudio::Backend
 		FranAudioShared::Containers::UnorderedMap<size_t, std::unique_ptr<MiniaudioSound>> miniaudioSoundData;
 
 	public:
-		//miniaudio();
-		//~miniaudio();
+		/// <summary>
+		/// Safety Net: Uninitialises the engine and device if Shutdown() was never called.
+		/// So destroying a live backend can't cause a segfault.
+		/// </summary>
+		FRANAUDIO_API ~miniaudio() override;
 
 		/// <summary>
 		/// Initialise the backend.

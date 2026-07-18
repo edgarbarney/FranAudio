@@ -176,6 +176,13 @@ int main(int argc, char** argv)
 				FranAudioShared::Logger::LogMessage("Client disconnected. Waiting for a new connection...");
 				closesocket(clientSocket);
 				clientSocket = INVALID_SOCKET;
+
+				// The client is gone.
+				if (FranAudio::IsBackendValid())
+				{
+					FranAudio::Reset();
+				}
+
 				break; // Let's go back to accept loop.
 			}
 
@@ -218,6 +225,11 @@ int main(int argc, char** argv)
 
 void FranAudioServer::Shutdown()
 {
+	// Shut the audio backend down before the process dies.
+	// Audio thread stops cleanly instead of imploding.
+	if (FranAudio::IsBackendValid())
+		FranAudio::Shutdown();
+
 	if (clientSocket != INVALID_SOCKET)
 		closesocket(clientSocket);
 	if (isSocketValid)

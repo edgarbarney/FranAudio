@@ -59,10 +59,28 @@ namespace FranAudio::Backend
 		Backend::Reset();
 	}
 
+	FRANAUDIO_API OpenALSoft::~OpenALSoft()
+	{
+		if (mainContext || openALDevice)
+		{
+			Shutdown();
+		}
+	}
+
 	FRANAUDIO_API void OpenALSoft::Shutdown(bool forReset)
 	{
 		if (mainContext)
 		{
+			// Release all sources and buffers while the context is still alive.
+			// We don't want a later Reset() to collide with stale handles.
+			for (auto& [soundID, soundData] : openalSoundData)
+			{
+				alSourceStop(soundData->sourceHandle);
+				alDeleteSources(1, &soundData->sourceHandle);
+				alDeleteBuffers(1, &soundData->sourceBuffer);
+			}
+			ALErrorCheck();
+
 			alcMakeContextCurrent(nullptr);
 			ALCErrorCheck(openALDevice);
 			alcDestroyContext(mainContext);
@@ -77,6 +95,8 @@ namespace FranAudio::Backend
 
 			openALDevice = nullptr;
 		}
+
+		openalSoundData.clear();
 
 		Backend::Shutdown(forReset);
 	}
@@ -191,9 +211,9 @@ namespace FranAudio::Backend
 		alSourcei(openalSound->sourceHandle, AL_LOOPING, AL_FALSE);
 		alSourcei(openalSound->sourceHandle, AL_BUFFER, openalSound->sourceBuffer);
 
-		alSourcef(openalSound->sourceHandle, AL_REFERENCE_DISTANCE, 0.02f); // Non-attenuated distance. Within this distance, the sound is at full volume.
-		alSourcef(openalSound->sourceHandle, AL_MAX_DISTANCE, 50.0f); // Distance at which attenuation stops changing
-		alSourcef(openalSound->sourceHandle, AL_ROLLOFF_FACTOR, 1.0f); // How fast it fades after the reference distance
+		alSourcef(openalSound->sourceHandle, AL_REFERENCE_DISTANCE, FranAudioShared::defaultSoundAttenuation.minDistance); // Non-attenuated distance. Within this distance, the sound is at full volume.
+		alSourcef(openalSound->sourceHandle, AL_MAX_DISTANCE, FranAudioShared::defaultSoundAttenuation.maxDistance); // Distance at which attenuation stops changing
+		alSourcef(openalSound->sourceHandle, AL_ROLLOFF_FACTOR, FranAudioShared::defaultSoundAttenuation.rolloffFactor); // How fast it fades after the reference distance
 
 		alSourcePlay(openalSound->sourceHandle);
 

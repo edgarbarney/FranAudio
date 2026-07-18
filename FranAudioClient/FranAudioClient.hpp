@@ -267,6 +267,12 @@ namespace FranAudioClient
 			FRANAUDIO_CLIENT_API size_t PlayAudioFileStream(const std::string& filename, bool looping = false);
 
 			/// <summary>
+			/// Get the list of audio files currently loaded on the server.
+			/// </summary>
+			/// <returns>A vector of (wave data ID, filename) pairs</returns>
+			FRANAUDIO_CLIENT_API const FranAudioShared::Containers::Vector<std::pair<size_t, std::string>> GetLoadedAudioFiles();
+
+			/// <summary>
 			/// Set the volume multiplier of a sound group (e.g. "sfx", "music", "voice").
 			/// Applied on top of each grouped sound's own volume.
 			/// </summary>

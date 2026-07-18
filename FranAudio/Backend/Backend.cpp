@@ -56,7 +56,10 @@ namespace FranAudio::Backend
 	FRANAUDIO_API void Backend::Reset()
 	{
 		Shutdown(true);
-		currentDecoder->Reset();
+		if (currentDecoder)
+		{
+			currentDecoder->Reset();
+		}
 		Init(currentDecoderType);
 	}
 

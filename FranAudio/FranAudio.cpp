@@ -11,19 +11,26 @@ namespace FranAudio
 
 	FRANAUDIO_API void Init()
 	{
-		gGlobals.currentBackend = nullptr; // Initialise to null
+		// Destroying a live backend without Shutdown() leaves its audio thread using freed memory.
+		// SetBackend() handles the teardown properly so no segfaults occur.
 		SetBackend(defaultBackend);
 	}
 
 	FRANAUDIO_API void Reset()
 	{
-		gGlobals.currentBackend->Reset();
+		if (gGlobals.currentBackend)
+		{
+			gGlobals.currentBackend->Reset();
+		}
 	}
 
 	FRANAUDIO_API void Shutdown()
 	{
-		gGlobals.currentBackend->Shutdown();
-		gGlobals.currentBackend.reset();
+		if (gGlobals.currentBackend)
+		{
+			gGlobals.currentBackend->Shutdown();
+			gGlobals.currentBackend.reset();
+		}
 	}
 
 	FRANAUDIO_API void RouteLoggingToConsole(FranAudioShared::Logger::ConsoleStreamBuffer* consoleBuffer)

@@ -19,7 +19,16 @@ namespace FranAudioServer
 	{
 		FranAudioShared::Logger::LogMessage("FranAudioServer::Init() Start");
 
-		FranAudio::Init();
+		if (FranAudio::IsBackendValid())
+		{
+			// A client (re)connected while the backend is already up.
+			// Reset for a clean slate instead of re-initialising.
+			FranAudio::Reset();
+		}
+		else
+		{
+			FranAudio::Init();
+		}
 
 		FranAudioShared::Logger::LogMessage("FranAudioServer::Init() Done");
 	}
@@ -572,6 +581,32 @@ namespace FranAudioServer
 				}
 
 				return std::to_string(FranAudio::GetBackend()->GetGroupVolume(fn.params[0]));
+			}
+		},
+
+		// Backend::GetWaveDataCache (file list only)
+		// Params: none
+		// Returns: waveDataID and filename pairs, "id|filename|id|filename|...", empty if none
+		{
+			"backend-get_loaded_files",
+			[](const FranAudioShared::Network::NetworkFunction& fn)
+			{
+				if (FranAudio::GetBackend() == nullptr)
+				{
+					FranAudioShared::Logger::LogError("Backend is not initialised!");
+					return std::string("err");
+				}
+
+				std::string result;
+				for (const auto& [waveDataID, waveData] : FranAudio::GetBackend()->GetWaveDataCache())
+				{
+					if (!result.empty())
+					{
+						result += '|';
+					}
+					result += std::to_string(waveDataID) + "|" + waveData.GetFilename();
+				}
+				return result;
 			}
 		},
 
