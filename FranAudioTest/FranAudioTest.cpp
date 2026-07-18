@@ -22,6 +22,8 @@
 #include <iostream>
 #include <string>
 #include <format>
+#include <filesystem>
+#include <utility>
 
 #if defined(_WIN32) || defined(_WIN64)
 #include "windows.h"
@@ -34,6 +36,7 @@
 #include "FranAudioClient/FranAudioClient.hpp"
 #endif
 
+#include "FranAudioShared/FranAudioShared.hpp"
 #include "FranAudioShared/Logger/Logger.hpp"
 #include "FranAudioShared/Containers/Vector.hpp"
 #include "FranAudioShared/Containers/UnorderedMap.hpp"
@@ -132,25 +135,36 @@ static void DrawConsole(FranAudioShared::Logger::FranAudioConsole& franConsole, 
 	ImGui::End();
 }
 
-static size_t PlayTestFile(const std::string& filename)
+static size_t PlayTestFile(const std::string& filename, bool looping, bool streamed)
 {
 	FranAudioShared::Logger::LogMessage(std::format("Playing test file: {}", filename));
 
 #ifndef FRANAUDIO_USE_SERVER
 	auto backend = FranAudio::GetBackend();
+
+	if (streamed)
+	{
+		return backend->PlayAudioFileStream(filename, looping);
+	}
+
 	backend->LoadAudioFile(filename);
 	size_t soundId = backend->PlayAudioFile(filename);
 
-	if (soundId == SIZE_MAX)
+	if (soundId != SIZE_MAX && looping)
 	{
-		return SIZE_MAX;
+		backend->SetSoundLooping(soundId, true);
 	}
 
 	return soundId;
 #else
+	if (streamed)
+	{
+		return FranAudioClient::Wrapper::Backend::PlayAudioFileStream(filename, looping);
+	}
+
 	FranAudioClient::Wrapper::Backend::LoadAudioFile(filename);
 
-	return FranAudioClient::Wrapper::Backend::PlayAudioFile(filename);
+	return FranAudioClient::Wrapper::Backend::PlayAudioFile(filename, looping);
 #endif
 }
 
@@ -235,6 +249,85 @@ static float GetSoundVolume(size_t soundId)
 	return FranAudio::GetBackend()->GetSoundVolume(soundId);
 #else
 	return FranAudioClient::Wrapper::Sound::GetVolume(soundId);
+#endif
+}
+
+static void SetTestSoundPitch(size_t soundId, float pitch)
+{
+#ifndef FRANAUDIO_USE_SERVER
+	FranAudio::GetBackend()->SetSoundPitch(soundId, pitch);
+#else
+	FranAudioClient::Wrapper::Sound::SetPitch(soundId, pitch);
+#endif
+}
+
+static float GetTestSoundPitch(size_t soundId)
+{
+#ifndef FRANAUDIO_USE_SERVER
+	return FranAudio::GetBackend()->GetSoundPitch(soundId);
+#else
+	return FranAudioClient::Wrapper::Sound::GetPitch(soundId);
+#endif
+}
+
+static void SetTestSoundLooping(size_t soundId, bool looping)
+{
+#ifndef FRANAUDIO_USE_SERVER
+	FranAudio::GetBackend()->SetSoundLooping(soundId, looping);
+#else
+	FranAudioClient::Wrapper::Sound::SetLooping(soundId, looping);
+#endif
+}
+
+static bool IsTestSoundLooping(size_t soundId)
+{
+#ifndef FRANAUDIO_USE_SERVER
+	return FranAudio::GetBackend()->IsSoundLooping(soundId);
+#else
+	return FranAudioClient::Wrapper::Sound::IsLooping(soundId);
+#endif
+}
+
+static void SetTestSoundAttenuation(size_t soundId, const FranAudioShared::SoundAttenuation& attenuation)
+{
+#ifndef FRANAUDIO_USE_SERVER
+	FranAudio::GetBackend()->SetSoundAttenuation(soundId, attenuation);
+#else
+	FranAudioClient::Wrapper::Sound::SetAttenuation(soundId, attenuation.rolloffFactor, attenuation.minDistance, attenuation.maxDistance);
+#endif
+}
+
+static FranAudioShared::SoundAttenuation GetTestSoundAttenuation(size_t soundId)
+{
+#ifndef FRANAUDIO_USE_SERVER
+	return FranAudio::GetBackend()->GetSoundAttenuation(soundId);
+#else
+	FranAudioShared::SoundAttenuation attenuation = {};
+	FranAudioClient::Wrapper::Sound::GetAttenuation(soundId, attenuation.rolloffFactor, attenuation.minDistance, attenuation.maxDistance);
+	return attenuation;
+#endif
+}
+
+static bool UnloadTestFile(const std::string& filename)
+{
+#ifndef FRANAUDIO_USE_SERVER
+	return FranAudio::GetBackend()->UnloadAudioFile(filename);
+#else
+	return FranAudioClient::Wrapper::Backend::UnloadAudioFile(filename);
+#endif
+}
+
+static FranAudioShared::Containers::Vector<std::pair<size_t, std::string>> GetLoadedTestFiles()
+{
+#ifndef FRANAUDIO_USE_SERVER
+	FranAudioShared::Containers::Vector<std::pair<size_t, std::string>> loadedFiles;
+	for (const auto& [waveDataID, waveData] : FranAudio::GetBackend()->GetWaveDataCache())
+	{
+		loadedFiles.emplace_back(waveDataID, waveData.GetFilename());
+	}
+	return loadedFiles;
+#else
+	return FranAudioClient::Wrapper::Backend::GetLoadedAudioFiles();
 #endif
 }
 
@@ -515,6 +608,25 @@ int main()
 			ImGui::EndCombo();
 		}
 
+		// For the next played sound.
+		static bool playLooping = false;
+		static bool playStreamed = false;
+
+		// The test app uses screen pixels as world units
+		// So we have to scale up the defaults compared to the library's normal use.
+		static FranAudioShared::SoundAttenuation newSoundAttenuation = { 1.0f, 100.0f, 10000.0f };
+
+		ImGui::Separator();
+		ImGui::Text("Play Options:");
+		ImGui::Checkbox("Loop", &playLooping);
+		ImGui::SameLine();
+		ImGui::Checkbox("Stream from disk", &playStreamed);
+
+		ImGui::Text("New Sound Attenuation:");
+		ImGui::SliderFloat("Rolloff Factor", &newSoundAttenuation.rolloffFactor, 0.0f, 10.0f, "%.2f");
+		ImGui::SliderFloat("Min Distance", &newSoundAttenuation.minDistance, 0.0f, 2000.0f, "%.1f");
+		ImGui::SliderFloat("Max Distance", &newSoundAttenuation.maxDistance, 0.0f, 20000.0f, "%.1f");
+
 		if (ImGui::Button("Browse file to play"))
 		{
 			fileBrowser.Open();
@@ -600,6 +712,30 @@ int main()
 					SetSoundVolume(soundId, soundVolume);
 				}
 
+				float soundPitch = GetTestSoundPitch(soundId);
+				ImGui::Text("Sound Pitch: ");
+				if (ImGui::SliderFloat("##soundpitch", &soundPitch, 0.25f, 4.0f, "%.2f"))
+				{
+					SetTestSoundPitch(soundId, soundPitch);
+				}
+
+				bool soundLooping = IsTestSoundLooping(soundId);
+				if (ImGui::Checkbox("Looping", &soundLooping))
+				{
+					SetTestSoundLooping(soundId, soundLooping);
+				}
+
+				FranAudioShared::SoundAttenuation soundAttenuation = GetTestSoundAttenuation(soundId);
+				bool attenuationChanged = false;
+				ImGui::Text("Attenuation: ");
+				attenuationChanged |= ImGui::SliderFloat("Rolloff##soundatt", &soundAttenuation.rolloffFactor, 0.0f, 10.0f, "%.2f");
+				attenuationChanged |= ImGui::SliderFloat("Min Dist##soundatt", &soundAttenuation.minDistance, 0.0f, 2000.0f, "%.1f");
+				attenuationChanged |= ImGui::SliderFloat("Max Dist##soundatt", &soundAttenuation.maxDistance, 0.0f, 20000.0f, "%.1f");
+				if (attenuationChanged)
+				{
+					SetTestSoundAttenuation(soundId, soundAttenuation);
+				}
+
 				if (IsTestSoundPaused(soundId))
 				{
 					if (ImGui::Button(std::format("Resume Sound ID: {}", soundId).c_str()))
@@ -622,11 +758,77 @@ int main()
 			ImGui::End();
 		}
 
+		// Live WaveData cache view to watch allocations/unallocations in real time.
+		ImGui::Begin("Loaded Audio Files");
+			auto loadedFiles = GetLoadedTestFiles();
+			ImGui::Text("Loaded files: %zu", loadedFiles.size());
+			ImGui::Separator();
+			for (const auto& [waveDataID, loadedFilename] : loadedFiles)
+			{
+				ImGui::PushID(orderedID++);
+				if (ImGui::Button("Unload"))
+				{
+					UnloadTestFile(loadedFilename);
+				}
+				ImGui::SameLine();
+				ImGui::Text("[%zu] %s", waveDataID, std::filesystem::path(loadedFilename).filename().string().c_str());
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("%s", loadedFilename.c_str());
+				}
+				ImGui::PopID();
+			}
+		ImGui::End();
+
+		// Live active sounds view to watch allocations/unallocations in real time.
+		// Re-fetch the list in case a sound was stopped from its own window this frame.
+		soundIDs = GetActiveSoundIDs();
+		ImGui::Begin("Playing Sounds");
+			ImGui::Text("Active sounds: %zu", soundIDs.size());
+			bool stoppedAll = false;
+			if (ImGui::Button("Stop All"))
+			{
+				for (size_t soundId : soundIDs)
+				{
+					StopTestSound(soundId);
+				}
+				stoppedAll = true;
+			}
+			ImGui::Separator();
+			if (!stoppedAll)
+			{
+				for (size_t soundId : soundIDs)
+				{
+					// Query state before the stop button.
+					// So a click can't trigger "invalid sound" errors on the same frame.
+					const bool isPaused = IsTestSoundPaused(soundId);
+					const bool isLooping = IsTestSoundLooping(soundId);
+
+					ImGui::PushID(orderedID++);
+					if (ImGui::Button("Stop"))
+					{
+						StopTestSound(soundId);
+					}
+					ImGui::SameLine();
+					ImGui::Text("Sound ID: %zu%s%s", soundId,
+						isPaused ? " (paused)" : "",
+						isLooping ? " (looping)" : "");
+					ImGui::PopID();
+				}
+			}
+		ImGui::End();
+
 		fileBrowser.Display();
 
 		if (fileBrowser.HasSelected())
 		{
-			lastPlayedSoundId = PlayTestFile(fileBrowser.GetSelected().string());
+			lastPlayedSoundId = PlayTestFile(fileBrowser.GetSelected().string(), playLooping, playStreamed);
+
+			if (lastPlayedSoundId != SIZE_MAX)
+			{
+				SetTestSoundAttenuation(lastPlayedSoundId, newSoundAttenuation);
+			}
+
 			fileBrowser.ClearSelected();
 		}
 
