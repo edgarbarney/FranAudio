@@ -6,6 +6,8 @@
 #include <array>
 #include <tuple>
 #include <span>
+#include <chrono>
+#include <utility>
 
 #include "FranAudioAPI.hpp"
 
@@ -108,8 +110,50 @@ namespace FranAudio::Backend
 		/// <summary>
 		/// Remove backend resources for non-looping sounds which reached their end.
 		/// Implementations must also remove the sound from activeSounds and call OnSoundRemoved().
+		///
+		/// <para>
+		/// NOTE: This is a full sweep over every live sound, so it costs one backend state query per sound.
+		/// Do not call it from per-sound operations, use CleanupFinishedSoundsThrottled() or IsSoundFinished() there instead.
+		/// </para>
+		///
 		/// </summary>
 		virtual void CleanupFinishedSounds() = 0;
+
+		/// <summary>
+		/// Check whether a single non-looping sound has played to its end, without sweeping the other sounds.
+		/// Used by IsSoundValid() so that per-sound calls stay O(1).
+		/// </summary>
+		/// <param name="soundID">ID of the sound to check</param>
+		/// <returns>True if the sound exists in the backend and has finished playing</returns>
+		virtual bool IsSoundFinished(size_t soundID) = 0;
+
+		/// <summary>
+		/// Run a full CleanupFinishedSounds() sweep, but at most once per cleanupInterval.
+		///
+		/// <para>
+		/// NOTE: Every per-sound setter validates its ID first, and a game updating positions every frame produces one such call per sound per frame.
+		/// Sweeping on each of those made the whole update quadratic in the number of live sounds.
+		/// The sweep is amortised here instead, and IsSoundValid() answers per-sound queries by itself.
+		/// </para>
+		///
+		/// </summary>
+		void CleanupFinishedSoundsThrottled();
+
+		/// <summary>
+		/// Time of the last full cleanup sweep, used by CleanupFinishedSoundsThrottled().
+		/// </summary>
+		std::chrono::steady_clock::time_point lastCleanupTime = {};
+
+		/// <summary>
+		/// Shortest time between two sweeps triggered by CleanupFinishedSoundsThrottled().
+		///
+		/// <para>
+		/// NOTE: Finished sounds already report as invalid before they are reaped.
+		/// This only bounds how long their backend resources stay allocated.
+		/// </para>
+		///
+		/// </summary>
+		static constexpr std::chrono::milliseconds cleanupInterval = std::chrono::milliseconds(100);
 
 		/// <summary>
 		/// Clear common per-sound state after a sound is stopped or finishes.
@@ -537,6 +581,18 @@ namespace FranAudio::Backend
 		/// <param name="soundID">ID of the sound to set the position of</param>
 		/// <param name="position">Position to set the sound to</param>
 		virtual void SetSoundPosition(size_t soundID, const FranAudioShared::Vector3& position) = 0;
+
+		/// <summary>
+		/// Set the position of several playing sounds at once.
+		/// IDs which are no longer valid are skipped without logging.
+		///
+		/// <para>
+		/// NOTE: This exists so a caller tracking many moving sounds can update them all in one call, and over the network in one message, per frame.
+		/// </para>
+		///
+		/// </summary>
+		/// <param name="positions">Sound IDs paired with their new positions</param>
+		virtual FRANAUDIO_API void SetSoundPositions(std::span<const FranAudioShared::SoundPositionUpdate> positions);
 
 		/// <summary>
 		/// Get the position of a playing sound by its index.

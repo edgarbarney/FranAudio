@@ -3,6 +3,7 @@
 #ifdef FRANAUDIO_USE_OPENAL
 
 #include <array>
+#include <ranges>
 
 #include "Backend_OpenALSoft.hpp"
 
@@ -268,18 +269,30 @@ namespace FranAudio::Backend
 		OnSoundRemoved(soundID);
 	}
 
+	bool OpenALSoft::IsSoundFinished(size_t soundID)
+	{
+		const auto it = openalSoundData.find(soundID);
+
+		if (it == openalSoundData.end())
+		{
+			return false;
+		}
+
+		ALint sourceState = AL_INITIAL;
+		ALint looping = AL_FALSE;
+		alGetSourcei(it->second->sourceHandle, AL_SOURCE_STATE, &sourceState);
+		alGetSourcei(it->second->sourceHandle, AL_LOOPING, &looping);
+		ALErrorCheck();
+
+		return sourceState == AL_STOPPED && looping == AL_FALSE;
+	}
+
 	void OpenALSoft::CleanupFinishedSounds()
 	{
 		FranAudioShared::Containers::Vector<size_t> finishedSounds;
-		for (const auto& [soundID, sound] : openalSoundData)
+		for (const auto& soundID : openalSoundData | std::views::keys)
 		{
-			ALint sourceState = AL_INITIAL;
-			ALint looping = AL_FALSE;
-			alGetSourcei(sound->sourceHandle, AL_SOURCE_STATE, &sourceState);
-			alGetSourcei(sound->sourceHandle, AL_LOOPING, &looping);
-			ALErrorCheck();
-
-			if (sourceState == AL_STOPPED && looping == AL_FALSE)
+			if (IsSoundFinished(soundID))
 			{
 				finishedSounds.push_back(soundID);
 			}
@@ -300,7 +313,6 @@ namespace FranAudio::Backend
 	{
 		if (!activeSounds.contains(soundID) || !openalSoundData.contains(soundID))
 		{
-			FranAudioShared::Logger::LogError(std::format("{}: Tried to stop an invalid sound.", GetBackendName()));
 			return;
 		}
 

@@ -766,6 +766,29 @@ namespace FranAudioClient::Wrapper
 			FranAudioClient::SendNoReply(FranAudioShared::Network::NetworkFunction("sound-set_position", { std::to_string(soundIndex), std::to_string(position[0]), std::to_string(position[1]), std::to_string(position[2]) }));
 		}
 
+		FRANAUDIO_CLIENT_API void SetPositions(std::span<const FranAudioShared::SoundPositionUpdate> positions)
+		{
+			if (positions.empty())
+			{
+				return;
+			}
+
+			FranAudioShared::Containers::Vector<std::string> params;
+			params.reserve(positions.size() * 4);
+
+			for (const auto& update : positions)
+			{
+				cache.sounds[update.soundID].position = { update.position.x, update.position.y, update.position.z };
+
+				params.push_back(std::to_string(update.soundID));
+				params.push_back(std::to_string(update.position.x));
+				params.push_back(std::to_string(update.position.y));
+				params.push_back(std::to_string(update.position.z));
+			}
+
+			FranAudioClient::SendNoReply(FranAudioShared::Network::NetworkFunction("sound-set_position_multi", std::move(params)));
+		}
+
 		FRANAUDIO_CLIENT_API void GetPosition(size_t soundIndex, float position[3])
 		{
 			if (auto it = cache.sounds.find(soundIndex); it != cache.sounds.end() && it->second.position)

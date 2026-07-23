@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <chrono>
 #include <format>
+#include <vector>
 
 #include "FranAudio.hpp"
 
@@ -1050,6 +1051,43 @@ namespace FranAudioServer
 				catch (const std::exception& e)
 				{
 					FranAudioShared::Logger::LogError(std::format("Failed to set sound position: {}", e.what()));
+					return std::string("err");
+				}
+				return std::string();
+			}
+		},
+
+		// Sound::SetPositions
+		// Params: soundIndex, posX, posY, posZ repeated for every sound
+		// Returns: nothing
+		{
+			"sound-set_position_multi",
+			[](const FranAudioShared::Network::NetworkFunction& fn)
+			{
+				if (fn.params.empty() || (fn.params.size() % 4) != 0)
+				{
+					FranAudioShared::Logger::LogError("Malformed parameter list for sound-set_position_multi");
+					return std::string("err");
+				}
+				try
+				{
+					std::vector<FranAudioShared::SoundPositionUpdate> updates;
+					updates.reserve(fn.params.size() / 4);
+
+					for (size_t i = 0; i < fn.params.size(); i += 4)
+					{
+						updates.push_back
+						({
+							static_cast<size_t>(std::stoull(fn.params[i])),
+							{ std::stof(fn.params[i + 1]), std::stof(fn.params[i + 2]), std::stof(fn.params[i + 3]) }
+						});
+					}
+
+					FranAudio::GetBackend()->SetSoundPositions(updates);
+				}
+				catch (const std::exception& e)
+				{
+					FranAudioShared::Logger::LogError(std::format("Failed to set sound positions: {}", e.what()));
 					return std::string("err");
 				}
 				return std::string();

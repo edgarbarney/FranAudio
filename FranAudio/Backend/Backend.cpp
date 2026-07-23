@@ -309,16 +309,34 @@ namespace FranAudio::Backend
 	// Sound Management
 	// ========================
 
+	void Backend::CleanupFinishedSoundsThrottled()
+	{
+		const auto now = std::chrono::steady_clock::now();
+
+		if (now - lastCleanupTime < cleanupInterval)
+		{
+			return;
+		}
+
+		lastCleanupTime = now;
+		CleanupFinishedSounds();
+	}
+
 	FRANAUDIO_API bool Backend::IsSoundValid(size_t soundIndex)
 	{
-		CleanupFinishedSounds();
-
 		if (soundIndex == SIZE_MAX)
 		{
 			return false;
 		}
 
-		return activeSounds.contains(soundIndex);
+		CleanupFinishedSoundsThrottled();
+
+		if (!activeSounds.contains(soundIndex))
+		{
+			return false;
+		}
+
+		return !IsSoundFinished(soundIndex);
 	}
 
 	FRANAUDIO_API void Backend::SetSoundVolume(size_t soundID, float volume)
@@ -493,6 +511,19 @@ namespace FranAudio::Backend
 		}
 
 		return false;
+	}
+
+	FRANAUDIO_API void Backend::SetSoundPositions(std::span<const FranAudioShared::SoundPositionUpdate> positions)
+	{
+		for (const auto& update : positions)
+		{
+			if (!IsSoundValid(update.soundID))
+			{
+				continue;
+			}
+
+			SetSoundPosition(update.soundID, update.position);
+		}
 	}
 
 	void Backend::OnSoundRemoved(size_t soundID)

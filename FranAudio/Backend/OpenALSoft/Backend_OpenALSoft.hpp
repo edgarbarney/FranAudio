@@ -51,6 +51,7 @@ namespace FranAudio::Backend
 
 		void DestroySound(size_t soundID);
 		void CleanupFinishedSounds() override;
+		bool IsSoundFinished(size_t soundID) override;
 
 	public:
 		/// <summary>

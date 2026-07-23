@@ -52,6 +52,21 @@ namespace FranAudioShared
 	};
 
 	/// <summary>
+	/// A sound ID paired with the position to move it to.
+	///
+	/// <para>
+	/// NOTE: Used for batched position updates.
+	/// A game repositioning every tracked sound every frame would otherwise pay one message per sound per frame.
+	/// </para>
+	///
+	/// </summary>
+	struct SoundPositionUpdate
+	{
+		size_t soundID;
+		Vector3 position;
+	};
+
+	/// <summary>
 	/// Tuple-like type for sound attenuation parameters, containing rolloff factor, minimum distance, and maximum distance.
 	/// </summary>
 	struct SoundAttenuation

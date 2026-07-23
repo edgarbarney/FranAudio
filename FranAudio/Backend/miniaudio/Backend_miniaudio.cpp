@@ -2,6 +2,7 @@
 
 #include <iterator>
 #include <thread>
+#include <ranges>
 
 #include "Backend_miniaudio.hpp"
 
@@ -282,12 +283,26 @@ namespace FranAudio::Backend
 		OnSoundRemoved(soundID);
 	}
 
+	bool miniaudio::IsSoundFinished(size_t soundID)
+	{
+		const auto it = miniaudioSoundData.find(soundID);
+
+		if (it == miniaudioSoundData.end())
+		{
+			return false;
+		}
+
+		auto& sound = *it->second;
+
+		return !sound.isPaused && ma_sound_is_looping(&sound.sound) == MA_FALSE && ma_sound_at_end(&sound.sound) == MA_TRUE;
+	}
+
 	void miniaudio::CleanupFinishedSounds()
 	{
 		FranAudioShared::Containers::Vector<size_t> finishedSounds;
-		for (const auto& [soundID, sound] : miniaudioSoundData)
+		for (const auto& soundID : miniaudioSoundData | std::views::keys)
 		{
-			if (!sound->isPaused && ma_sound_is_looping(&sound->sound) == MA_FALSE && ma_sound_at_end(&sound->sound) == MA_TRUE)
+			if (IsSoundFinished(soundID))
 			{
 				finishedSounds.push_back(soundID);
 			}
@@ -308,7 +323,6 @@ namespace FranAudio::Backend
 	{
 		if (!activeSounds.contains(soundID) || !miniaudioSoundData.contains(soundID))
 		{
-			FranAudioShared::Logger::LogError("MiniAudio: Tried to stop an invalid sound.");
 			return;
 		}
 

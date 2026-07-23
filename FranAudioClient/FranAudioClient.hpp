@@ -1,7 +1,10 @@
 // FranticDreamer 2022-2025
 #pragma once
 
+#include <span>
+
 #include "FranAudioClientAPI.hpp"
+#include "FranAudioShared/FranAudioShared.hpp"
 #include "FranAudioShared/Logger/Logger.hpp"
 
 #include "Decoder/DecodeSettings.hpp"
@@ -408,6 +411,19 @@ namespace FranAudioClient
 			/// <param name="soundID">ID of the sound to set the position of</param>
 			/// <param name="position">Position to set the sound to</param>
 			FRANAUDIO_CLIENT_API void SetPosition(size_t soundID, float position[3]);
+
+			/// <summary>
+			/// Set the position of several playing sounds in a single fire-and-forget message.
+			/// Sound IDs which are no longer valid are skipped by the server.
+			///
+			/// <para>
+			/// NOTE: Prefer this over calling SetPosition() in a loop.
+			/// A caller which repositions its tracked sounds every frame otherwise sends one message per sound per frame, and the socket writes alone become the frame's bottleneck.
+			/// </para>
+			///
+			/// </summary>
+			/// <param name="positions">Sound IDs paired with their new positions</param>
+			FRANAUDIO_CLIENT_API void SetPositions(std::span<const FranAudioShared::SoundPositionUpdate> positions);
 
 			/// <summary>
 			/// Get the position of a playing sound by its ID.
