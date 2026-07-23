@@ -89,8 +89,13 @@ namespace FranAudio::Backend
 		FranAudioShared::Containers::UnorderedMap<std::string, float> groupVolumes;
 
 		/// <summary>
+		/// Whether each sound group only permits its most recently assigned sound to play.
+		/// </summary>
+		FranAudioShared::Containers::UnorderedMap<std::string, bool> groupExclusive;
+
+		/// <summary>
 		/// Group assignment per sound ID. Sounds without an entry belong to no group.
-		/// Stale entries of finished sounds are cleaned up lazily in SetGroupVolume.
+		/// Entries are removed whenever their sound is stopped or cleaned up after playback.
 		/// </summary>
 		FranAudioShared::Containers::UnorderedMap<size_t, std::string> soundGroups;
 
@@ -99,6 +104,17 @@ namespace FranAudio::Backend
 		/// The backend itself is given baseVolume * groupVolume.
 		/// </summary>
 		FranAudioShared::Containers::UnorderedMap<size_t, float> soundBaseVolumes;
+
+		/// <summary>
+		/// Remove backend resources for non-looping sounds which reached their end.
+		/// Implementations must also remove the sound from activeSounds and call OnSoundRemoved().
+		/// </summary>
+		virtual void CleanupFinishedSounds() = 0;
+
+		/// <summary>
+		/// Clear common per-sound state after a sound is stopped or finishes.
+		/// </summary>
+		void OnSoundRemoved(size_t soundID);
 
 		/// <summary>
 		/// Get the group volume multiplier that applies to a sound (1.0 if ungrouped).
@@ -475,6 +491,19 @@ namespace FranAudio::Backend
 		FRANAUDIO_API float GetGroupVolume(const std::string& groupName) const;
 
 		/// <summary>
+		/// Set whether a group permits only one concurrent sound.
+		/// Enabling this immediately stops every sound in the group except the newest.
+		/// </summary>
+		/// <param name="groupName">Name of the group</param>
+		/// <param name="exclusive">True to allow only the latest sound</param>
+		FRANAUDIO_API void SetGroupExclusive(const std::string& groupName, bool exclusive);
+
+		/// <summary>
+		/// Check whether a group permits only one concurrent sound.
+		/// </summary>
+		FRANAUDIO_API bool IsGroupExclusive(const std::string& groupName) const;
+
+		/// <summary>
 		/// Set the pitch of a playing sound by its index.
 		/// </summary>
 		/// <param name="soundID">ID of the sound to set the pitch of</param>
@@ -553,13 +582,13 @@ namespace FranAudio::Backend
 		/// Get the map of currently active sounds.
 		/// </summary>
 		/// <returns>Map of currently active sounds</returns>
-		virtual const FRANAUDIO_API FranAudioShared::Containers::UnorderedMap<size_t, Sound::Sound>& GetActiveSounds() const;
+		virtual const FRANAUDIO_API FranAudioShared::Containers::UnorderedMap<size_t, Sound::Sound>& GetActiveSounds();
 
 		/// <summary>
 		/// Retrieves a list of active sound IDs.
 		/// </summary>
 		/// <returns>A vector containing the IDs of currently active sounds.</returns>
-		virtual const FRANAUDIO_API FranAudioShared::Containers::Vector<size_t> GetActiveSoundIDs() const;
+		virtual const FRANAUDIO_API FranAudioShared::Containers::Vector<size_t> GetActiveSoundIDs();
 
 		// ========================
 		// Backend

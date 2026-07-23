@@ -70,6 +70,7 @@ namespace FranAudio::Backend
 		nextSoundID = 0;
 		activeSounds.clear();
 		groupVolumes.clear();
+		groupExclusive.clear();
 		soundGroups.clear();
 		soundBaseVolumes.clear();
 
@@ -271,6 +272,8 @@ namespace FranAudio::Backend
 
 	FRANAUDIO_API bool Backend::UnloadAudioFile(const std::string& filename)
 	{
+		CleanupFinishedSounds();
+
 		const auto it = filenameWaveMap.find(CanonicalisePath(filename));
 		if (it == filenameWaveMap.end())
 		{
@@ -298,9 +301,9 @@ namespace FranAudio::Backend
 	}
 
 	const FRANAUDIO_API FranAudioShared::Containers::UnorderedMap<size_t, FranAudio::Sound::WaveData>& Backend::GetWaveDataCache()
-    {
+	{
 		return waveDataCache;
-    }
+	}
 
 	// ========================
 	// Sound Management
@@ -308,6 +311,8 @@ namespace FranAudio::Backend
 
 	FRANAUDIO_API bool Backend::IsSoundValid(size_t soundIndex)
 	{
+		CleanupFinishedSounds();
+
 		if (soundIndex == SIZE_MAX)
 		{
 			return false;
@@ -362,8 +367,26 @@ namespace FranAudio::Backend
 			soundBaseVolumes[soundID] = previousGroupVolume > 0.0f ? GetSoundVolumeRaw(soundID) / previousGroupVolume : 1.0f;
 		}
 
-		soundGroups[soundID] = groupName.empty() ? FranAudioShared::defaultSoundGroupName : groupName;
+		const std::string targetGroup = groupName.empty() ? FranAudioShared::defaultSoundGroupName : groupName;
+		soundGroups[soundID] = targetGroup;
 		SetSoundVolumeRaw(soundID, soundBaseVolumes[soundID] * GetGroupVolume(soundGroups[soundID]));
+
+		if (IsGroupExclusive(targetGroup))
+		{
+			FranAudioShared::Containers::Vector<size_t> soundsToStop;
+			for (const auto& otherSoundID : activeSounds | std::views::keys)
+			{
+				if (otherSoundID != soundID && GetSoundGroup(otherSoundID) == targetGroup)
+				{
+					soundsToStop.push_back(otherSoundID);
+				}
+			}
+
+			for (const size_t otherSoundID : soundsToStop)
+			{
+				StopPlayingSound(otherSoundID);
+			}
+		}
 	}
 
 	FRANAUDIO_API std::string Backend::GetSoundGroup(size_t soundID) const
@@ -425,18 +448,73 @@ namespace FranAudio::Backend
 		return 1.0f;
 	}
 
+	FRANAUDIO_API void Backend::SetGroupExclusive(const std::string& groupName, bool exclusive)
+	{
+		const std::string targetGroup = groupName.empty() ? FranAudioShared::defaultSoundGroupName : groupName;
+		groupExclusive[targetGroup] = exclusive;
+
+		if (!exclusive)
+		{
+			return;
+		}
+
+		CleanupFinishedSounds();
+
+		size_t newestSoundID = SIZE_MAX;
+		for (const auto& soundID : activeSounds | std::views::keys)
+		{
+			if (GetSoundGroup(soundID) == targetGroup && (newestSoundID == SIZE_MAX || soundID > newestSoundID))
+			{
+				newestSoundID = soundID;
+			}
+		}
+
+		FranAudioShared::Containers::Vector<size_t> soundsToStop;
+		for (const auto& soundID : activeSounds | std::views::keys)
+		{
+			if (soundID != newestSoundID && GetSoundGroup(soundID) == targetGroup)
+			{
+				soundsToStop.push_back(soundID);
+			}
+		}
+
+		for (const size_t soundID : soundsToStop)
+		{
+			StopPlayingSound(soundID);
+		}
+	}
+
+	FRANAUDIO_API bool Backend::IsGroupExclusive(const std::string& groupName) const
+	{
+		const std::string targetGroup = groupName.empty() ? FranAudioShared::defaultSoundGroupName : groupName;
+		if (const auto it = groupExclusive.find(targetGroup); it != groupExclusive.end())
+		{
+			return it->second;
+		}
+
+		return false;
+	}
+
+	void Backend::OnSoundRemoved(size_t soundID)
+	{
+		soundGroups.erase(soundID);
+		soundBaseVolumes.erase(soundID);
+	}
+
 	FRANAUDIO_API FranAudio::Sound::Sound& Backend::GetSound(size_t soundID)
 	{
 		return activeSounds[soundID];
 	}
 
-	const FRANAUDIO_API FranAudioShared::Containers::UnorderedMap<size_t, FranAudio::Sound::Sound>& Backend::GetActiveSounds() const
+	const FRANAUDIO_API FranAudioShared::Containers::UnorderedMap<size_t, FranAudio::Sound::Sound>& Backend::GetActiveSounds()
 	{
+		CleanupFinishedSounds();
 		return activeSounds;
 	}
 
-	const FRANAUDIO_API FranAudioShared::Containers::Vector<size_t> Backend::GetActiveSoundIDs() const
+	const FRANAUDIO_API FranAudioShared::Containers::Vector<size_t> Backend::GetActiveSoundIDs()
 	{
+		CleanupFinishedSounds();
 		FranAudioShared::Containers::Vector<size_t> soundIDs;
 
 		soundIDs.clear();

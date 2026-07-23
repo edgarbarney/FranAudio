@@ -49,6 +49,9 @@ namespace FranAudio::Backend
 		/// </summary>
 		FranAudioShared::Containers::UnorderedMap<size_t, std::unique_ptr<OpenALSound>> openalSoundData;
 
+		void DestroySound(size_t soundID);
+		void CleanupFinishedSounds() override;
+
 	public:
 		/// <summary>
 		/// Safety Net: Uninitialises the engine and device if Shutdown() was never called.

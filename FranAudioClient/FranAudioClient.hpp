@@ -192,7 +192,7 @@ namespace FranAudioClient
 			/// Get the listener's position.
 			/// </summary>
 			/// <param name="outPosition">Output position of the listener</param>
- 			FRANAUDIO_CLIENT_API void GetListenerPosition(float outPosition[3]);
+			FRANAUDIO_CLIENT_API void GetListenerPosition(float outPosition[3]);
 
 			/// <summary>
 			/// Set the listener's orientation.
@@ -286,6 +286,17 @@ namespace FranAudioClient
 			/// <param name="groupName">Name of the group</param>
 			/// <returns>Volume multiplier of the group (1.0 if never set)</returns>
 			FRANAUDIO_CLIENT_API float GetGroupVolume(const std::string& groupName);
+
+			/// <summary>
+			/// Set whether a sound group only permits its latest sound to play.
+			/// Enabling this stops all older sounds currently assigned to the group.
+			/// </summary>
+			FRANAUDIO_CLIENT_API void SetGroupExclusive(const std::string& groupName, bool exclusive);
+
+			/// <summary>
+			/// Check whether a sound group only permits its latest sound to play.
+			/// </summary>
+			FRANAUDIO_CLIENT_API bool IsGroupExclusive(const std::string& groupName);
 
 			// ========================
 			// Macro Sound Management

@@ -248,6 +248,49 @@ namespace FranAudio::Backend
 	// Sound Management
 	// ========================
 
+	void OpenALSoft::DestroySound(size_t soundID)
+	{
+		const auto it = openalSoundData.find(soundID);
+		if (it == openalSoundData.end())
+		{
+			return;
+		}
+
+		alSourceStop(it->second->sourceHandle);
+		ALErrorCheck();
+		alDeleteSources(1, &it->second->sourceHandle);
+		ALErrorCheck();
+		alDeleteBuffers(1, &it->second->sourceBuffer);
+		ALErrorCheck();
+
+		openalSoundData.erase(it);
+		activeSounds.erase(soundID);
+		OnSoundRemoved(soundID);
+	}
+
+	void OpenALSoft::CleanupFinishedSounds()
+	{
+		FranAudioShared::Containers::Vector<size_t> finishedSounds;
+		for (const auto& [soundID, sound] : openalSoundData)
+		{
+			ALint sourceState = AL_INITIAL;
+			ALint looping = AL_FALSE;
+			alGetSourcei(sound->sourceHandle, AL_SOURCE_STATE, &sourceState);
+			alGetSourcei(sound->sourceHandle, AL_LOOPING, &looping);
+			ALErrorCheck();
+
+			if (sourceState == AL_STOPPED && looping == AL_FALSE)
+			{
+				finishedSounds.push_back(soundID);
+			}
+		}
+
+		for (const size_t soundID : finishedSounds)
+		{
+			DestroySound(soundID);
+		}
+	}
+
 	FRANAUDIO_API bool OpenALSoft::IsSoundValid(size_t soundID)
 	{
 		return Backend::IsSoundValid(soundID) && openalSoundData.contains(soundID);
@@ -255,21 +298,13 @@ namespace FranAudio::Backend
 
 	FRANAUDIO_API void OpenALSoft::StopPlayingSound(size_t soundID)
 	{
-		if (!IsSoundValid(soundID))
+		if (!activeSounds.contains(soundID) || !openalSoundData.contains(soundID))
 		{
 			FranAudioShared::Logger::LogError(std::format("{}: Tried to stop an invalid sound.", GetBackendName()));
 			return;
 		}
 
-		alSourceStop(openalSoundData[soundID]->sourceHandle);
-		ALErrorCheck();
-		alDeleteSources(1, &(openalSoundData[soundID]->sourceHandle));
-		ALErrorCheck();
-		alDeleteBuffers(1, &(openalSoundData[soundID]->sourceBuffer));
-		ALErrorCheck();
-
-		openalSoundData.erase(soundID);
-		activeSounds.erase(soundID);
+		DestroySound(soundID);
 	}
 
 	FRANAUDIO_API void OpenALSoft::SetSoundPaused(size_t soundID, bool isPaused)
@@ -334,8 +369,8 @@ namespace FranAudio::Backend
 		return vol;
 	}
 
-    FRANAUDIO_API void OpenALSoft::SetSoundPitch(size_t soundID, float pitch)
-    {
+	FRANAUDIO_API void OpenALSoft::SetSoundPitch(size_t soundID, float pitch)
+	{
 		if (!IsSoundValid(soundID))
 		{
 			FranAudioShared::Logger::LogError(std::format("{}: Tried to set pitch of an invalid sound.", GetBackendName()));
@@ -344,7 +379,7 @@ namespace FranAudio::Backend
 
 		alSourcef(openalSoundData[soundID]->sourceHandle, AL_PITCH, pitch);
 		ALErrorCheck();
-    }
+	}
 
 	FRANAUDIO_API float OpenALSoft::GetSoundPitch(size_t soundID)
 	{

@@ -261,6 +261,44 @@ namespace FranAudio::Backend
 	// Sound Management
 	// ========================
 
+	void miniaudio::DestroySound(size_t soundID)
+	{
+		const auto it = miniaudioSoundData.find(soundID);
+		if (it == miniaudioSoundData.end())
+		{
+			return;
+		}
+
+		auto& sound = *it->second;
+		ma_sound_stop(&sound.sound);
+		ma_sound_uninit(&sound.sound);
+		if (!sound.isStreamed)
+		{
+			ma_audio_buffer_uninit(&sound.audioBuffer);
+		}
+
+		miniaudioSoundData.erase(it);
+		activeSounds.erase(soundID);
+		OnSoundRemoved(soundID);
+	}
+
+	void miniaudio::CleanupFinishedSounds()
+	{
+		FranAudioShared::Containers::Vector<size_t> finishedSounds;
+		for (const auto& [soundID, sound] : miniaudioSoundData)
+		{
+			if (!sound->isPaused && ma_sound_is_looping(&sound->sound) == MA_FALSE && ma_sound_at_end(&sound->sound) == MA_TRUE)
+			{
+				finishedSounds.push_back(soundID);
+			}
+		}
+
+		for (const size_t soundID : finishedSounds)
+		{
+			DestroySound(soundID);
+		}
+	}
+
 	FRANAUDIO_API bool miniaudio::IsSoundValid(size_t soundID)
 	{
 		return Backend::IsSoundValid(soundID) && miniaudioSoundData.contains(soundID);
@@ -268,28 +306,13 @@ namespace FranAudio::Backend
 
 	FRANAUDIO_API void miniaudio::StopPlayingSound(size_t soundID)
 	{
-		if (!IsSoundValid(soundID))
+		if (!activeSounds.contains(soundID) || !miniaudioSoundData.contains(soundID))
 		{
 			FranAudioShared::Logger::LogError("MiniAudio: Tried to stop an invalid sound.");
 			return;
 		}
 
-		auto& soundPtr = miniaudioSoundData[soundID];
-
-		if (!miniaudioSoundData[soundID]->isPaused)
-		{
-			ma_sound_stop(&soundPtr->sound);
-		}
-
-		ma_sound_uninit(&soundPtr->sound);
-		if (!soundPtr->isStreamed)
-		{
-			ma_audio_buffer_uninit(&soundPtr->audioBuffer);
-		}
-
-		soundPtr.reset();
-		miniaudioSoundData.erase(soundID);
-		activeSounds.erase(soundID);
+		DestroySound(soundID);
 	}
 
 	FRANAUDIO_API void miniaudio::SetSoundPaused(size_t soundID, bool isPaused)
@@ -357,8 +380,8 @@ namespace FranAudio::Backend
 		return ma_sound_get_volume(&miniaudioSoundData[soundID]->sound);
 	}
 
-    FRANAUDIO_API void miniaudio::SetSoundPitch(size_t soundID, float pitch)
-    {
+	FRANAUDIO_API void miniaudio::SetSoundPitch(size_t soundID, float pitch)
+	{
 		if (!IsSoundValid(soundID))
 		{
 			FranAudioShared::Logger::LogError("MiniAudio: Tried to set pitch of an invalid sound.");
@@ -366,7 +389,7 @@ namespace FranAudio::Backend
 		}
 
 		ma_sound_set_pitch(&miniaudioSoundData[soundID]->sound, pitch);
-    }
+	}
 
 	FRANAUDIO_API float miniaudio::GetSoundPitch(size_t soundID)
 	{

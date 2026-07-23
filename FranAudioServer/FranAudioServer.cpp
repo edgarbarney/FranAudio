@@ -584,6 +584,41 @@ namespace FranAudioServer
 			}
 		},
 
+		// Backend::SetGroupExclusive
+		// Params: groupName, exclusive (1 or 0)
+		// Returns: nothing
+		{
+			"backend-set_group_exclusive",
+			[](const FranAudioShared::Network::NetworkFunction& fn)
+			{
+				if (fn.params.size() < 2)
+				{
+					FranAudioShared::Logger::LogError("Missing parameters for set_group_exclusive");
+					return std::string("err");
+				}
+
+				FranAudio::GetBackend()->SetGroupExclusive(fn.params[0], fn.params[1] == "1");
+				return std::string();
+			}
+		},
+
+		// Backend::IsGroupExclusive
+		// Params: groupName
+		// Returns: "1" if exclusive, "0" otherwise
+		{
+			"backend-is_group_exclusive",
+			[](const FranAudioShared::Network::NetworkFunction& fn)
+			{
+				if (fn.params.empty())
+				{
+					FranAudioShared::Logger::LogError("Missing group name parameter for is_group_exclusive");
+					return std::string("err");
+				}
+
+				return FranAudio::GetBackend()->IsGroupExclusive(fn.params[0]) ? std::string("1") : std::string("0");
+			}
+		},
+
 		// Backend::GetWaveDataCache (file list only)
 		// Params: none
 		// Returns: waveDataID and filename pairs, "id|filename|id|filename|...", empty if none

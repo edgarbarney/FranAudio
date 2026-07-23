@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <array>
+#include <algorithm>
 
 #include "FranAudioShared/FranAudioShared.hpp"
 #include "FranAudioShared/Network/Network.hpp"
@@ -37,6 +38,7 @@ namespace
 		std::optional<std::array<float, 6>> listenerOrientation; // forward (3), up (3)
 		FranAudioShared::Containers::UnorderedMap<size_t, CachedSoundState> sounds;
 		FranAudioShared::Containers::UnorderedMap<std::string, float> groupVolumes;
+		FranAudioShared::Containers::UnorderedMap<std::string, bool> groupExclusive;
 	};
 
 	ClientCache cache;
@@ -547,6 +549,31 @@ namespace FranAudioClient::Wrapper
 				return 1.0f;
 			}
 		}
+
+		FRANAUDIO_CLIENT_API void SetGroupExclusive(const std::string& groupName, bool exclusive)
+		{
+			cache.groupExclusive[groupName] = exclusive;
+			FranAudioClient::SendNoReply(FranAudioShared::Network::NetworkFunction("backend-set_group_exclusive", { groupName, exclusive ? "1" : "0" }));
+		}
+
+		FRANAUDIO_CLIENT_API bool IsGroupExclusive(const std::string& groupName)
+		{
+			if (const auto it = cache.groupExclusive.find(groupName); it != cache.groupExclusive.end())
+			{
+				return it->second;
+			}
+
+			const auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-is_group_exclusive", { groupName }));
+			if (IsErrorResponse(response))
+			{
+				FranAudioShared::Logger::LogError(std::format("Server returned an error for is_group_exclusive of group: {}", groupName));
+				return false;
+			}
+
+			const bool exclusive = response == "1";
+			cache.groupExclusive[groupName] = exclusive;
+			return exclusive;
+		}
 		
 		// ========================
 		// Macro Sound Management
@@ -555,7 +582,21 @@ namespace FranAudioClient::Wrapper
 		FRANAUDIO_CLIENT_API const FranAudioShared::Containers::Vector<size_t> GetActiveSoundIDs()
 		{
 			std::string response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-get_active_sound_ids", {}));
-			return FranAudioShared::Serialisation::BinarySerialiser::DeserialiseVector<size_t>(response);
+			const auto soundIDs = FranAudioShared::Serialisation::BinarySerialiser::DeserialiseVector<size_t>(response);
+
+			for (auto it = cache.sounds.begin(); it != cache.sounds.end();)
+			{
+				if (std::find(soundIDs.begin(), soundIDs.end(), it->first) == soundIDs.end())
+				{
+					it = cache.sounds.erase(it);
+				}
+				else
+				{
+					++it;
+				}
+			}
+
+			return soundIDs;
 		}
 	}
 
@@ -568,7 +609,12 @@ namespace FranAudioClient::Wrapper
 		FRANAUDIO_CLIENT_API bool IsValid(size_t soundIndex)
 		{
 			auto response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("sound-is_valid", { std::to_string(soundIndex) }));
-			return response == "1";
+			const bool valid = response == "1";
+			if (!valid)
+			{
+				cache.sounds.erase(soundIndex);
+			}
+			return valid;
 		}
 
 		FRANAUDIO_CLIENT_API void Stop(size_t soundIndex)
@@ -627,11 +673,11 @@ namespace FranAudioClient::Wrapper
 			}
 		}
 
-        FRANAUDIO_CLIENT_API void SetPitch(size_t soundID, float pitch)
-        {
+		FRANAUDIO_CLIENT_API void SetPitch(size_t soundID, float pitch)
+		{
 			cache.sounds[soundID].pitch = pitch;
 			FranAudioClient::SendNoReply(FranAudioShared::Network::NetworkFunction("sound-set_pitch", { std::to_string(soundID), std::to_string(pitch) }));
-        }
+		}
 
 		FRANAUDIO_CLIENT_API float GetPitch(size_t soundID)
 		{
