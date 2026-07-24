@@ -96,6 +96,17 @@ namespace FranAudio::Backend
 		FranAudioShared::Containers::UnorderedMap<std::string, bool> groupExclusive;
 
 		/// <summary>
+		/// The sound currently occupying each exclusive group.
+		///
+		/// <para>
+		/// NOTE: Without this, enforcing exclusivity means scanning every active sound on each assignment.
+		/// A caller which emits on the same group repeatedly, such as a game replaying a weapon sound, would pay that scan per emit.
+		/// </para>
+		///
+		/// </summary>
+		FranAudioShared::Containers::UnorderedMap<std::string, size_t> exclusiveGroupSound;
+
+		/// <summary>
 		/// Group assignment per sound ID. Sounds without an entry belong to no group.
 		/// Entries are removed whenever their sound is stopped or cleaned up after playback.
 		/// </summary>
@@ -518,7 +529,7 @@ namespace FranAudio::Backend
 		/// </summary>
 		/// <param name="soundID">ID of the sound to check</param>
 		/// <returns>Group name</returns>
-		FRANAUDIO_API std::string GetSoundGroup(size_t soundID) const;
+		const FRANAUDIO_API std::string& GetSoundGroup(size_t soundID) const;
 
 		/// <summary>
 		/// Set the volume multiplier of a group and reapply it to all sounds in the group.

@@ -71,6 +71,7 @@ namespace FranAudio::Backend
 		activeSounds.clear();
 		groupVolumes.clear();
 		groupExclusive.clear();
+		exclusiveGroupSound.clear();
 		soundGroups.clear();
 		soundBaseVolumes.clear();
 
@@ -391,23 +392,17 @@ namespace FranAudio::Backend
 
 		if (IsGroupExclusive(targetGroup))
 		{
-			FranAudioShared::Containers::Vector<size_t> soundsToStop;
-			for (const auto& otherSoundID : activeSounds | std::views::keys)
+			// The group can only ever hold one sound, so the occupant is known without looking at any of the others.
+			if (const auto it = exclusiveGroupSound.find(targetGroup); it != exclusiveGroupSound.end() && it->second != soundID)
 			{
-				if (otherSoundID != soundID && GetSoundGroup(otherSoundID) == targetGroup)
-				{
-					soundsToStop.push_back(otherSoundID);
-				}
+				StopPlayingSound(it->second);
 			}
 
-			for (const size_t otherSoundID : soundsToStop)
-			{
-				StopPlayingSound(otherSoundID);
-			}
+			exclusiveGroupSound[targetGroup] = soundID;
 		}
 	}
 
-	FRANAUDIO_API std::string Backend::GetSoundGroup(size_t soundID) const
+	const FRANAUDIO_API std::string& Backend::GetSoundGroup(size_t soundID) const
 	{
 		if (const auto it = soundGroups.find(soundID); it != soundGroups.end())
 		{
@@ -415,7 +410,8 @@ namespace FranAudio::Backend
 		}
 
 		// Every sound belongs to a group. Unassigned sounds are in the default group.
-		return FranAudioShared::defaultSoundGroupName;
+		static const std::string defaultGroup = FranAudioShared::defaultSoundGroupName;
+		return defaultGroup;
 	}
 
 	FRANAUDIO_API void Backend::SetGroupVolume(const std::string& groupName, float volume)
@@ -431,6 +427,11 @@ namespace FranAudio::Backend
 		{
 			if (!IsSoundValid(it->first))
 			{
+				if (const auto exclusiveIt = exclusiveGroupSound.find(it->second); exclusiveIt != exclusiveGroupSound.end() && exclusiveIt->second == it->first)
+				{
+					exclusiveGroupSound.erase(exclusiveIt);
+				}
+
 				soundBaseVolumes.erase(it->first);
 				it = soundGroups.erase(it);
 				continue;
@@ -469,10 +470,19 @@ namespace FranAudio::Backend
 	FRANAUDIO_API void Backend::SetGroupExclusive(const std::string& groupName, bool exclusive)
 	{
 		const std::string targetGroup = groupName.empty() ? FranAudioShared::defaultSoundGroupName : groupName;
+
+		// Every sound which was never assigned a group reports as a member of the default one, so making it exclusive would let a single sound cut all of them.
+		if (targetGroup == FranAudioShared::defaultSoundGroupName && exclusive)
+		{
+			FranAudioShared::Logger::LogError(std::format("{}: The default sound group cannot be made exclusive.", GetBackendName()));
+			return;
+		}
+
 		groupExclusive[targetGroup] = exclusive;
 
 		if (!exclusive)
 		{
+			exclusiveGroupSound.erase(targetGroup);
 			return;
 		}
 
@@ -499,6 +509,12 @@ namespace FranAudio::Backend
 		for (const size_t soundID : soundsToStop)
 		{
 			StopPlayingSound(soundID);
+		}
+
+		// Seed the index so later assignments can take the fast path.
+		if (newestSoundID != SIZE_MAX)
+		{
+			exclusiveGroupSound[targetGroup] = newestSoundID;
 		}
 	}
 
@@ -528,6 +544,15 @@ namespace FranAudio::Backend
 
 	void Backend::OnSoundRemoved(size_t soundID)
 	{
+		// Read the group before erasing it below, so an exclusive group is released when the sound holding it ends on its own rather than being replaced.
+		if (const auto groupIt = soundGroups.find(soundID); groupIt != soundGroups.end())
+		{
+			if (const auto it = exclusiveGroupSound.find(groupIt->second); it != exclusiveGroupSound.end() && it->second == soundID)
+			{
+				exclusiveGroupSound.erase(it);
+			}
+		}
+
 		soundGroups.erase(soundID);
 		soundBaseVolumes.erase(soundID);
 	}
