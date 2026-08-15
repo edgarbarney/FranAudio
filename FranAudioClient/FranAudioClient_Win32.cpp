@@ -105,9 +105,12 @@ namespace FranAudioClient
 	FRANAUDIO_CLIENT_API void Init(bool isTestmode)
 	{
 		// Setup Logger to route to console.
-		static FranAudioShared::Logger::FranAudioConsole franConsole;
-		static FranAudioShared::Logger::ConsoleStreamBuffer consoleBuffer(franConsole);
-		FranAudioShared::Logger::RouteToConsole(&consoleBuffer);
+		if (FranAudioShared::Logger::customStreamBuffer == nullptr)
+		{
+			static FranAudioShared::Logger::FranAudioConsole franConsole;
+			static FranAudioShared::Logger::ConsoleStreamBuffer consoleBuffer(franConsole);
+			FranAudioShared::Logger::RouteToConsole(&consoleBuffer);
+		}
 
 		if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 		{
@@ -197,6 +200,11 @@ namespace FranAudioClient
 		}
 
 		return true;
+	}
+
+	FRANAUDIO_CLIENT_API bool IsConnected()
+	{
+		return isSocketValid;
 	}
 
 	FRANAUDIO_CLIENT_API std::string Send(std::string message)

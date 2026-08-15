@@ -23,6 +23,7 @@
 #include <string>
 #include <format>
 #include <filesystem>
+#include <span>
 #include <utility>
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -337,7 +338,17 @@ static FranAudioShared::Containers::Vector<size_t> GetActiveSoundIDs()
 #ifndef FRANAUDIO_USE_SERVER
 	return FranAudio::GetBackend()->GetActiveSoundIDs();
 #else
-	return FranAudioClient::Wrapper::Backend::GetActiveSoundIDs();
+	static FranAudioShared::Containers::Vector<size_t> soundIDBuffer(32);
+
+	size_t activeSoundCount = FranAudioClient::Wrapper::Backend::GetActiveSoundIDs(std::span<size_t>(soundIDBuffer.data(), soundIDBuffer.size()));
+
+	while (activeSoundCount > soundIDBuffer.size())
+	{
+		soundIDBuffer.resize(activeSoundCount);
+		activeSoundCount = FranAudioClient::Wrapper::Backend::GetActiveSoundIDs(std::span<size_t>(soundIDBuffer.data(), soundIDBuffer.size()));
+	}
+
+	return FranAudioShared::Containers::Vector<size_t>(soundIDBuffer.begin(), soundIDBuffer.begin() + activeSoundCount);
 #endif
 }
 

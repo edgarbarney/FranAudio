@@ -84,6 +84,69 @@ FRANAUDIO_CLIENT_API void FranAudioClient::RouteClientLoggingToConsole(FranAudio
 	FranAudioShared::Logger::RouteToConsole(consoleBuffer);
 }
 
+namespace
+{
+	FranAudioShared::Logger::FranAudioConsole logCallbackConsole;
+
+	/// <summary>
+	/// Buffers logger output and hands the host one line at a time.
+	/// </summary>
+	class CallbackStreamBuffer : public FranAudioShared::Logger::ConsoleStreamBuffer
+	{
+	private:
+		FranAudioClient::LogCallback callback;
+		std::string lineBuffer;
+
+	protected:
+		int overflow(int character) override
+		{
+			if (character == traits_type::eof())
+			{
+				return traits_type::not_eof(character);
+			}
+
+			if (character != '\n')
+			{
+				lineBuffer.push_back(static_cast<char>(character));
+				return character;
+			}
+
+			callback(lineBuffer.c_str());
+			lineBuffer.clear();
+
+			return character;
+		}
+
+	public:
+		CallbackStreamBuffer(FranAudioClient::LogCallback callback)
+			: ConsoleStreamBuffer(logCallbackConsole)
+			, callback(callback)
+		{
+		}
+	};
+
+	std::unique_ptr<CallbackStreamBuffer> logCallbackBuffer;
+}
+
+FRANAUDIO_CLIENT_API void FranAudioClient::SetLogCallback(FranAudioClient::LogCallback callback)
+{
+	// Restores whatever is routed, not just a previous callback, so this works either side of Init().
+	if (FranAudioShared::Logger::customStreamBuffer != nullptr)
+	{
+		FranAudioShared::Logger::RestoreDefault();
+	}
+
+	logCallbackBuffer.reset();
+
+	if (callback == nullptr)
+	{
+		return;
+	}
+
+	logCallbackBuffer = std::make_unique<CallbackStreamBuffer>(callback);
+	FranAudioShared::Logger::RouteToConsole(logCallbackBuffer.get());
+}
+
 namespace FranAudioClient::Wrapper
 {
 	FRANAUDIO_CLIENT_API void ClearCache()
@@ -579,11 +642,12 @@ namespace FranAudioClient::Wrapper
 		// Macro Sound Management
 		// ========================
 
-		FRANAUDIO_CLIENT_API const FranAudioShared::Containers::Vector<size_t> GetActiveSoundIDs()
+		FRANAUDIO_CLIENT_API size_t GetActiveSoundIDs(std::span<size_t> outSoundIDs)
 		{
 			std::string response = FranAudioClient::Send(FranAudioShared::Network::NetworkFunction("backend-get_active_sound_ids", {}));
 			const auto soundIDs = FranAudioShared::Serialisation::BinarySerialiser::DeserialiseVector<size_t>(response);
 
+			// The cache is dropped for every sound the server no longer has, whether or not the caller's buffer could hold the reply.
 			for (auto it = cache.sounds.begin(); it != cache.sounds.end();)
 			{
 				if (std::find(soundIDs.begin(), soundIDs.end(), it->first) == soundIDs.end())
@@ -596,7 +660,14 @@ namespace FranAudioClient::Wrapper
 				}
 			}
 
-			return soundIDs;
+			if (soundIDs.size() > outSoundIDs.size())
+			{
+				return soundIDs.size();
+			}
+
+			std::copy(soundIDs.begin(), soundIDs.end(), outSoundIDs.begin());
+
+			return soundIDs.size();
 		}
 	}
 

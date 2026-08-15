@@ -47,6 +47,12 @@ namespace FranAudioClient
 	FRANAUDIO_CLIENT_API bool Reconnect();
 
 	/// <summary>
+	/// Whether the client currently holds a live connection to the server.
+	/// </summary>
+	/// <returns>True if the connection is live</returns>
+	FRANAUDIO_CLIENT_API bool IsConnected();
+
+	/// <summary>
 	/// Send a message to the server, and wait for a response.
 	/// Response will be returned as a string, and will be empty if no response is received.
 	///
@@ -87,6 +93,21 @@ namespace FranAudioClient
 	/// </summary>
 	/// <param name="consoleBuffer">A pointer to the ConsoleStreamBuffer where client output will be directed.</param>
 	FRANAUDIO_CLIENT_API void RouteClientLoggingToConsole(FranAudioShared::Logger::ConsoleStreamBuffer* consoleBuffer);
+
+	/// <summary>
+	/// Receives one log line, without its trailing newline.
+	/// </summary>
+	using LogCallback = void (*)(const char* message);
+
+	/// <summary>
+	/// Route this library's logging to a host-supplied function, one call per line.
+	/// Pass nullptr to stop routing and restore the default streams.
+	/// Used mainly for plain C string requirements.
+	/// </para>
+	///
+	/// </summary>
+	/// <param name="callback">Function to hand each log line to, or nullptr to stop routing</param>
+	FRANAUDIO_CLIENT_API void SetLogCallback(LogCallback callback);
 
 	/// <summary>
 	/// FranAudio client wrapper functions.
@@ -306,10 +327,16 @@ namespace FranAudioClient
 			// ========================
 
 			/// <summary>
-			/// Retrieves a list of active sound IDs.
+			/// Retrieves the IDs of the currently active sounds, into a buffer owned by the caller.
+			///
+			/// <para>
+			/// NOTE: The caller owns the buffer because this crosses a DLL boundary.
+			/// </para>
+			///
 			/// </summary>
-			/// <returns>A vector containing the IDs of currently active sounds.</returns>
-			FRANAUDIO_CLIENT_API const FranAudioShared::Containers::Vector<size_t> GetActiveSoundIDs();
+			/// <param name="outSoundIDs">Buffer to write the active sound IDs into</param>
+			/// <returns>Number of active sounds, which is the number of IDs written unless it exceeds the buffer's size.</returns>
+			FRANAUDIO_CLIENT_API size_t GetActiveSoundIDs(std::span<size_t> outSoundIDs);
 		}
 
 		/// <summary>

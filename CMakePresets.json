@@ -6,43 +6,42 @@
 	},
 	"configurePresets": [
 		{
-			"name": "with-server",
-			"hidden": true,
-			"cacheVariables": {
-				"FRANAUDIO_USE_SERVER": "ON"
-			}
-		},
-		{
 			"name": "WIN-X64-DEBUG",
 			"displayName": "Windows x64 Debug",
 			"generator": "Ninja",
 			"binaryDir": "${sourceDir}/out/build/WIN-X64-DEBUG",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug",
-				"CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/WIN-X64-DEBUG",
-				"CMAKE_POLICY_VERSION_MINIMUM": "3.23"
-			},
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/WIN-X64-DEBUG",
+        "CMAKE_POLICY_VERSION_MINIMUM": "3.23",
+        "FRANAUDIO_USE_SERVER": "OFF"
+      },
 			"vendor": {
 				"visualstudio": {
 					"environment": "msvc_x64_x64"
 				}
 			}
 		},
-		{
-			"name": "WIN-X64-DEBUG-SERVER",
-			"displayName": "Windows x64 Debug (Server-Client Mode)",
-			"inherits": [ "WIN-X64-DEBUG", "with-server" ]
-		},
+    {
+      "name": "WIN-X64-DEBUG-SERVER",
+      "displayName": "Windows x64 Debug (Server-Client Mode)",
+      "inherits": [ "WIN-X64-DEBUG" ],
+      "binaryDir": "${sourceDir}/out/build/WIN-X64-DEBUG-SERVER",
+      "cacheVariables": {
+        "FRANAUDIO_USE_SERVER": "ON"
+      }
+    },
 		{
 			"name": "WIN-X86-DEBUG",
 			"displayName": "Windows x86 Debug",
 			"generator": "Ninja",
 			"binaryDir": "${sourceDir}/out/build/WIN-X86-DEBUG",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug",
-				"CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/WIN-X86-DEBUG",
-				"CMAKE_POLICY_VERSION_MINIMUM": "3.23"
-			},
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/WIN-X86-DEBUG",
+        "CMAKE_POLICY_VERSION_MINIMUM": "3.23",
+        "FRANAUDIO_USE_SERVER": "OFF"
+      },
 			"vendor": {
 				"visualstudio": {
 					"environment": "msvc_x86"
@@ -57,40 +56,52 @@
 				"strategy": "external"
 			}
 		},
-		{
-			"name": "WIN-X86-DEBUG-SERVER",
-			"displayName": "Windows x86 Debug (Server-Client Mode)",
-			"inherits": [ "WIN-X86-DEBUG", "with-server" ]
-		},
+    {
+      "name": "WIN-X86-DEBUG-SERVER",
+      "displayName": "Windows x86 Debug (Server-Client Mode)",
+      "inherits": [ "WIN-X86-DEBUG" ],
+      "binaryDir": "${sourceDir}/out/build/WIN-X86-DEBUG-SERVER",
+      "cacheVariables": {
+        "FRANAUDIO_USE_SERVER": "ON"
+      }
+    },
 		{
 			"name": "WIN-X64-RELEASE",
 			"displayName": "Windows x64 Release",
 			"generator": "Ninja",
 			"binaryDir": "${sourceDir}/out/build/WIN-X64-RELEASE",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release",
-				"CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/WIN-X64-RELEASE"
-			},
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/WIN-X64-RELEASE",
+        "CMAKE_POLICY_VERSION_MINIMUM": "3.23",
+        "FRANAUDIO_USE_SERVER": "OFF"
+      },
 			"vendor": {
 				"visualstudio": {
 					"environment": "msvc_x64_x64"
 				}
 			}
 		},
-		{
-			"name": "WIN-X64-RELEASE-SERVER",
-			"displayName": "Windows x64 Release (Server-Client Mode)",
-			"inherits": [ "WIN-X64-RELEASE", "with-server" ]
-		},
+    {
+      "name": "WIN-X64-RELEASE-SERVER",
+      "displayName": "Windows x64 Release (Server-Client Mode)",
+      "inherits": [ "WIN-X64-RELEASE" ],
+      "binaryDir": "${sourceDir}/out/build/WIN-X64-RELEASE-SERVER",
+      "cacheVariables": {
+        "FRANAUDIO_USE_SERVER": "ON"
+      }
+    },
 		{
 			"name": "WIN-X86-RELEASE",
 			"displayName": "Windows x86 Release",
 			"generator": "Ninja",
 			"binaryDir": "${sourceDir}/out/build/WIN-X86-RELEASE",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release",
-				"CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/WIN-X86-RELEASE"
-			},
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/WIN-X86-RELEASE",
+        "CMAKE_POLICY_VERSION_MINIMUM": "3.23",
+        "FRANAUDIO_USE_SERVER": "OFF"
+      },
 			"vendor": {
 				"visualstudio": {
 					"environment": "msvc_x86"
@@ -105,42 +116,52 @@
 				"strategy": "external"
 			}
 		},
-		{
-			"name": "WIN-X86-RELEASE-SERVER",
-			"displayName": "Windows x86 Release (Server-Client Mode)",
-			"inherits": [ "WIN-X86-RELEASE", "with-server" ]
-		},
+    {
+      "name": "WIN-X86-RELEASE-SERVER",
+      "displayName": "Windows x86 Release (Server-Client Mode)",
+      "inherits": [ "WIN-X86-RELEASE" ],
+      "binaryDir": "${sourceDir}/out/build/WIN-X86-RELEASE-SERVER",
+      "cacheVariables": {
+        "FRANAUDIO_USE_SERVER": "ON"
+      }
+    },
 		{
 			"name": "WSL-X64-DEBUG",
 			"displayName": "WSL x64 Debug",
 			"generator": "Ninja",
 			"binaryDir": "${sourceDir}/out/build/WSL-X64-DEBUG",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug",
-				"CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/WSL-X64-DEBUG",
-				"CMAKE_POLICY_VERSION_MINIMUM": "3.23"
-			},
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/WSL-X64-DEBUG",
+        "CMAKE_POLICY_VERSION_MINIMUM": "3.23",
+        "FRANAUDIO_USE_SERVER": "OFF"
+      },
 			"vendor": {
 				"visualstudio": {
 					"environment": "linux_x64"
 				}
 			}
 		},
-		{
-			"name": "WSL-X64-DEBUG-SERVER",
-			"displayName": "WSL x64 Debug (Server-Client Mode)",
-			"inherits": [ "WSL-X64-DEBUG", "with-server" ]
-		},
+    {
+      "name": "WSL-X64-DEBUG-SERVER",
+      "displayName": "WSL x64 Debug (Server-Client Mode)",
+      "inherits": [ "WSL-X64-DEBUG" ],
+      "binaryDir": "${sourceDir}/out/build/WSL-X64-DEBUG-SERVER",
+      "cacheVariables": {
+        "FRANAUDIO_USE_SERVER": "ON"
+      }
+    },
 		{
 			"name": "WSL-X86-DEBUG",
 			"displayName": "WSL x86 Debug",
 			"generator": "Ninja",
 			"binaryDir": "${sourceDir}/out/build/WSL-X86-DEBUG",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug",
-				"CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/WSL-X86-DEBUG",
-				"CMAKE_POLICY_VERSION_MINIMUM": "3.23"
-			},
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/WSL-X86-DEBUG",
+        "CMAKE_POLICY_VERSION_MINIMUM": "3.23",
+        "FRANAUDIO_USE_SERVER": "OFF"
+      },
 			"vendor": {
 				"visualstudio": {
 					"environment": "linux_x86"
@@ -155,42 +176,52 @@
 				"strategy": "external"
 			}
 		},
-		{
-			"name": "WSL-X86-DEBUG-SERVER",
-			"displayName": "WSL x86 Debug (Server-Client Mode)",
-			"inherits": [ "WSL-X86-DEBUG", "with-server" ]
-		},
+    {
+      "name": "WSL-X86-DEBUG-SERVER",
+      "displayName": "WSL x86 Debug (Server-Client Mode)",
+      "inherits": [ "WSL-X86-DEBUG" ],
+      "binaryDir": "${sourceDir}/out/build/WSL-X86-DEBUG-SERVER",
+      "cacheVariables": {
+        "FRANAUDIO_USE_SERVER": "ON"
+      }
+    },
 		{
 			"name": "WSL-X64-RELEASE",
 			"displayName": "WSL x64 Release",
 			"generator": "Ninja",
 			"binaryDir": "${sourceDir}/out/build/WSL-X64-RELEASE",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release",
-				"CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/WSL-X64-RELEASE",
-				"CMAKE_POLICY_VERSION_MINIMUM": "3.23"
-			},
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/WSL-X64-RELEASE",
+        "CMAKE_POLICY_VERSION_MINIMUM": "3.23",
+        "FRANAUDIO_USE_SERVER": "OFF"
+      },
 			"vendor": {
 				"visualstudio": {
 					"environment": "linux_x64"
 				}
 			}
 		},
-		{
-			"name": "WSL-X64-RELEASE-SERVER",
-			"displayName": "WSL x64 Release (Server-Client Mode)",
-			"inherits": [ "WSL-X64-RELEASE", "with-server" ]
-		},
+    {
+      "name": "WSL-X64-RELEASE-SERVER",
+      "displayName": "WSL x64 Release (Server-Client Mode)",
+      "inherits": [ "WSL-X64-RELEASE" ],
+      "binaryDir": "${sourceDir}/out/build/WSL-X64-RELEASE-SERVER",
+      "cacheVariables": {
+        "FRANAUDIO_USE_SERVER": "ON"
+      }
+    },
 		{
 			"name": "WSL-X86-RELEASE",
 			"displayName": "WSL x86 Release",
 			"generator": "Ninja",
 			"binaryDir": "${sourceDir}/out/build/WSL-X86-RELEASE",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release",
-				"CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/WSL-X86-RELEASE",
-				"CMAKE_POLICY_VERSION_MINIMUM": "3.23"
-			},
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/WSL-X86-RELEASE",
+        "CMAKE_POLICY_VERSION_MINIMUM": "3.23",
+        "FRANAUDIO_USE_SERVER": "OFF"
+      },
 			"vendor": {
 				"visualstudio": {
 					"environment": "linux_x86"
@@ -205,10 +236,14 @@
 				"strategy": "external"
 			}
 		},
-		{
-			"name": "WSL-X86-RELEASE-SERVER",
-			"displayName": "WSL x86 Release (Server-Client Mode)",
-			"inherits": [ "WSL-X86-RELEASE", "with-server" ]
-		}
+    {
+      "name": "WSL-X86-RELEASE-SERVER",
+      "displayName": "WSL x86 Release (Server-Client Mode)",
+      "inherits": [ "WSL-X86-RELEASE" ],
+      "binaryDir": "${sourceDir}/out/build/WSL-X86-RELEASE-SERVER",
+      "cacheVariables": {
+        "FRANAUDIO_USE_SERVER": "ON"
+      }
+    }
 	]
 }

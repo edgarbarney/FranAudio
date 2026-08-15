@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 3.23)
 
 project("FranAudio"
-	VERSION 0.1.0
+	VERSION 0.2.0
 	DESCRIPTION "Audio Library, Mainly for Games and Game Engines"
 	LANGUAGES CXX C
 )
@@ -25,6 +25,13 @@ option(FRANAUDIO_USE_VORBIS "Enable Vorbis Support (requires libogg and libvorbi
 option(FRANAUDIO_USE_OPUS "Enable Opus Support (requires Vorbis Support, libopus and libopusfile)" ON)
 option(FRANAUDIO_USE_OPENAL "Enable OpenAL Backend Support" ON)
 option(FRANAUDIO_USE_STL_CONTAINERS "Use STL Containers instead of custom containers" ON)
+option(FRANAUDIO_INSTAL_COMPACT "Install only FranAudio files and required dynamic libraries" ON)
+
+function(FRANAUDIO_EXCLUDE_DEPENDENCY_FROM_INSTALL DEPENDENCY_SOURCE_DIR)
+	if (FRANAUDIO_INSTAL_COMPACT)
+		set_property(DIRECTORY "${DEPENDENCY_SOURCE_DIR}" PROPERTY EXCLUDE_FROM_ALL TRUE)
+	endif()
+endfunction()
 
 if (FRANAUDIO_USE_SERVER)
 	add_compile_definitions (FRANAUDIO_USE_SERVER)
@@ -79,8 +86,8 @@ include("CMakeMacros.cmake")
 # =================
 include(FetchContent)
 FetchContent_Declare(
-    doxygen-awesome-css
-    URL https://github.com/jothepro/doxygen-awesome-css/archive/refs/tags/v2.4.2.zip
+	doxygen-awesome-css
+	URL https://github.com/jothepro/doxygen-awesome-css/archive/refs/tags/v2.4.2.zip
 	SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Docs/doxygen-awesome-css
 	DOWNLOAD_EXTRACT_TIMESTAMP YES
 )
@@ -125,6 +132,7 @@ if (FRANAUDIO_USE_VORBIS)
 		SOURCE_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/Libs/ogg  # clean folder name
 	)
 	FetchContent_MakeAvailable(ogg)
+	FRANAUDIO_EXCLUDE_DEPENDENCY_FROM_INSTALL("${CMAKE_CURRENT_SOURCE_DIR}/Libs/ogg")
 
 	set(OGG_INCLUDE_DIR "Libs/ogg/include")
 	set(OGG_LIBRARY "Libs/ogg")
@@ -138,6 +146,7 @@ if (FRANAUDIO_USE_VORBIS)
 		SOURCE_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/Libs/vorbis
 	)
 	FetchContent_MakeAvailable(vorbis)
+	FRANAUDIO_EXCLUDE_DEPENDENCY_FROM_INSTALL("${CMAKE_CURRENT_SOURCE_DIR}/Libs/vorbis")
 	
 	set(VORBIS_LIBRARY "Libs/vorbis")
 	set(Vorbis_DIR "Libs/vorbis")
@@ -157,6 +166,7 @@ if (FRANAUDIO_USE_OPUS)
 		SOURCE_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/Libs/opus
 	)
 	FetchContent_MakeAvailable(opus)
+	FRANAUDIO_EXCLUDE_DEPENDENCY_FROM_INSTALL("${CMAKE_CURRENT_SOURCE_DIR}/Libs/opus")
 
 	set(OPUS_LIBRARY "Libs/opus")
 	set(Opus_DIR "Libs/opus")
@@ -169,6 +179,7 @@ if (FRANAUDIO_USE_OPUS)
 		SOURCE_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/Libs/opusfile
 	)
 	FetchContent_MakeAvailable(opusfile)
+	FRANAUDIO_EXCLUDE_DEPENDENCY_FROM_INSTALL("${CMAKE_CURRENT_SOURCE_DIR}/Libs/opusfile")
 	
 	set(OPUSFILE_LIBRARY "Libs/opusfile")
 	set(OpusFile_DIR "Libs/opusfile")
@@ -190,13 +201,16 @@ if (FRANAUDIO_USE_OPENAL)
 		SOURCE_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/Libs/openal-soft
 	)
 	FetchContent_MakeAvailable(openal-soft)
+	FRANAUDIO_EXCLUDE_DEPENDENCY_FROM_INSTALL("${CMAKE_CURRENT_SOURCE_DIR}/Libs/openal-soft")
 endif()
 
 # Miniaudio
 add_subdirectory("Libs/miniaudio")
+FRANAUDIO_EXCLUDE_DEPENDENCY_FROM_INSTALL("${CMAKE_CURRENT_SOURCE_DIR}/Libs/miniaudio")
 
 # Libnyquist
 add_subdirectory("Libs/libnyquist")
+FRANAUDIO_EXCLUDE_DEPENDENCY_FROM_INSTALL("${CMAKE_CURRENT_SOURCE_DIR}/Libs/libnyquist")
 
 if (FRANAUDIO_USE_TEST)
 	set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
@@ -211,6 +225,7 @@ if (FRANAUDIO_USE_TEST)
 		SOURCE_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/Libs/glfw
 	)
 	FetchContent_MakeAvailable(glfw)
+	FRANAUDIO_EXCLUDE_DEPENDENCY_FROM_INSTALL("${CMAKE_CURRENT_SOURCE_DIR}/Libs/glfw")
 endif()
 
 # =================
@@ -336,6 +351,35 @@ install(TARGETS ${FRANAUDIO_INSTALL_TARGETS}
 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
+
+# Re-add runtime dependencies that must accompany FranAudio.
+# Static dependency archives and dependency headers remain excluded in compact mode.
+if (FRANAUDIO_INSTAL_COMPACT)
+	set(FRANAUDIO_RUNTIME_DEPENDENCY_TARGETS
+		ogg
+		vorbis
+		vorbisenc
+		vorbisfile
+		opus
+		opusfile
+		opusurl
+		OpenAL
+		glfw
+	)
+
+	foreach(FRANAUDIO_DEPENDENCY_TARGET IN LISTS FRANAUDIO_RUNTIME_DEPENDENCY_TARGETS)
+		if (TARGET ${FRANAUDIO_DEPENDENCY_TARGET})
+			get_target_property(FRANAUDIO_DEPENDENCY_TYPE ${FRANAUDIO_DEPENDENCY_TARGET} TYPE)
+			if (FRANAUDIO_DEPENDENCY_TYPE STREQUAL "SHARED_LIBRARY" OR
+				FRANAUDIO_DEPENDENCY_TYPE STREQUAL "MODULE_LIBRARY")
+				install(TARGETS ${FRANAUDIO_DEPENDENCY_TARGET}
+					RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+					LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+				)
+			endif()
+		endif()
+	endforeach()
+endif()
 
 install(EXPORT FranAudioTargets
 	FILE FranAudioConfig.cmake
