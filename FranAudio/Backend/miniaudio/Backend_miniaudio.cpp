@@ -348,14 +348,11 @@ namespace FranAudio::Backend
 
 		if (isPaused)
 		{
-			miniaudioSoundData[soundID]->pausedTime = ma_sound_get_time_in_milliseconds(maSoundData);
 			ma_sound_stop(maSoundData);
 		}
 		else
 		{
 			ma_sound_start(maSoundData);
-			ma_sound_seek_to_second(maSoundData, miniaudioSoundData[soundID]->pausedTime);
-			miniaudioSoundData[soundID]->pausedTime = 0;
 		}
 
 		miniaudioSoundData[soundID]->isPaused = isPaused;

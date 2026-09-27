@@ -88,11 +88,6 @@ namespace FranAudio::Backend
 			/// Whether the sound is paused or not.
 			/// </summary>
 			bool isPaused = false;
-
-			/// <summary>
-			/// Time the sound was paused at in milliseconds.
-			/// </summary>
-			size_t pausedTime = 0;
 		};
 
 		/// <summary>
